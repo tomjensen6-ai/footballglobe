@@ -11,6 +11,16 @@
 # production
 /build
 
+# env files - CRITICAL: don't commit API keys!
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# vercel
+.vercel
+
 # misc
 .DS_Store
 .env.local
