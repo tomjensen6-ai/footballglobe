@@ -2,21 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { fgForwardGeocode, fgReverseGeocode, fgFootball } from './lib/fgApi';
 
 // ===== Normalize API keys into constants (robust against missing nested objects) =====
-const GOOGLE_KEY =
-  (typeof API_CONFIG !== 'undefined' &&
-    API_CONFIG &&
-    API_CONFIG.google &&
-    API_CONFIG.google.key) ||
-  (typeof process !== 'undefined' && process.env && process.env.REACT_APP_GOOGLE_MAPS_API_KEY) ||
-  '';
-
-const FOOTBALL_KEY =
-  (typeof API_CONFIG !== 'undefined' &&
-    API_CONFIG &&
-    API_CONFIG.football &&
-    (API_CONFIG.football.key || API_CONFIG.football.apiKey)) ||
-  (typeof process !== 'undefined' && process.env && (process.env.REACT_APP_FOOTBALL_API_KEY || process.env.REACT_APP_API_SPORTS_KEY)) ||
-  '';
+const GOOGLE_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
+const FOOTBALL_KEY = process.env.REACT_APP_FOOTBALL_API_KEY || process.env.REACT_APP_API_SPORTS_KEY || '';
 
 if (!GOOGLE_KEY) console.warn('Google key missing: GOOGLE_KEY is empty.');
 if (!FOOTBALL_KEY) console.warn('Football key missing: FOOTBALL_KEY is empty.');
@@ -330,28 +317,12 @@ const FootballGlobe = () => {
       setTimeout(processQueue, 1000); // 1 second between requests
     };
 
-  // API Configuration with smart caching (NO HARDCODING)
-  const API_CONFIG = {
-  cache: {
+  const CACHE_CONFIG = {
     enabled: true,
-    ttl: 6 * 60 * 60 * 1000, // 6 hours cache
-    maxInitialCountries: 15, // Reduced from 211 to 15
+    ttl: 6 * 60 * 60 * 1000,
+    maxInitialCountries: 15,
     priorityCountries: ['GB', 'US', 'DE', 'FR', 'ES', 'IT', 'BR', 'AR', 'NL', 'PT', 'BE', 'CH', 'SE', 'NO', 'DK'],
     enableProgressiveLoading: true
-        
-    },
-    football: {
-      baseUrl: 'https://v3.football.api-sports.io',
-      key: process.env.REACT_APP_FOOTBALL_API_KEY,
-      endpoints: {
-        countries: '/countries',
-        leagues: '/leagues',
-        venues: '/venues'
-      }
-    },
-    googleMaps: {
-      key: process.env.REACT_APP_GOOGLE_MAPS_API_KEY
-    }
   };
 
   // Validate API keys on component mount
@@ -447,9 +418,9 @@ const FootballGlobe = () => {
     });
     
     // Process priority countries immediately (10 countries = ~30 API calls)
-    const countriesToProcess = API_CONFIG.cache.enableProgressiveLoading 
+    const countriesToProcess = CACHE_CONFIG.enableProgressiveLoading 
       ? priorityCountriesData 
-      : apiCountries.slice(0, API_CONFIG.cache.maxCountriesPerLoad);
+      : apiCountries.slice(0, CACHE_CONFIG.maxInitialCountries);
       
     console.log(`🌍 SMART LOADING: Processing ${countriesToProcess.length} priority countries first`);
       setTotalCountries(apiCountries.length);
@@ -2276,10 +2247,10 @@ const map = new MapCtor(mapRef.current, {
 
       let venuesData;
       try {
-        venuesData = await fgFootball('venues', { country: code });
+        venuesData = await fgFootball('venues', { country: countryCode });
       } catch (err) {
-        console.error(`❌ Football proxy /venues?country=${code} failed:`, err);
-        return { leagues: [], venues: [] }; // keep UI alive
+        console.error(`❌ Football proxy /venues?country=${countryCode} failed:`, err);
+        return { leagues: [], venues: [] };
       }
       if (!venuesData || !Array.isArray(venuesData.response)) {
         console.error('❌ Football proxy returned unexpected shape for /venues:', venuesData);
