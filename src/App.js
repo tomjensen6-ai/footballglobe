@@ -328,10 +328,10 @@ const FootballGlobe = () => {
   // Validate API keys on component mount
   useEffect(() => {
     console.log('🔧 API Configuration Check:');
-    console.log('📍 Google Maps API Key:', API_CONFIG.googleMaps.key ? '✅ Present' : '❌ Missing');
+    console.log('📍 Google Maps API Key:', GOOGLE_KEY ? '✅ Present' : '❌ Missing');
     console.log('⚽ Football API Key:', API_CONFIG.football.key ? '✅ Present' : '❌ Missing');
     
-    if (!API_CONFIG.googleMaps.key) {
+    if (!GOOGLE_KEY) {
       console.error('🚫 Google Maps API key missing! Add REACT_APP_GOOGLE_MAPS_API_KEY to .env');
     }
     if (!API_CONFIG.football.key) {
@@ -561,10 +561,10 @@ const FootballGlobe = () => {
       try {
         const countryName = await getCountryNameFromCode(countryCode);
         const response = await fetch(
-          `${API_CONFIG.football.baseUrl}${API_CONFIG.football.endpoints.leagues}?country=${countryName}`,
+          `https://v3.football.api-sports.io${API_CONFIG.football.endpoints.leagues}?country=${countryName}`,
           {
             headers: {
-              'x-apisports-key': API_CONFIG.football.key
+              'x-apisports-key': FOOTBALL_KEY
             }
           }
         );
@@ -575,10 +575,10 @@ const FootballGlobe = () => {
           const leagues = data.response.map(item => item.league.name);
           // Get real stadium count from venues API
           const venuesResponse = await fetch(
-            `${API_CONFIG.football.baseUrl}${API_CONFIG.football.endpoints.venues}?country=${countryCode}`,
+            `https://v3.football.api-sports.io${API_CONFIG.football.endpoints.venues}?country=${countryCode}`,
             {
               headers: {
-                'x-apisports-key': API_CONFIG.football.key
+                'x-apisports-key': FOOTBALL_KEY
               }
             }
           );
@@ -632,9 +632,9 @@ const FootballGlobe = () => {
       
       // If not found, fetch from football API to get the correct name
       try {
-        const response = await fetch(`${API_CONFIG.football.baseUrl}/countries`, {
+        const response = await fetch(`https://v3.football.api-sports.io/countries`, {
           headers: {
-            'x-apisports-key': API_CONFIG.football.key
+            'x-apisports-key': FOOTBALL_KEY
           }
         });
         
@@ -731,8 +731,8 @@ const FootballGlobe = () => {
         
         // First get leagues for the country
         const leaguesData = await controlledFetch(
-          `${API_CONFIG.football.baseUrl}/leagues?country=${apiCountryName}`,
-          { headers: { 'x-apisports-key': API_CONFIG.football.key } }
+          `https://v3.football.api-sports.io/leagues?country=${apiCountryName}`,
+          { headers: { 'x-apisports-key': FOOTBALL_KEY } }
         );
         
         if (!leaguesData.response || leaguesData.response.length === 0) {
@@ -802,8 +802,8 @@ const FootballGlobe = () => {
             console.log(`🏆 USING SEASON: ${apiSeason} for ${league.name}`);
 
             const teamsData = await controlledFetch(
-              `${API_CONFIG.football.baseUrl}/teams?league=${league.id}&season=${apiSeason}`,
-              { headers: { 'x-apisports-key': API_CONFIG.football.key } }
+              `https://v3.football.api-sports.io/teams?league=${league.id}&season=${apiSeason}`,
+              { headers: { 'x-apisports-key': FOOTBALL_KEY } }
             );
             
             if (teamsData.response && teamsData.response.length > 0) {
@@ -893,8 +893,8 @@ const FootballGlobe = () => {
         // Use current season consistently across all functions
         const currentSeason = new Date().getFullYear();
         const teamsResponse = await controlledFetch(
-          `${API_CONFIG.football.baseUrl}/teams?league=${leagueId}&season=${currentSeason}`,
-          { headers: { 'x-apisports-key': API_CONFIG.football.key } },
+          `https://v3.football.api-sports.io/teams?league=${leagueId}&season=${currentSeason}`,
+          { headers: { 'x-apisports-key': FOOTBALL_KEY } },
           'football',
           600000
         );
@@ -1057,7 +1057,7 @@ const FootballGlobe = () => {
           console.log(`🔍 GEOCODING STRATEGY 1: ${fullQuery}`);
           
           const response = await fetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullQuery)}&key=${API_CONFIG.googleMaps.key}`
+            `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullQuery)}&key=${GOOGLE_KEY}`
           );
           const data = await response.json();
           
@@ -1077,7 +1077,7 @@ const FootballGlobe = () => {
         console.log(`🔍 GEOCODING STRATEGY 2: ${cityQuery}`);
         
         const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityQuery)}&key=${API_CONFIG.googleMaps.key}`
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityQuery)}&key=${GOOGLE_KEY}`
         );
         const data = await response.json();
         
@@ -1096,7 +1096,7 @@ const FootballGlobe = () => {
         console.log(`🔍 GEOCODING STRATEGY 3: ${cityOnlyQuery}`);
         
         const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityOnlyQuery)}&key=${API_CONFIG.googleMaps.key}`
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityOnlyQuery)}&key=${GOOGLE_KEY}`
         );
         const data = await response.json();
         
@@ -1122,7 +1122,7 @@ const FootballGlobe = () => {
           console.log(`🔍 GEOCODING STRATEGY 1: "${fullQuery}"`);
           
           const data = await controlledFetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullQuery)}&key=${API_CONFIG.googleMaps.key}`,
+            `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullQuery)}&key=${GOOGLE_KEY}`,
             {},
             'geocoding',
             3600000 // 1 hour cache for geocoding
@@ -1140,7 +1140,7 @@ const FootballGlobe = () => {
         console.log(`🔍 GEOCODING STRATEGY 2: "${cityQuery}"`);
         
         const data2 = await controlledFetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityQuery)}&key=${API_CONFIG.googleMaps.key}`,
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityQuery)}&key=${GOOGLE_KEY}`,
           {},
           'geocoding',
           3600000
@@ -1157,7 +1157,7 @@ const FootballGlobe = () => {
         console.log(`🔍 GEOCODING STRATEGY 3 (City Center): "${cityOnly}"`);
         
         const data3 = await controlledFetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityOnly)}&key=${API_CONFIG.googleMaps.key}`,
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityOnly)}&key=${GOOGLE_KEY}`,
           {},
           'geocoding',
           3600000
@@ -1188,9 +1188,9 @@ const FootballGlobe = () => {
       
       try {
         // Get all countries from Football API
-        const footballResponse = await fetch(`${API_CONFIG.football.baseUrl}/countries`, {
+        const footballResponse = await fetch(`https://v3.football.api-sports.io/countries`, {
           headers: {
-            'x-apisports-key': API_CONFIG.football.key
+            'x-apisports-key': FOOTBALL_KEY
           }
         });
         const footballData = await footballResponse.json();
@@ -2579,9 +2579,9 @@ const map = new MapCtor(mapRef.current, {
   // Load Google Maps API
   useEffect(() => {
     const loadGoogleMaps = () => {
-      if (!window.google && API_CONFIG.googleMaps.key) {
+      if (!window.google && GOOGLE_KEY) {
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${API_CONFIG.googleMaps.key}&libraries=places&loading=async&language=en`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_KEY}&libraries=places&loading=async&language=en`;
         script.async = true;
         script.defer = true;
         script.onload = () => {
