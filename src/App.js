@@ -5,6 +5,31 @@ import { fgForwardGeocode, fgReverseGeocode, fgFootball } from './lib/fgApi';
 const GOOGLE_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
 const FOOTBALL_KEY = process.env.REACT_APP_FOOTBALL_API_KEY || process.env.REACT_APP_API_SPORTS_KEY || '';
 
+const CACHE_CONFIG = {
+  enabled: true,
+  ttl: 6 * 60 * 60 * 1000,
+  maxInitialCountries: 15,
+  priorityCountries: ['GB', 'US', 'DE', 'FR', 'ES', 'IT', 'BR', 'AR', 'NL', 'PT', 'BE', 'CH', 'SE', 'NO', 'DK'],
+  enableProgressiveLoading: true
+};
+
+// Compatibility shim - uses environment variables but provides API_CONFIG structure
+const API_CONFIG = {
+  football: {
+    baseUrl: 'https://v3.football.api-sports.io',
+    key: FOOTBALL_KEY,
+    endpoints: {
+      countries: '/countries',
+      leagues: '/leagues',
+      venues: '/venues'
+    }
+  },
+  googleMaps: {
+    key: GOOGLE_KEY
+  },
+  cache: CACHE_CONFIG
+};
+
 if (!GOOGLE_KEY) console.warn('Google key missing: GOOGLE_KEY is empty.');
 if (!FOOTBALL_KEY) console.warn('Football key missing: FOOTBALL_KEY is empty.');
 
