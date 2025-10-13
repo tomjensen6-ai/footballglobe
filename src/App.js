@@ -13,6 +13,29 @@ const CACHE_CONFIG = {
   enableProgressiveLoading: true
 };
 
+// Map Football-Data.org codes to REST Countries codes
+const COUNTRY_CODE_MAP = {
+  'ENG': 'GBR',  // England → Great Britain
+  'SCO': 'GBR',  // Scotland → Great Britain
+  'WAL': 'GBR',  // Wales → Great Britain
+  'NIR': 'GBR',  // Northern Ireland → Great Britain
+  'DEU': 'DEU',  // Germany (same)
+  'FRA': 'FRA',  // France (same)
+  'ESP': 'ESP',  // Spain (same)
+  'ITA': 'ITA',  // Italy (same)
+  'BRA': 'BRA',  // Brazil (same)
+  'ARG': 'ARG',  // Argentina (same)
+  'NLD': 'NLD',  // Netherlands (same)
+  'POR': 'POR',  // Portugal (same)
+  'BEL': 'BEL',  // Belgium (same)
+  'INT': 'WRL'   // International → World
+};
+
+// Helper function to get REST Countries code
+const getRestCountriesCode = (footballCode) => {
+  return COUNTRY_CODE_MAP[footballCode] || footballCode;
+};
+
 // Compatibility shim - uses environment variables but provides API_CONFIG structure
 const API_CONFIG = {
   football: {
@@ -490,35 +513,35 @@ const FootballGlobe = () => {
 
   // Geocode country name to coordinates with enhanced debugging (NO HARDCODING)
   const geocodeCountry = async (countryName, countryCode) => {
-  try {
-    console.log(`🔍 Geocoding ${countryName} via FG proxy...`);
-    const { lat, lng, countryCode: cc, countryName: cn } = await fgForwardGeocode(countryName);
-    console.log(`✅ FG proxy geocode SUCCESS: ${countryName} -> ${lat}, ${lng}`);
-    return { lat, lng, countryCode: cc || countryCode, countryName: cn || countryName };
-  } catch (error) {
-    console.warn(`🔄 FG proxy geocode failed for ${countryName}, trying REST Countries:`, error.message);
-
-    // REST Countries fallback
     try {
-      let restResponse;
-      if (countryCode) {
-        restResponse = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
-      } else {
-        restResponse = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(countryName)}?fullText=true`);
+      // Use REST Countries for reliable coordinates
+      const restCode = getRestCountriesCode(countryCode);
+      
+      console.log(`🔍 Geocoding ${countryName} (${countryCode} → ${restCode})`);
+      
+      const response = await fetch(`https://restcountries.com/v3.1/alpha/${restCode}`);
+      
+      if (!response.ok) {
+        throw new Error(`REST Countries HTTP ${response.status}`);
       }
-      if (!restResponse.ok) throw new Error(`REST Countries HTTP ${restResponse.status}`);
-      const json = await restResponse.json();
+      
+      const json = await response.json();
       const latlng = json?.[0]?.latlng || json?.[0]?.capitalInfo?.latlng;
-      if (!latlng) throw new Error('No latlng in REST Countries');
+      
+      if (!latlng) {
+        throw new Error('No latlng in REST Countries');
+      }
+      
       const [lat, lng] = latlng;
-      console.log(`✅ REST Countries fallback SUCCESS: ${countryName} -> ${lat}, ${lng}`);
-      return { lat, lng };
-    } catch (e2) {
-      console.error(`⛔ Both FG proxy and REST Countries failed for ${countryName}:`, e2.message);
+      console.log(`✅ Geocode SUCCESS: ${countryName} → ${lat}, ${lng}`);
+      
+      return { lat, lng, countryCode: restCode, countryName: json[0].name.common };
+      
+    } catch (error) {
+      console.error(`⛔ Geocoding failed for ${countryName}:`, error.message);
       return null;
     }
-  }
-};
+  };
 
 
   // Determine continent using REST Countries API (NO HARDCODING - covers all 195+ countries)
