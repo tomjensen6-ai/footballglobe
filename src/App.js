@@ -435,26 +435,14 @@ const FootballGlobe = () => {
     const processedCountries = [];
     
     // SMART LOADING: Start with popular countries, load others on-demand
-    const priorityCountries = ['GB', 'AR', 'AU', 'BR', 'CA', 'CL', 'CN', 'CO', 'EG', 'FR', 'DE', 'IN', 'IT', 'JP', 'MX', 'MA', 'NL', 'NG', 'PT', 'ZA', 'KR', 'ES', 'US'];
+    const priorityCountries = ['ENG', 'DEU', 'FRA', 'ESP', 'ITA', 'BRA', 'ARG', 'NLD', 'POR', 'BEL'];
     // Create priority countries data with special handling for GB
     const priorityCountriesData = [];
 
     priorityCountries.forEach(code => {
-      if (code === 'GB') {
-        // Special case: GB -> England
-        const englandEntry = apiCountries.find(c => c.code === 'GB-ENG');
-        if (englandEntry) {
-          priorityCountriesData.push({
-            code: 'GB', // Keep as GB for our system
-            name: 'United Kingdom' // Use proper name for geocoding
-          });
-        }
-      } else {
-        // Normal lookup
-        const country = apiCountries.find(c => c.code === code);
-        if (country) {
-          priorityCountriesData.push(country);
-        }
+      const country = apiCountries.find(c => c.code === code);
+      if (country) {
+        priorityCountriesData.push(country);
       }
     });
     
