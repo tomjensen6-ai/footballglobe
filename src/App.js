@@ -566,9 +566,9 @@ const FootballGlobe = () => {
   // Determine continent using REST Countries API (NO HARDCODING - covers all 195+ countries)
   const determineContinent = async (countryCode, countryName) => {
     try {
-      // First try with country code (most reliable)
       if (countryCode) {
-        const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
+        const restCode = getRestCountriesCode(countryCode);
+        const response = await fetch(`https://restcountries.com/v3.1/alpha/${restCode}`);
         if (response.ok) {
           const data = await response.json();
           return data[0]?.continents?.[0] || 'Unknown';
@@ -594,7 +594,8 @@ const FootballGlobe = () => {
     try {
       if (!countryCode) return null;
       
-      const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
+      const restCode = getRestCountriesCode(countryCode);
+      const response = await fetch(`https://restcountries.com/v3.1/alpha/${restCode}`);
       if (response.ok) {
         const data = await response.json();
         const area = data[0]?.area || null;
@@ -616,7 +617,8 @@ const FootballGlobe = () => {
     try {
       if (!countryCode) return '🏳️';
       
-      const response = await fetch(`https://restcountries.com/v3.1/alpha/${countryCode}`);
+      const restCode = getRestCountriesCode(countryCode);
+      const response = await fetch(`https://restcountries.com/v3.1/alpha/${restCode}`);
       if (response.ok) {
         const data = await response.json();
         // REST Countries API provides emoji flags in the 'flag' field
