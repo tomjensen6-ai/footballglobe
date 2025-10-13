@@ -2219,6 +2219,11 @@ const map = new MapCtor(mapRef.current, {
           const code = f.properties.ISO_A2;
           const name = f.properties.NAME_EN || f.properties.NAME;
           
+          // Special case: England uses code "ENG" but GeoJSON uses "GB"
+          if (country.code === 'ENG' && code === 'GB') {
+            return true;
+          }
+          
           return code === country.code || 
                 code?.toLowerCase() === country.code?.toLowerCase() ||
                 name?.toLowerCase() === country.name?.toLowerCase();
