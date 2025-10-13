@@ -1841,6 +1841,12 @@ const map = new MapCtor(mapRef.current, {
           const lat = event.latLng.lat();
           const lng = event.latLng.lng();
           const rev = await fgReverseGeocode(lat, lng);
+
+          if (!rev) {
+            // No country found - probably ocean
+            return;
+          }
+
           let detectedCountryName = rev.countryName;
           let detectedCountryCode = googleToFootballCode(rev.countryCode);
           console.log('✅ Reverse-geocode:', rev.countryName, rev.countryCode, '→', detectedCountryCode);
@@ -2073,7 +2079,12 @@ const map = new MapCtor(mapRef.current, {
         const lat = event.latLng.lat();
         const lng = event.latLng.lng();
 
-        const rev = await fgReverseGeocode(lat, lng); // { ok, countryCode, countryName, lat, lng }
+        const rev = await fgReverseGeocode(lat, lng);
+
+        if (!rev) {
+          console.log('ℹ️ No country clicked');
+          return;
+        }
 
         let detectedCountryName = rev.countryName;
         let detectedCountryCode = googleToFootballCode(rev.countryCode);
