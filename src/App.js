@@ -3,7 +3,7 @@ import { fgForwardGeocode, fgReverseGeocode, fgFootball } from './lib/fgApi';
 
 // ===== Normalize API keys into constants (robust against missing nested objects) =====
 const GOOGLE_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
-const FOOTBALL_KEY = process.env.REACT_APP_FOOTBALL_API_KEY || process.env.REACT_APP_API_SPORTS_KEY || '';
+const FOOTBALL_KEY = process.env.FOOTBALL_DATA_API_TOKEN || '';
 
 const CACHE_CONFIG = {
   enabled: true,
@@ -375,39 +375,55 @@ const FootballGlobe = () => {
     setApiError(null);
 
     try {
-      console.log('🌍 Fetching countries from api-football.com...');
+      console.log('🌐 Fetching competitions from football-data.org...');
       
-      // via backend proxy (fixes CORS)
+      // Football-Data.org uses "competitions" instead of "countries"
       let data;
       try {
-        data = await fgFootball('countries');
+        data = await fgFootball('competitions');
       } catch (err) {
-        // If the proxy returns HTML or a 4xx/5xx, fgFootball may throw.
-        console.error('❌ Football proxy /countries failed:', err);
-        throw err; // let your existing catch trigger the fallback
+        console.error('❌ Football proxy /competitions failed:', err);
+        throw err;
       }
 
-      // Extra guard – if the proxy returned an unexpected shape, don’t proceed
-      if (!data || !Array.isArray(data.response)) {
-        console.error('❌ Football proxy returned unexpected shape for /countries:', data);
-        throw new Error('Bad football countries payload');
+      if (!data || !Array.isArray(data.competitions)) {
+        console.error('❌ Football proxy returned unexpected shape:', data);
+        throw new Error('Bad football competitions payload');
       }
 
-     
-      if (data.response && Array.isArray(data.response)) {
-        // Process API response to match our structure
-        const processedCountries = await processCountriesData(data.response);
-        setCountriesData(processedCountries);
-        countriesDataRef.current = processedCountries;
-        console.log(`✅ Loaded ${processedCountries.length} countries from API`);
-      } else {
-        throw new Error('Invalid API response format');
-      }
+      // Extract unique countries from competitions
+      const countryMap = new Map();
+      data.competitions.forEach(competition => {
+        const area = competition.area;
+        if (area && area.code && area.name) {
+          if (!countryMap.has(area.code)) {
+            countryMap.set(area.code, {
+              name: area.name,
+              code: area.code,
+              flag: area.flag || area.ensignUrl,
+              competitions: []
+            });
+          }
+          countryMap.get(area.code).competitions.push({
+            id: competition.id,
+            name: competition.name,
+            type: competition.type,
+            emblem: competition.emblem
+          });
+        }
+      });
+
+      const countries = Array.from(countryMap.values());
+      console.log(`📊 Extracted ${countries.length} unique countries from competitions`);
+
+      const processedCountries = await processCountriesData(countries);
+      setCountriesData(processedCountries);
+      countriesDataRef.current = processedCountries;
+      console.log(`✅ Loaded ${processedCountries.length} countries from API`);
+      
     } catch (error) {
       console.error('❌ Error fetching countries:', error);
       setApiError(error.message);
-      
-      // Fallback: Load minimal FIFA countries for demo
       loadFallbackCountries();
     } finally {
       setIsLoadingCountries(false);
@@ -459,17 +475,20 @@ const FootballGlobe = () => {
         // Get country coordinates via geocoding
         const coordinates = await geocodeCountry(country.name, country.code);
         
-        // Get league count for this country
-        const leagueInfo = await getCountryLeagues(country.code);
-        
+        // Use competitions data directly (no need for separate API call)
+        const competitionNames = country.competitions 
+          ? country.competitions.slice(0, 3).map(c => c.name)
+          : [];
+
         processedCountries.push({
           id: country.code || country.name.replace(/\s+/g, ''),
           name: country.name,
           code: country.code,
-          flag: await getFlagFromRestCountries(country.code), // Always use REST Countries for emoji flags
+          flag: country.flag || await getFlagFromRestCountries(country.code),
           center: coordinates,
-          stadiums: leagueInfo.stadiumCount || 0,
-          topLeagues: leagueInfo.leagues || [],
+          stadiums: country.competitions ? country.competitions.length * 10 : 0, // Estimate
+          topLeagues: competitionNames,
+          competitions: country.competitions || [],
           continent: await determineContinent(country.code, country.name),
           area: await getCountryArea(country.code)
         });
@@ -581,45 +600,16 @@ const FootballGlobe = () => {
     }
   };
 
-  // Get leagues for country (NO HARDCODING)
-    const getCountryLeagues = async (countryCode) => {
+    // Get leagues for country (NO HARDCODING)
+    const getCountryCompetitions = async (countryCode) => {
       try {
-        const countryName = await getCountryNameFromCode(countryCode);
-        const response = await fetch(
-          `https://v3.football.api-sports.io${API_CONFIG.football.endpoints.leagues}?country=${countryName}`,
-          {
-            headers: {
-              'x-apisports-key': FOOTBALL_KEY
-            }
-          }
-        );
-        
-        const data = await response.json();
-        
-        if (data.response && Array.isArray(data.response)) {
-          const leagues = data.response.map(item => item.league.name);
-          // Get real stadium count from venues API
-          const venuesResponse = await fetch(
-            `https://v3.football.api-sports.io${API_CONFIG.football.endpoints.venues}?country=${countryCode}`,
-            {
-              headers: {
-                'x-apisports-key': FOOTBALL_KEY
-              }
-            }
-          );
-
-          const venuesData = await venuesResponse.json();
-          const realStadiumCount = venuesData.response ? venuesData.response.length : 0;
-
-          return {
-            leagues: leagues.slice(0, 3),
-            stadiumCount: realStadiumCount // REAL data from API
-          };
-        }
-        
-        return { leagues: [], stadiumCount: 0 };
+        // Football-Data.org doesn't filter by country directly
+        // We already have competitions from the initial load
+        const country = countriesDataRef.current.find(c => c.code === countryCode);
+        return country?.competitions || [];
       } catch (error) {
-        return { leagues: [], stadiumCount: 0 };
+        console.error('Error getting competitions:', error);
+        return [];
       }
     };
 
@@ -736,7 +726,7 @@ const FootballGlobe = () => {
 
     // Fetch detailed stadium data for a country
     const fetchStadiumsForCountry = async (countryCode, countryName) => {
-      console.log(`🔍 DEBUG: Starting stadium fetch for ${countryName} (${countryCode})`);
+      console.log(`🏟 DEBUG: Starting stadium fetch for ${countryName} (${countryCode})`);
       
       // Check cache first
       if (stadiumsCache[countryCode]) {
@@ -747,158 +737,69 @@ const FootballGlobe = () => {
       setIsLoadingStadiums(true);
       
       try {
-        // Convert country code to country name for API
-        const apiCountryName = await getCountryNameFromCode(countryCode);
-        console.log(`🔍 API Country Name: ${countryCode} -> ${apiCountryName}`);
-        
-        // OPTIMIZED: Use teams-based venue loading for more reliable data
-        console.log(`🔄 OPTIMIZED: Using teams-based venue loading for ${apiCountryName}`);
-        
-        // First get leagues for the country
-        const leaguesData = await controlledFetch(
-          `https://v3.football.api-sports.io/leagues?country=${apiCountryName}`,
-          { headers: { 'x-apisports-key': FOOTBALL_KEY } }
-        );
-        
-        if (!leaguesData.response || leaguesData.response.length === 0) {
-          console.warn(`❌ No leagues found for ${apiCountryName}`);
-          return [];
-        }
-        
-        // After getting the API response, but before the filter
-        // Extract the actual leagues array from the API response
-        const leagues = leaguesData.response;
-        console.log(`🏆 FOUND: ${leagues ? leagues.length : 'undefined'} leagues for ${countryName}`);
-
-        // Add safety check for the leagues array
-        if (!leagues || !Array.isArray(leagues)) {
-          console.log(`❌ Invalid leagues data for ${countryName}:`, leagues);
+        // Get country's competitions
+        const country = countriesDataRef.current.find(c => c.code === countryCode);
+        if (!country || !country.competitions || country.competitions.length === 0) {
+          console.warn(`❌ No competitions found for ${countryName}`);
           return [];
         }
 
-        // Filter out youth and amateur leagues
-        const professionalLeagues = leagues.filter(league => {
-          const name = league.league.name.toLowerCase();
-          return !name.includes('u18') && 
-                !name.includes('u19') && 
-                !name.includes('u21') && 
-                !name.includes('youth') && 
-                !name.includes('junior') && 
-                !name.includes('amateur');
-        });
+        console.log(`🏆 FOUND: ${country.competitions.length} competitions for ${countryName}`);
 
-        // Use professional leagues for sorting, fall back to all if none found
-        const leaguesToUse = professionalLeagues.length > 0 ? professionalLeagues : leagues;
-        console.log(`🎯 FILTERED: ${leaguesToUse.length} professional leagues from ${leagues.length} total`);
+        const stadiums = [];
         
-        // Store ALL leagues for country (keep your existing logic)
-        const rankedLeagues = rankLeaguesByImportance(leaguesToUse);
-        setAvailableLeagues(rankedLeagues.map(league => ({
-          id: league.league.id,
-          name: league.league.name,
-          type: league.league.type,
-          logo: league.league.logo,
-          country: league.country.name,
-          seasons: league.seasons,
-          importance: league.importanceScore
-        })));
+        // Get teams from the top competition
+        const topCompetition = country.competitions[0];
+        console.log(`🏆 TOP COMPETITION: ${topCompetition.name} (ID: ${topCompetition.id})`);
         
-        // Get teams from ONLY the top-ranked league initially (API-driven)
-        let stadiums = [];
-        const topLeague = rankedLeagues[0]; // Highest importance score from API
-        
-        if (!topLeague) {
-          console.warn(`❌ No leagues found for ${apiCountryName}`);
-          return [];
-        }
-        
-        console.log(`🏆 TOP LEAGUE (API-ranked): ${topLeague.league.name} (score: ${topLeague.importanceScore})`);
-        
-        // Process ONLY the top league for initial load
-        const league = topLeague.league;
-        console.log(`🔄 PROCESSING TOP LEAGUE: ${league.name} (ID: ${league.id})`);
+        try {
+          const teamsData = await fgFootball(`competitions/${topCompetition.id}/teams`);
           
-          try {
+          if (teamsData && teamsData.teams && Array.isArray(teamsData.teams)) {
+            console.log(`⚽ FOUND: ${teamsData.teams.length} teams in ${topCompetition.name}`);
             
-            // Use the league's current season from API data
-            const currentSeasonData = league.seasons?.find(s => s.current) || league.seasons?.[0];
-            const apiSeason = currentSeasonData?.year || new Date().getFullYear();
-
-            console.log(`🏆 USING SEASON: ${apiSeason} for ${league.name}`);
-
-            const teamsData = await controlledFetch(
-              `https://v3.football.api-sports.io/teams?league=${league.id}&season=${apiSeason}`,
-              { headers: { 'x-apisports-key': FOOTBALL_KEY } }
-            );
-            
-            if (teamsData.response && teamsData.response.length > 0) {
-              console.log(`⚽ FOUND: ${teamsData.response.length} teams in ${league.name}`);
-              
-              // Process teams to extract venue information
-              for (const teamData of teamsData.response) { // Process ALL teams in top league
-                const team = teamData.team;
-                const venue = teamData.venue;
-                
-                if (venue && venue.name && venue.city) {
-                  console.log(`🏟️ PROCESSING: ${venue.name} (${team.name})`);
+            for (const team of teamsData.teams) {
+              if (team.venue) {
+                try {
+                  // Geocode the venue
+                  const coordinates = await geocodeStadium(
+                    team.address,
+                    team.venue,
+                    team.name,
+                    countryName
+                  );
                   
-                  try {
-                    // Enhanced geocoding with multiple fallbacks
-                    const coordinates = await geocodeStadium(venue.address, venue.city, venue.name, apiCountryName);
+                  if (coordinates) {
+                    stadiums.push({
+                      id: team.id,
+                      name: team.venue || `${team.name} Stadium`,
+                      address: team.address || team.venue,
+                      city: team.venue,
+                      capacity: 0, // Football-Data.org doesn't provide capacity
+                      coordinates: coordinates,
+                      team: team.name,
+                      teamLogo: team.crest,
+                      league: topCompetition.name,
+                      leagueId: topCompetition.id,
+                      isTopLeague: true
+                    });
                     
-                    if (coordinates) {
-                      stadiums.push({
-                        id: venue.id || `${team.id}_venue`,
-                        name: venue.name,
-                        address: venue.address || `${venue.city}, ${apiCountryName}`,
-                        city: venue.city,
-                        capacity: venue.capacity || 0,
-                        coordinates: coordinates,
-                        image: venue.image,
-                        surface: venue.surface || 'Grass',
-                        team: team.name,
-                        teamLogo: team.logo,
-                        league: league.name,
-                        leagueId: league.id,
-                        isTopLeague: true
-                      });
-                      
-                      console.log(`✅ STADIUM ADDED: ${venue.name} -> ${team.name}`);
-                    }
-                  } catch (error) {
-                    console.warn(`⚠️ Failed to process ${venue.name}:`, error.message);
+                    console.log(`✅ STADIUM ADDED: ${team.venue} -> ${team.name}`);
                   }
+                } catch (error) {
+                  console.warn(`⚠️ Failed to process ${team.name}:`, error.message);
                 }
               }
             }
-          } catch (error) {
-            console.warn(`⚠️ Failed to get teams for ${league.name}:`, error.message);
           }
+        } catch (error) {
+          console.warn(`⚠️ Failed to get teams for ${topCompetition.name}:`, error.message);
+        }
+
+        console.log(`🎯 RESULT: ${stadiums.length} stadiums found`);
+        return stadiums;
         
-
-        console.log(`🎯 TEAMS-BASED RESULT: ${stadiums.length} stadiums found`);
-
-        // Filter out stadiums without coordinates
-        const validStadiums = stadiums.filter(stadium => 
-          stadium.coordinates && 
-          stadium.coordinates.lat && 
-          stadium.coordinates.lng
-        );
-
-        console.log(`🔍 VALID STADIUMS: ${validStadiums.length} out of ${stadiums.length}`);
-
-        if (validStadiums.length > 0) {
-          console.log(`✅ RETURNING ${validStadiums.length} stadiums for ${apiCountryName}`);
-          return validStadiums;
-        }
-
-        console.log(`⚠️ No stadium data found for ${apiCountryName}`);
-        return [];
       } catch (error) {
-        if (error.message.includes('Rate limit')) {
-          console.warn(`⚠️ RATE LIMITED: Stadium fetch for ${countryName} delayed`);
-          return [];
-        }
         console.error(`❌ Stadium fetch failed for ${countryName}:`, error);
         return [];
       } finally {
@@ -2253,7 +2154,6 @@ const map = new MapCtor(mapRef.current, {
   };
 
     const fetchCountryOnDemand = async (countryCode, countryName = null) => {
-      // Check cache first
       const cacheKey = `country_${countryCode}`;
       if (apiCacheRef.current.countryDetails[cacheKey]) {
         console.log(`📦 CACHE HIT: Using cached data for ${countryName}`);
@@ -2262,86 +2162,64 @@ const map = new MapCtor(mapRef.current, {
       
       console.log(`🔄 LAZY LOAD: Fetching data for ${countryName} on-demand`);
       try {
-      // Get leagues first
-      const leaguesData = await fgFootball('leagues', { country: countryCode });
+        // Get competitions data (already loaded)
+        const country = countriesDataRef.current.find(c => c.code === countryCode);
+        const competitions = country?.competitions || [];
 
+        const areaData = await getCountryArea(countryCode);
+        console.log(`📍 LAZY LOAD AREA: ${countryCode} -> ${areaData} km²`);
 
-      // Get actual stadium count from venues API
-      const apiCountryName = await getCountryNameFromCode(countryCode);
-      console.log(`🔍 On-demand API call: ${countryCode} -> ${apiCountryName}`);
-
-      let venuesData;
-      try {
-        venuesData = await fgFootball('venues', { country: countryCode });
-      } catch (err) {
-        console.error(`❌ Football proxy /venues?country=${countryCode} failed:`, err);
-        return { leagues: [], venues: [] };
-      }
-      if (!venuesData || !Array.isArray(venuesData.response)) {
-        console.error('❌ Football proxy returned unexpected shape for /venues:', venuesData);
-        return { leagues: [], venues: [] };
-      }
-
-
-
-      // 🔥 NEW: Get area data for smart zoom functionality
-      const areaData = await getCountryArea(countryCode);
-      console.log(`📏 LAZY LOAD AREA: ${countryCode} -> ${areaData} km²`);
-
-      const countryData = {
-      name: countryName || countryCode,
-      code: countryCode,
-      stadiums: venuesData.response?.length || 0, // REAL stadium count
-      topLeagues: leaguesData.response?.slice(0, 2).map(item => item.league.name) || [],
-      hasWomensLeagues: leaguesData.response?.some(item =>
-      item.league.name.toLowerCase().includes('women') ||
-      item.league.name.toLowerCase().includes('female')
-      ) || false,
-      area: areaData, // 🔥 NEW: Add area data for smart zoom
-      cachedAt: Date.now()
-      };
-
-            // Cache the result
-            apiCacheRef.current.countryDetails[`country_${countryCode}`] = countryData;
-            console.log(`💾 CACHED: ${countryName} data saved for future use`);
-
-            return countryData;
-          } catch (error) {
-            return null;
-          }
+        const countryData = {
+          name: countryName || countryCode,
+          code: countryCode,
+          stadiums: competitions.length * 10, // Estimate
+          topLeagues: competitions.slice(0, 2).map(c => c.name),
+          hasWomensLeagues: false, // Football-Data.org doesn't have women's data
+          area: areaData,
+          competitions: competitions,
+          cachedAt: Date.now()
         };
 
+        apiCacheRef.current.countryDetails[`country_${countryCode}`] = countryData;
+        console.log(`💾 CACHED: ${countryName} data saved for future use`);
+
+        return countryData;
+      } catch (error) {
+        return null;
+      }
+    };
+
         const getCountryHistoricalFact = (countryCode) => {
-        const facts = {
-          'GB': '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Birthplace of modern football (1863)',
-          'BR': '🏆 5-time World Cup champions',
-          'DE': '🏆 4-time World Cup winners',
-          'AR': '🏆 3-time World Cup champions',
-          'IT': '🏆 4-time World Cup winners',
-          'FR': '🏆 2-time World Cup champions',
-          'ES': '🏆 2010 World Cup champions',
-          'NL': '🧡 Total Football pioneers',
-          'PT': '🏆 Euro 2016 champions',
-          'US': '🏆 4-time Women\'s World Cup champions',
-          'JP': '🏆 2011 Women\'s World Cup champions',
-          'AU': '🏆 4-time AFC Asian Cup winners',
-          'MX': '🏆 11-time CONCACAF champions',
-          'EG': '🏆 7-time African Cup of Nations',
-          'NG': '🏆 3-time African Cup of Nations',
-          'IN': '🏆 1951 Asian Games football gold',
-          'CN': '🏆 1984 AFC Asian Cup champions',
-          'RU': '🏆 1960 European Championship winners',
-          'SE': '🏆 1948 Olympic football champions',
-          'NO': '🏆 2000 European Championship runners-up'
+          const facts = {
+            'GB': '🏴󠁧󠁢󠁥󠁮󠁧󠁿 Birthplace of modern football (1863)',
+            'BR': '🏆 5-time World Cup champions',
+            'DE': '🏆 4-time World Cup winners',
+            'AR': '🏆 3-time World Cup champions',
+            'IT': '🏆 4-time World Cup winners',
+            'FR': '🏆 2-time World Cup champions',
+            'ES': '🏆 2010 World Cup champions',
+            'NL': '🧡 Total Football pioneers',
+            'PT': '🏆 Euro 2016 champions',
+            'US': '🏆 4-time Women\'s World Cup champions',
+            'JP': '🏆 2011 Women\'s World Cup champions',
+            'AU': '🏆 4-time AFC Asian Cup winners',
+            'MX': '🏆 11-time CONCACAF champions',
+            'EG': '🏆 7-time African Cup of Nations',
+            'NG': '🏆 3-time African Cup of Nations',
+            'IN': '🏆 1951 Asian Games football gold',
+            'CN': '🏆 1984 AFC Asian Cup champions',
+            'RU': '🏆 1960 European Championship winners',
+            'SE': '🏆 1948 Olympic football champions',
+            'NO': '🏆 2000 European Championship runners-up'
         };
         
         const fact = facts[countryCode];
-        return fact ? `
-          <div style="margin-top: 6px; font-size: 10px; color: #6b7280; text-align: center; font-style: italic;">
-            ${fact}
-          </div>
-        ` : '';
-      };
+          return fact ? `
+            <div style="margin-top: 6px; font-size: 10px; color: #6b7280; text-align: center; font-style: italic;">
+              ${fact}
+            </div>
+          ` : '';
+        };
   
   const createHoverInfoContent = (country) => {
     const stadiumText = country.stadiums > 0 
