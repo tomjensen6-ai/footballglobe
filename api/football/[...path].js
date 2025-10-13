@@ -9,29 +9,36 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Extract path segments
-  const { path: pathSegments, ...params } = req.query;
   const apiToken = process.env.FOOTBALL_DATA_API_TOKEN;
   
   console.log('🔑 FOOTBALL_DATA_API_TOKEN exists?', !!apiToken);
-  console.log('📍 Path segments:', pathSegments);
+  console.log('📍 Full query:', req.query);
   
   if (!apiToken) {
     return res.status(500).json({ error: 'Missing FOOTBALL_DATA_API_TOKEN' });
   }
 
-  if (!pathSegments || pathSegments.length === 0) {
+  // Extract path from query - Vercel puts it in req.query.path as an array
+  let pathSegments = req.query.path;
+  
+  // Ensure it's an array
+  if (!pathSegments) {
+    console.log('❌ No path segments found');
     return res.status(400).json({ error: 'No path provided' });
   }
-
+  
+  if (!Array.isArray(pathSegments)) {
+    pathSegments = [pathSegments];
+  }
+  
+  console.log('📍 Path segments:', pathSegments);
+  
   // Build the API path from segments
-  // Examples:
-  // ['competitions'] -> /competitions
-  // ['competitions', '2013', 'teams'] -> /competitions/2013/teams
   const apiPath = pathSegments.join('/');
   
-  // Build query string from remaining params
-  const qs = new URLSearchParams(params);
+  // Remove 'path' from params and build query string from remaining params
+  const { path, ...otherParams } = req.query;
+  const qs = new URLSearchParams(otherParams);
   const queryString = qs.toString() ? `?${qs.toString()}` : '';
   
   const url = `https://api.football-data.org/v4/${apiPath}${queryString}`;
@@ -46,6 +53,7 @@ export default async function handler(req, res) {
     });
     
     const data = await upstream.json();
+    console.log('✅ Proxy response status:', upstream.status);
     return res.status(upstream.status).json(data);
     
   } catch (e) {
