@@ -1689,6 +1689,12 @@ const map = new MapCtor(mapRef.current, {
 
    
     setIsMapLoaded(true);
+
+    // 🔥 NEW: Render countries on map after initialization
+    if (countriesDataRef.current.length > 0) {
+      console.log('🎨 Rendering countries on map...');
+      renderCountriesOnMap(map, countriesDataRef.current);
+    }
       })();
     };
 
@@ -2193,6 +2199,103 @@ const map = new MapCtor(mapRef.current, {
 
       map.setOptions({ draggableCursor: 'grab' });
     });
+  };
+
+  // NEW FUNCTION: Render all countries on initial map load
+  const renderCountriesOnMap = async (map, countries) => {
+    console.log(`🎨 RENDERING: ${countries.length} countries on map`);
+    
+    try {
+      // Fetch GeoJSON data
+      const response = await fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson');
+      const geoJsonData = await response.json();
+      
+      // Store all country polygons
+      window.countryPolygons = [];
+      
+      countries.forEach(country => {
+        // Find matching GeoJSON feature
+        const feature = geoJsonData.features.find(f => {
+          const code = f.properties.ISO_A2;
+          const name = f.properties.NAME_EN || f.properties.NAME;
+          
+          return code === country.code || 
+                code?.toLowerCase() === country.code?.toLowerCase() ||
+                name?.toLowerCase() === country.name?.toLowerCase();
+        });
+        
+        if (!feature) {
+          console.warn(`⚠️ No GeoJSON found for ${country.name}`);
+          return;
+        }
+        
+        // Create polygon(s) for this country
+        const createPolygon = (coordinates) => {
+          const paths = coordinates.map(coord => ({
+            lat: coord[1],
+            lng: coord[0]
+          }));
+          
+          return new window.google.maps.Polygon({
+            paths: paths,
+            strokeColor: '#22c55e',
+            strokeOpacity: 0.6,
+            strokeWeight: 1,
+            fillColor: '#22c55e',
+            fillOpacity: 0.2,
+            map: map,
+            zIndex: 100,
+            clickable: true
+          });
+        };
+        
+        let polygons = [];
+        
+        if (feature.geometry.type === 'Polygon') {
+          polygons.push(createPolygon(feature.geometry.coordinates[0]));
+        } else if (feature.geometry.type === 'MultiPolygon') {
+          feature.geometry.coordinates.forEach(polygon => {
+            polygons.push(createPolygon(polygon[0]));
+          });
+        }
+        
+        // Store polygons with country data
+        polygons.forEach(polygon => {
+          polygon.countryData = country;
+          window.countryPolygons.push(polygon);
+          
+          // Add click listener to polygon
+          polygon.addListener('click', () => {
+            console.log(`🎯 POLYGON CLICKED: ${country.name}`);
+            window.clickCountryFromPopup(country.code, country.name, country.center.lat, country.center.lng);
+          });
+          
+          // Add hover effects
+          polygon.addListener('mouseover', () => {
+            polygon.setOptions({
+              fillOpacity: 0.4,
+              strokeWeight: 2
+            });
+            map.setOptions({ draggableCursor: 'pointer' });
+          });
+          
+          polygon.addListener('mouseout', () => {
+            polygon.setOptions({
+              fillOpacity: 0.2,
+              strokeWeight: 1
+            });
+            map.setOptions({ draggableCursor: 'grab' });
+          });
+        });
+        
+        console.log(`✅ Rendered: ${country.name}`);
+      });
+      
+      console.log(`🎨 RENDER COMPLETE: ${window.countryPolygons.length} polygons created`);
+      
+    } catch (error) {
+      console.error('❌ Failed to render countries:', error);
+    }
   };
 
     const fetchCountryOnDemand = async (countryCode, countryName = null) => {
