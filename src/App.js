@@ -31,6 +31,25 @@ const COUNTRY_CODE_MAP = {
   'INT': 'WRL'   // International → World
 };
 
+// Map Google's 2-letter codes to Football-Data.org's 3-letter codes
+const GOOGLE_TO_FOOTBALL_CODE = {
+  'GB': 'ENG',  // Google's GB → Football's ENG
+  'DE': 'DEU',  // Germany
+  'FR': 'FRA',  // France
+  'ES': 'ESP',  // Spain
+  'IT': 'ITA',  // Italy
+  'BR': 'BRA',  // Brazil
+  'AR': 'ARG',  // Argentina
+  'NL': 'NLD',  // Netherlands
+  'PT': 'POR',  // Portugal
+  'BE': 'BEL',  // Belgium
+};
+
+// Helper to convert Google code to Football code
+const googleToFootballCode = (googleCode) => {
+  return GOOGLE_TO_FOOTBALL_CODE[googleCode] || googleCode;
+};
+
 // Helper function to get REST Countries code
 const getRestCountriesCode = (footballCode) => {
   return COUNTRY_CODE_MAP[footballCode] || footballCode;
@@ -1823,8 +1842,8 @@ const map = new MapCtor(mapRef.current, {
           const lng = event.latLng.lng();
           const rev = await fgReverseGeocode(lat, lng);
           let detectedCountryName = rev.countryName;
-          let detectedCountryCode = rev.countryCode;
-          console.log('✅ FG reverse-geocode:', detectedCountryName, detectedCountryCode);
+          let detectedCountryCode = googleToFootballCode(rev.countryCode);
+          console.log('✅ Reverse-geocode:', rev.countryName, rev.countryCode, '→', detectedCountryCode);
 
 
           if (detectedCountryName && detectedCountryCode) {
@@ -2057,9 +2076,8 @@ const map = new MapCtor(mapRef.current, {
         const rev = await fgReverseGeocode(lat, lng); // { ok, countryCode, countryName, lat, lng }
 
         let detectedCountryName = rev.countryName;
-        let detectedCountryCode = rev.countryCode;
-
-        console.log('FG reverse-geocode:', detectedCountryName, detectedCountryCode);
+        let detectedCountryCode = googleToFootballCode(rev.countryCode);
+        console.log('Reverse-geocode:', rev.countryName, rev.countryCode, '→', detectedCountryCode);
 
 
         if (detectedCountryName && detectedCountryCode) {
