@@ -1139,8 +1139,7 @@ const FootballGlobe = () => {
       
       try {
         // Get all countries from Football API
-        const response = await fgFootball('countries');
-        const footballData = await footballResponse.json();
+        const footballData = await fgFootball('countries');
         
         if (!footballData.response) {
           console.error('❌ Failed to get Football API countries');
