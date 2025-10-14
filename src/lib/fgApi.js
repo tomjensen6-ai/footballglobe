@@ -9,7 +9,28 @@ export async function fgReverseGeocode(lat, lng) {
 export async function fgForwardGeocode(address) {
   const r = await fetch(`${BASE}/geocode?address=${encodeURIComponent(address)}`);
   if (!r.ok) throw new Error(`geocode failed ${r.status}`);
-  return r.json();
+  
+  const data = await r.json();
+  
+  // Transform backend format to Google format that App.js expects
+  return {
+    status: 'OK',
+    results: [{
+      geometry: {
+        location: {
+          lat: data.lat,
+          lng: data.lng
+        }
+      },
+      address_components: [
+        {
+          types: ['country'],
+          short_name: data.countryCode,
+          long_name: data.countryName
+        }
+      ]
+    }]
+  };
 }
 
 export async function fgFootball(endpoint, params = {}) {
