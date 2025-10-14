@@ -2151,6 +2151,19 @@ const map = new MapCtor(mapRef.current, {
                 setSelectedCountry(updatedCountryData);
                 
                 console.log(`📊 STADIUM COUNT SYNC: ${displayedCount} stadiums loaded and displayed`);
+
+                // Load standings for the top competition
+                if (updatedCountryData.topCompetition?.id) {
+                  console.log('📊 Loading standings for:', updatedCountryData.topCompetition.name);
+                  try {
+                    const standingsData = await fgFootballStandings(updatedCountryData.topCompetition.id);
+                    setStandings(standingsData.standings);
+                    console.log('✅ Standings loaded:', standingsData.standings?.length);
+                  } catch (error) {
+                    console.error('❌ Failed to load standings:', error);
+                    setStandings(null);
+                  }
+                }
                 
                 displayStadiumPins(stadiums, map);
                 setStadiumPins(stadiums);
@@ -2575,6 +2588,7 @@ const map = new MapCtor(mapRef.current, {
     // Reset all state
     setSelectedCountry(null);
     setSelectedStadium(null);
+    setStandings(null);
     setIsLoading(false);
     setStadiumPins([]);
     setAppMode('world');
@@ -2978,17 +2992,52 @@ const map = new MapCtor(mapRef.current, {
                         key={index} 
                         onClick={async () => {
                           console.log('🔄 Switching to league:', comp.name, 'ID:', comp.id);
-                          // Reload stadiums and standings for this competition
+                          setIsLoading(true);
+                          setStadiumPins([]); // Clear old pins
+                          setStandings(null); // Clear old standings
+                          
                           try {
+                            // Load teams for this competition
                             const teamsData = await fgFootballTeams(comp.id);
+                            console.log('⚽ FOUND:', teamsData.teams?.length || 0, 'teams in', comp.name);
+                            
+                            // Load stadiums (copy the geocoding logic from clickCountryFromPopup)
                             const stadiums = [];
-                            // ... process teams and geocode stadiums (same logic as original)
-                            // You'll need to copy the stadium loading logic here
-                            // Then load standings
+                            const countryName = selectedCountry.name === 'England' ? 'United Kingdom' : selectedCountry.name;
+                            
+                            for (const team of (teamsData.teams || [])) {
+                              if (team.venue) {
+                                try {
+                                  const address = `${team.venue}, ${team.address || ''}, ${countryName}`;
+                                  const result = await fgForwardGeocode(address);
+                                  
+                                  if (result.status === 'OK' && result.results?.[0]) {
+                                    const location = result.results[0].geometry.location;
+                                    stadiums.push({
+                                      name: team.venue,
+                                      team: team.name,
+                                      city: team.address?.split(',')[0] || team.venue,
+                                      coordinates: { lat: location.lat, lng: location.lng },
+                                      capacity: 0
+                                    });
+                                  }
+                                } catch (error) {
+                                  console.warn('⚠️ Geocoding failed for:', team.venue);
+                                }
+                              }
+                            }
+                            
+                            console.log('🎯 RESULT:', stadiums.length, 'stadiums found');
+                            setStadiumPins(stadiums);
+                            
+                            // Load standings
                             const standingsData = await fgFootballStandings(comp.id);
                             setStandings(standingsData.standings);
+                            
                           } catch (error) {
                             console.error('❌ Error switching league:', error);
+                          } finally {
+                            setIsLoading(false);
                           }
                         }}
                         style={{ 
