@@ -13,16 +13,36 @@ export async function fgForwardGeocode(address) {
 }
 
 export async function fgFootball(endpoint, params = {}) {
-  const endpointMap = {
-    'countries': 'football-countries',
-    'leagues': 'football-leagues',
-    'teams': 'football-teams',
-    'competitions': 'football-competitions'  // ← MUST HAVE THIS LINE
-  };
+  // Handle dynamic paths like "competitions/2021/teams"
+  let fileName;
   
-  const fileName = endpointMap[endpoint];
-  if (!fileName) {
-    throw new Error(`Unknown endpoint: ${endpoint}`);
+  if (endpoint.includes('/')) {
+    // Dynamic path with ID - extract the base endpoint
+    const parts = endpoint.split('/');
+    const baseEndpoint = parts[0]; // "competitions"
+    const id = parts[1]; // "2021"
+    const subEndpoint = parts[2]; // "teams"
+    
+    if (baseEndpoint === 'competitions' && subEndpoint === 'teams') {
+      fileName = 'football-teams';
+      // Add competition ID to params
+      params = { ...params, competition: id };
+    } else {
+      throw new Error(`Unknown dynamic endpoint: ${endpoint}`);
+    }
+  } else {
+    // Simple endpoint
+    const endpointMap = {
+      'countries': 'football-countries',
+      'leagues': 'football-leagues',
+      'competitions': 'football-competitions',
+      'teams': 'football-teams'
+    };
+    
+    fileName = endpointMap[endpoint];
+    if (!fileName) {
+      throw new Error(`Unknown endpoint: ${endpoint}`);
+    }
   }
   
   const qs = new URLSearchParams(params);
