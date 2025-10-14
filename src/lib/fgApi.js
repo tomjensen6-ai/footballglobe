@@ -75,6 +75,18 @@ export async function fgFootball(endpoint, params = {}) {
   if (!res.ok) throw new Error(`${endpoint} failed: ${res.status}`);
   return res.json();
 }
+export async function fgFootballTeams(competitionId) {
+  const url = `${BASE}/football-teams?competition=${competitionId}`;
+  console.log(`📡 Calling proxy: ${url}`);
+  
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`teams failed: ${res.status}`);
+  return res.json();
+}
+
+export async function fgFootballStandings(competitionId) {
+  // ... existing code
+}
 export async function fgFootballStandings(competitionId) {
   const url = `${BASE}/football-standings?competition=${competitionId}`;
   console.log(`📡 Calling proxy: ${url}`);
