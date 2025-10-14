@@ -1,90 +1,38 @@
 // src/lib/fgApi.js
 
-// Use Google Geocoding API directly (no CORS issues)
+const BASE = process.env.REACT_APP_FG_API_BASE; // https://api.veylorcraft.com/api/fg
+
 export async function fgReverseGeocode(lat, lng) {
-  const GOOGLE_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
-  
-  if (!GOOGLE_KEY) {
-    console.warn('⚠️ Google Maps API key missing');
-    return null;
-  }
-  
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_KEY}`;
-  
-  try {
-    const res = await fetch(url);
-    
-    if (!res.ok) {
-      console.warn(`⚠️ Geocoding HTTP error: ${res.status}`);
-      return null;
-    }
-    
-    const data = await res.json();
-    
-    // Check for valid response
-    if (data.status === 'OK' && data.results && data.results.length > 0) {
-      // Try to find country in results
-      for (const result of data.results) {
-        const countryComponent = result.address_components?.find(c =>
-          c.types && c.types.includes('country')
-        );
-        
-        if (countryComponent && countryComponent.short_name && countryComponent.long_name) {
-          console.log(`✅ Found country: ${countryComponent.long_name} (${countryComponent.short_name})`);
-          return {
-            lat,
-            lng,
-            countryCode: countryComponent.short_name,
-            countryName: countryComponent.long_name
-          };
-        }
-      }
-    }
-    
-    // No country found - probably ocean or Antarctica
-    console.log(`ℹ️ No country at coordinates: ${lat}, ${lng}`);
-    return null;
-    
-  } catch (error) {
-    console.warn(`⚠️ Geocoding error:`, error.message);
-    return null;
-  }
+  const r = await fetch(`${BASE}/revgeocode?lat=${lat}&lng=${lng}`);
+  if (!r.ok) throw new Error(`revgeocode failed ${r.status}`);
+  return r.json();
 }
 
 export async function fgForwardGeocode(address) {
-  const GOOGLE_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY;
-  const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GOOGLE_KEY}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Forward geocode failed: ${res.status}`);
-  const data = await res.json();
-  if (data.status === 'OK' && data.results[0]) {
-    const location = data.results[0].geometry.location;
-    return {
-      lat: location.lat,
-      lng: location.lng,
-      countryCode: null,
-      countryName: null
-    };
-  }
-  throw new Error('Forward geocoding failed');
+  const r = await fetch(`${BASE}/geocode?address=${encodeURIComponent(address)}`);
+  if (!r.ok) throw new Error(`geocode failed ${r.status}`);
+  return r.json();
 }
 
-// Use the correct proxy path: /api/football
-export async function fgFootball(path) {
-  console.log(`📡 Calling proxy: /api/football/${path}`);
+// Football API endpoints
+export async function fgFootball(endpoint, params = {}) {
+  const endpointMap = {
+    'countries': 'football-countries',
+    'leagues': 'football-leagues',
+    'teams': 'football-teams'
+  };
   
-  try {
-    // NEW: Use proxy endpoint with path parameter
-    const url = `/api/football/proxy?path=${encodeURIComponent(path)}`;
-    const response = await fetch(url);
-    
-    if (!response.ok) {
-      throw new Error(`fgFootball ${path} failed: ${response.status}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error(`❌ Football API error for ${path}:`, error);
-    throw error;
+  const fileName = endpointMap[endpoint];
+  if (!fileName) {
+    throw new Error(`Unknown endpoint: ${endpoint}`);
   }
+  
+  const qs = new URLSearchParams(params);
+  const url = `${BASE}/${fileName}?${qs.toString()}`;
+  
+  console.log(`📡 Calling proxy: ${url}`);
+  
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`${endpoint} failed: ${res.status}`);
+  return res.json();
 }
