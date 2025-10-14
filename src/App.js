@@ -2556,6 +2556,7 @@ const map = new MapCtor(mapRef.current, {
   const handleCountrySelect = (country) => {
     setIsLoading(true);
     setSelectedCountry(country);
+    setStandings(null); // Reset standings
     
     if (googleMapRef.current) {
       googleMapRef.current.panTo(country.center);
@@ -3117,6 +3118,11 @@ const map = new MapCtor(mapRef.current, {
                             >
                               <div style={{ fontWeight: '500', color: '#1f2937', fontSize: '0.9rem' }}>
                                 {stadium.name}
+                                {stadium.team && (
+                                  <span style={{ fontWeight: '400', color: '#6b7280', marginLeft: '0.5rem' }}>
+                                    • {stadium.team}
+                                  </span>
+                                )}
                               </div>
                               <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '2px' }}>
                                 📍 {stadium.city} • 👥 {stadium.capacity?.toLocaleString() || 'Unknown'} capacity
