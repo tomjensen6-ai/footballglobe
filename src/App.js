@@ -800,15 +800,36 @@ const FootballGlobe = () => {
             for (const team of teamsData.teams) {
               if (team.venue) {
                 try {
-                  // 🔥 FIX: Add delay BEFORE each geocoding attempt (not inside)
-                  await new Promise(resolve => setTimeout(resolve, 800));
+                  // 🔥 FIX: Add delay BEFORE each geocoding attempt
+                  await new Promise(resolve => setTimeout(resolve, 1000));
                   
-                  // 🔥 FIX: Use proper country name
+                  // 🔥 CRITICAL FIX: Extract city from address properly
+                  let city = team.venue; // Default: use venue name as city
+                  
+                  // Try to extract city from address if it exists
+                  if (team.address && team.address.trim() !== '') {
+                    // Address format: "Stadium Name City Postcode"
+                    // Example: "Ewood Park Blackburn BB2 4JF"
+                    const addressParts = team.address.split(' ');
+                    
+                    // City is usually before the postcode (postcode has numbers)
+                    const cityIndex = addressParts.findIndex((part, idx) => 
+                      idx > 0 && /\d/.test(addressParts[idx + 1])
+                    );
+                    
+                    if (cityIndex > 0) {
+                      city = addressParts[cityIndex];
+                    }
+                  }
+                  
+                  // 🔥 CRITICAL FIX: Use VENUE (stadium name), not TEAM name
+                  console.log(`🏟️ GEOCODING: ${team.venue} in ${city}, ${geocodingCountry}`);
+                  
                   const coordinates = await geocodeStadium(
-                    team.address,
-                    team.venue,
-                    team.name,
-                    geocodingCountry  // ✅ Use 'United Kingdom' instead of 'England'
+                    team.address,      // Full address
+                    city,              // ✅ City name (extracted)
+                    team.venue,        // ✅ STADIUM NAME (not team.name!)
+                    geocodingCountry   // ✅ "United Kingdom"
                   );
                   
                   if (coordinates) {
@@ -816,8 +837,8 @@ const FootballGlobe = () => {
                       id: team.id,
                       name: team.venue || `${team.name} Stadium`,
                       address: team.address || team.venue,
-                      city: team.venue,
-                      capacity: 0, // Football-Data.org doesn't provide capacity
+                      city: city,
+                      capacity: 0,
                       coordinates: coordinates,
                       team: team.name,
                       teamLogo: team.crest,
@@ -826,7 +847,7 @@ const FootballGlobe = () => {
                       isTopLeague: true
                     });
                     
-                    console.log(`✅ STADIUM ADDED: ${team.venue} → ${team.name}`);
+                    console.log(`✅ STADIUM ADDED: ${team.venue} → ${team.name} (${coordinates.lat}, ${coordinates.lng})`);
                   } else {
                     console.warn(`⚠️ No coordinates for ${team.name}: ${team.venue}`);
                   }
