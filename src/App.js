@@ -203,9 +203,9 @@ const FootballGlobe = () => {
           requestsPerDay: 500
         },
         geocoding: {
-          requestsPerMinute: 30,
-          requestsPerHour: 1000,
-          requestsPerDay: 2500
+          requestsPerMinute: 50,
+          requestsPerHour: 2000,
+          requestsPerDay: 5000
         }
       },
       
@@ -793,18 +793,22 @@ const FootballGlobe = () => {
           if (teamsData && teamsData.teams && Array.isArray(teamsData.teams)) {
             console.log(`⚽ FOUND: ${teamsData.teams.length} teams in ${topCompetition.name}`);
             
+            // 🔥 FIX: Proper country name for geocoding
+            const geocodingCountry = countryCode === 'ENG' ? 'United Kingdom' : countryName;
+            console.log(`🌍 GEOCODING COUNTRY: ${countryName} → ${geocodingCountry}`);
+            
             for (const team of teamsData.teams) {
               if (team.venue) {
                 try {
-                  // 🔥 ADD THIS LINE - 500ms delay between each geocoding request
-                  await delay(500);
+                  // 🔥 FIX: Add delay BEFORE each geocoding attempt (not inside)
+                  await new Promise(resolve => setTimeout(resolve, 800));
                   
-                  // Geocode the venue
+                  // 🔥 FIX: Use proper country name
                   const coordinates = await geocodeStadium(
                     team.address,
                     team.venue,
                     team.name,
-                    countryName
+                    geocodingCountry  // ✅ Use 'United Kingdom' instead of 'England'
                   );
                   
                   if (coordinates) {
@@ -822,7 +826,9 @@ const FootballGlobe = () => {
                       isTopLeague: true
                     });
                     
-                    console.log(`✅ STADIUM ADDED: ${team.venue} -> ${team.name}`);
+                    console.log(`✅ STADIUM ADDED: ${team.venue} → ${team.name}`);
+                  } else {
+                    console.warn(`⚠️ No coordinates for ${team.name}: ${team.venue}`);
                   }
                 } catch (error) {
                   console.warn(`⚠️ Failed to process ${team.name}:`, error.message);
@@ -835,6 +841,13 @@ const FootballGlobe = () => {
         }
 
         console.log(`🎯 RESULT: ${stadiums.length} stadiums found`);
+        
+        // Cache the results
+        setStadiumsCache(prev => ({
+          ...prev,
+          [countryCode]: stadiums
+        }));
+        
         return stadiums;
         
       } catch (error) {
