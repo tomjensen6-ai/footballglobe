@@ -2932,7 +2932,7 @@ const map = new MapCtor(mapRef.current, {
               {/* Stadium Overview */}
               <div className="stadium-count-card" style={{ backgroundColor: '#f0fdf4', borderRadius: '0.5rem', padding: '1rem', position: 'relative', overflow: 'hidden' }}>
                 <div className="stadium-number" style={{ fontSize: '2.5rem', fontWeight: '900', color: '#16a34a', textShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
-                  {selectedCountry.stadiums}
+                  {stadiumPins.length}
                 </div>
                 <div style={{ color: '#6b7280', fontSize: '1.1rem', fontWeight: '500' }}>
                   Football Stadiums
