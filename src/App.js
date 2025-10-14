@@ -3,7 +3,7 @@ import { fgForwardGeocode, fgReverseGeocode, fgFootball } from './lib/fgApi';
 
 // ===== Normalize API keys into constants (robust against missing nested objects) =====
 const GOOGLE_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
-const FOOTBALL_KEY = process.env.FOOTBALL_DATA_API_TOKEN || '';
+const FOOTBALL_KEY = 'PROXY_HANDLES_THIS';
 
 const CACHE_CONFIG = {
   enabled: true,
