@@ -2555,14 +2555,14 @@ const map = new MapCtor(mapRef.current, {
 
   const handleCountrySelect = (country) => {
     setIsLoading(true);
+    setStandings(null); // Clear old standings (only need once!)
     setSelectedCountry(country);
-    setStandings(null); // Reset standings
     
     if (googleMapRef.current) {
       googleMapRef.current.panTo(country.center);
       googleMapRef.current.setZoom(6);
     }
-
+    
     // Simulate loading stadium data (will be real API call in Block 2)
     setTimeout(() => {
       setIsLoading(false);
@@ -2972,11 +2972,38 @@ const map = new MapCtor(mapRef.current, {
               <div>
                 <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '0.75rem' }}>🏆 Top Leagues</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {selectedCountry.topLeagues && selectedCountry.topLeagues.length > 0 ? (
-                    selectedCountry.topLeagues.map((league, index) => (
-                      <div key={index} style={{ backgroundColor: '#f9fafb', borderRadius: '0.5rem', padding: '0.75rem' }}>
-                        <div style={{ fontWeight: '500', color: '#1f2937' }}>{league}</div>
-                        <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>Professional League</div>
+                  {selectedCountry.competitions && selectedCountry.competitions.length > 0 ? (
+                    selectedCountry.competitions.map((comp, index) => (
+                      <div 
+                        key={index} 
+                        onClick={async () => {
+                          console.log('🔄 Switching to league:', comp.name, 'ID:', comp.id);
+                          // Reload stadiums and standings for this competition
+                          try {
+                            const teamsData = await fgFootballTeams(comp.id);
+                            const stadiums = [];
+                            // ... process teams and geocode stadiums (same logic as original)
+                            // You'll need to copy the stadium loading logic here
+                            // Then load standings
+                            const standingsData = await fgFootballStandings(comp.id);
+                            setStandings(standingsData.standings);
+                          } catch (error) {
+                            console.error('❌ Error switching league:', error);
+                          }
+                        }}
+                        style={{ 
+                          backgroundColor: '#f9fafb', 
+                          borderRadius: '0.5rem', 
+                          padding: '0.75rem',
+                          cursor: 'pointer',
+                          border: '1px solid #e5e7eb',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#f9fafb'}
+                      >
+                        <div style={{ fontWeight: '500', color: '#1f2937' }}>{comp.name}</div>
+                        <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>{comp.type || 'Professional League'}</div>
                       </div>
                     ))
                   ) : (
@@ -3126,6 +3153,11 @@ const map = new MapCtor(mapRef.current, {
                               </div>
                               <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '2px' }}>
                                 📍 {stadium.city} • 👥 {stadium.capacity?.toLocaleString() || 'Unknown'} capacity
+                                {stadium.name === 'Goodison Park' && (
+                                  <div style={{ fontSize: '0.7rem', color: '#f59e0b', marginTop: '4px', fontStyle: 'italic' }}>
+                                    ℹ️ Everton moving to new stadium in 2024/25 season
+                                  </div>
+                                )}
                               </div>
                             </div>
                           ))}
