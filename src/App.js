@@ -4,9 +4,7 @@ import {
   fgFootballCompetitions, 
   fgFootballCountries, 
   fgFootballTeams,
-  fgFootballStandings,
-  fgForwardGeocode, 
-  fgReverseGeocode 
+  fgFootballStandings
 } from './lib/fgApi';
 
 // 🔥 ADD THIS HELPER FUNCTION HERE (NEW CODE)
