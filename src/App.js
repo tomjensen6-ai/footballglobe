@@ -1044,71 +1044,94 @@ const FootballGlobe = () => {
       }).sort((a, b) => b.importanceScore - a.importanceScore);
     };
 
-    // Enhanced geocoding with multiple fallback strategies
-    const geocodeStadiumEnhanced = async (venue, countryName) => {
-      const { name, address, city } = venue;
-      
-      // Strategy 1: Full address
-      if (address && address !== 'null') {
-        try {
-          const fullQuery = `${name}, ${address}, ${city}, ${countryName}`;
-          console.log(`🔍 GEOCODING STRATEGY 1: ${fullQuery}`);
+    // Enhanced geocoding with country context and multiple fallback strategies:
+    const geocodeStadium = async (address, city, stadiumName, countryName) => {
+      try {
+        // Strategy 1: Full address if available
+        if (address && address !== 'null' && address !== '') {
+          const fullQuery = `${stadiumName}, ${address}, ${city}, ${countryName}`;
+          console.log(`🔍 GEOCODING STRATEGY 1: "${fullQuery}"`);
           
-          const response = await fetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullQuery)}&key=${GOOGLE_KEY}`
+          const data = await controlledFetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullQuery)}&key=${GOOGLE_KEY}`,
+            {},
+            'geocoding',
+            3600000
           );
-          const data = await response.json();
           
-          if (data.status === 'OK' && data.results[0]) {
+          // 🔥 DEBUG: Log what Google actually returns
+          console.log(`📡 GOOGLE RESPONSE (Strategy 1):`, {
+            status: data?.status,
+            resultsCount: data?.results?.length || 0,
+            error: data?.error_message
+          });
+          
+          if (data && data.status === 'OK' && data.results && data.results[0]) {
             const location = data.results[0].geometry.location;
-            console.log(`✅ GEOCODING SUCCESS (Strategy 1): ${name} -> ${location.lat}, ${location.lng}`);
+            console.log(`✅ STRATEGY 1 SUCCESS: ${stadiumName} → ${location.lat}, ${location.lng}`);
             return { lat: location.lat, lng: location.lng };
           }
-        } catch (error) {
-          console.warn(`Strategy 1 failed for ${name}:`, error.message);
         }
-      }
-      
-      // Strategy 2: Stadium + City + Country
-      try {
-        const cityQuery = `${name}, ${city}, ${countryName}`;
-        console.log(`🔍 GEOCODING STRATEGY 2: ${cityQuery}`);
         
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityQuery)}&key=${GOOGLE_KEY}`
+        // Strategy 2: Stadium + City + Country
+        const cityQuery = `${stadiumName}, ${city}, ${countryName}`;
+        console.log(`🔍 GEOCODING STRATEGY 2: "${cityQuery}"`);
+        
+        const data2 = await controlledFetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityQuery)}&key=${GOOGLE_KEY}`,
+          {},
+          'geocoding',
+          3600000
         );
-        const data = await response.json();
         
-        if (data.status === 'OK' && data.results[0]) {
-          const location = data.results[0].geometry.location;
-          console.log(`✅ GEOCODING SUCCESS (Strategy 2): ${name} -> ${location.lat}, ${location.lng}`);
+        // 🔥 DEBUG: Log what Google returns
+        console.log(`📡 GOOGLE RESPONSE (Strategy 2):`, {
+          status: data2?.status,
+          resultsCount: data2?.results?.length || 0,
+          error: data2?.error_message
+        });
+        
+        if (data2 && data2.status === 'OK' && data2.results && data2.results[0]) {
+          const location = data2.results[0].geometry.location;
+          console.log(`✅ STRATEGY 2 SUCCESS: ${stadiumName} → ${location.lat}, ${location.lng}`);
           return { lat: location.lat, lng: location.lng };
         }
-      } catch (error) {
-        console.warn(`Strategy 2 failed for ${name}:`, error.message);
-      }
-      
-      // Strategy 3: Just city + country (for city center)
-      try {
-        const cityOnlyQuery = `${city}, ${countryName}`;
-        console.log(`🔍 GEOCODING STRATEGY 3: ${cityOnlyQuery}`);
         
-        const response = await fetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityOnlyQuery)}&key=${GOOGLE_KEY}`
+        // Strategy 3: Just city center as fallback
+        const cityOnly = `${city}, ${countryName}`;
+        console.log(`🔍 GEOCODING STRATEGY 3 (City Center): "${cityOnly}"`);
+        
+        const data3 = await controlledFetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityOnly)}&key=${GOOGLE_KEY}`,
+          {},
+          'geocoding',
+          3600000
         );
-        const data = await response.json();
         
-        if (data.status === 'OK' && data.results[0]) {
-          const location = data.results[0].geometry.location;
-          console.log(`✅ GEOCODING SUCCESS (Strategy 3 - City Center): ${city} -> ${location.lat}, ${location.lng}`);
+        // 🔥 DEBUG: Log what Google returns
+        console.log(`📡 GOOGLE RESPONSE (Strategy 3):`, {
+          status: data3?.status,
+          resultsCount: data3?.results?.length || 0,
+          error: data3?.error_message
+        });
+        
+        if (data3 && data3.status === 'OK' && data3.results && data3.results[0]) {
+          const location = data3.results[0].geometry.location;
+          console.log(`✅ STRATEGY 3 SUCCESS (City Center): ${city} → ${location.lat}, ${location.lng}`);
           return { lat: location.lat, lng: location.lng };
         }
+        
+        console.warn(`❌ ALL GEOCODING STRATEGIES FAILED for ${stadiumName}`);
+        return null;
+        
       } catch (error) {
-        console.warn(`Strategy 3 failed for ${city}:`, error.message);
+        if (error.message.includes('Rate limit')) {
+          console.warn(`⚠️ GEOCODING RATE LIMITED: ${stadiumName}`);
+          return null;
+        }
+        console.warn(`Geocoding failed for ${stadiumName}:`, error);
+        return null;
       }
-      
-      console.warn(`❌ ALL GEOCODING STRATEGIES FAILED for ${name}`);
-      return null;
     };
 
     // Enhanced geocoding with country context and multiple fallback strategies:
