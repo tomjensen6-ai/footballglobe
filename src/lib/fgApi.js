@@ -70,13 +70,21 @@ export async function fgForwardGeocode(address) {
 }
 
 // Use the correct proxy path: /api/football
-export async function fgFootball(endpoint, params = {}) {
-  const qs = new URLSearchParams(params);
-  const url = `/api/football/${endpoint}?${qs.toString()}`;
-  console.log(`📡 Calling proxy: ${url}`);
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`fgFootball ${endpoint} failed: ${res.status}`);
+export async function fgFootball(path) {
+  console.log(`📡 Calling proxy: /api/football/${path}`);
+  
+  try {
+    // NEW: Use proxy endpoint with path parameter
+    const url = `/api/football/proxy?path=${encodeURIComponent(path)}`;
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`fgFootball ${path} failed: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error(`❌ Football API error for ${path}:`, error);
+    throw error;
   }
-  return res.json();
 }
