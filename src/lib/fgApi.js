@@ -85,9 +85,6 @@ export async function fgFootballTeams(competitionId) {
 }
 
 export async function fgFootballStandings(competitionId) {
-  // ... existing code
-}
-export async function fgFootballStandings(competitionId) {
   const url = `${BASE}/football-standings?competition=${competitionId}`;
   console.log(`📡 Calling proxy: ${url}`);
   
