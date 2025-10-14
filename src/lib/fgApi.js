@@ -1,6 +1,4 @@
-// src/lib/fgApi.js
-
-const BASE = process.env.REACT_APP_FG_API_BASE; // https://api.veylorcraft.com/api/fg
+const BASE = process.env.REACT_APP_FG_API_BASE;
 
 export async function fgReverseGeocode(lat, lng) {
   const r = await fetch(`${BASE}/revgeocode?lat=${lat}&lng=${lng}`);
@@ -14,12 +12,12 @@ export async function fgForwardGeocode(address) {
   return r.json();
 }
 
-// Football API endpoints
 export async function fgFootball(endpoint, params = {}) {
   const endpointMap = {
     'countries': 'football-countries',
     'leagues': 'football-leagues',
-    'teams': 'football-teams'
+    'teams': 'football-teams',
+    'competitions': 'football-competitions'  // ← MUST HAVE THIS LINE
   };
   
   const fileName = endpointMap[endpoint];
@@ -36,9 +34,3 @@ export async function fgFootball(endpoint, params = {}) {
   if (!res.ok) throw new Error(`${endpoint} failed: ${res.status}`);
   return res.json();
 }
-const endpointMap = {
-  'countries': 'football-countries',
-  'leagues': 'football-leagues',
-  'teams': 'football-teams',
-  'competitions': 'football-competitions'  
-};
