@@ -1051,12 +1051,7 @@ const FootballGlobe = () => {
           const fullQuery = `${stadiumName}, ${address}, ${city}, ${countryName}`;
           console.log(`🔍 GEOCODING STRATEGY 1: "${fullQuery}"`);
           
-          const data = await controlledFetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullQuery)}&key=${GOOGLE_KEY}`,
-            {},
-            'geocoding',
-            3600000
-          );
+          const data = await fgForwardGeocode(fullQuery);
           
           // 🔥 DEBUG: Log what Google actually returns
           console.log(`📡 GOOGLE RESPONSE (Strategy 1):`, {
@@ -1076,12 +1071,7 @@ const FootballGlobe = () => {
         const cityQuery = `${stadiumName}, ${city}, ${countryName}`;
         console.log(`🔍 GEOCODING STRATEGY 2: "${cityQuery}"`);
         
-        const data2 = await controlledFetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityQuery)}&key=${GOOGLE_KEY}`,
-          {},
-          'geocoding',
-          3600000
-        );
+        const data2 = await fgForwardGeocode(cityQuery);
         
         // 🔥 DEBUG: Log what Google returns
         console.log(`📡 GOOGLE RESPONSE (Strategy 2):`, {
@@ -1100,12 +1090,7 @@ const FootballGlobe = () => {
         const cityOnly = `${city}, ${countryName}`;
         console.log(`🔍 GEOCODING STRATEGY 3 (City Center): "${cityOnly}"`);
         
-        const data3 = await controlledFetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityOnly)}&key=${GOOGLE_KEY}`,
-          {},
-          'geocoding',
-          3600000
-        );
+        const data3 = await fgForwardGeocode(cityOnly);
         
         // 🔥 DEBUG: Log what Google returns
         console.log(`📡 GOOGLE RESPONSE (Strategy 3):`, {
