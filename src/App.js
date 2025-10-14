@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { fgForwardGeocode, fgReverseGeocode, fgFootball } from './lib/fgApi';
+import { 
+  fgFootballCompetitions, 
+  fgFootballCountries, 
+  fgFootballTeams,
+  fgFootballStandings,
+  fgForwardGeocode, 
+  fgReverseGeocode 
+} from './lib/fgApi';
 
 // 🔥 ADD THIS HELPER FUNCTION HERE (NEW CODE)
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -126,6 +134,7 @@ const FootballGlobe = () => {
     });
     // STADIUM-RELATED STATES:
     const [stadiumPins, setStadiumPins] = useState([]);
+    const [standings, setStandings] = useState(null);
     const [isLoadingStadiums, setIsLoadingStadiums] = useState(false);
     const [selectedStadium, setSelectedStadium] = useState(null);
     const [stadiumsCache, setStadiumsCache] = useState({});
@@ -863,6 +872,16 @@ const FootballGlobe = () => {
         }
 
         console.log(`🎯 RESULT: ${stadiums.length} stadiums found`);
+        // Fetch league standings
+        try {
+          console.log('📊 Fetching league standings for competition:', topCompetition.id);
+          const standingsData = await fgFootballStandings(topCompetition.id);
+          setStandings(standingsData.standings);
+          console.log('📊 STANDINGS:', standingsData.standings);
+        } catch (error) {
+          console.error('❌ Failed to fetch standings:', error);
+          setStandings(null);
+        }
         
         // Cache the results
         setStadiumsCache(prev => ({
@@ -2719,7 +2738,7 @@ const map = new MapCtor(mapRef.current, {
             gap: '0.75rem'
           }}>
           <div className="stats-badge" style={{ padding: '0.5rem 1rem', borderRadius: '2rem', fontSize: '0.875rem', fontWeight: '500' }}>
-            📊 171 Countries
+            📍 {countriesData.length} Countries
           </div>
           <div className="stats-badge" style={{ padding: '0.5rem 1rem', borderRadius: '2rem', fontSize: '0.875rem', fontWeight: '500' }}>
             ⚽ Live Football Data  
@@ -2772,8 +2791,8 @@ const map = new MapCtor(mapRef.current, {
               }}
             >
               <option value="">🗺️ Free Exploration Mode</option>
-              <option value="worldCupWinners">🏆 World Cup Champions Journey</option>
-              <option value="legendaryStadiums">🏟️ Legendary Stadiums Tour</option>
+              {/* <option value="worldCupWinners">🏆 World Cup Champions Journey</option> */}
+              {/* <option value="legendaryStadiums">🏟️ Legendary Stadiums Tour</option> */}
             </select>
             
             {/* Journey Progress Indicator */}
@@ -2799,7 +2818,7 @@ const map = new MapCtor(mapRef.current, {
           {isLoadingCountries && (
             <div style={{ color: 'white', textAlign: 'center' }}>
               <div style={{ display: 'inline-block', width: '1rem', height: '1rem', border: '2px solid white', borderTop: '2px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', marginRight: '0.5rem' }}></div>
-              Loading countries from api-football.com...
+              Loading countries from football-data.org...
             </div>
           )}
           
@@ -2918,7 +2937,12 @@ const map = new MapCtor(mapRef.current, {
           <div style={{ padding: '1.5rem', height: '100%', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
               <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
-                {selectedCountry.flag} {selectedCountry.name}
+                <img 
+                  src={selectedCountry.flag} 
+                  alt={selectedCountry.name}
+                  style={{ width: '32px', height: '24px', marginRight: '8px', borderRadius: '2px' }}
+                />
+                {selectedCountry.name}
               </h2>
               <button 
                 onClick={resetMap}
@@ -2939,6 +2963,9 @@ const map = new MapCtor(mapRef.current, {
                 </div>
                 <div style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.25rem' }}>
                   🟢 Live API Data • {stadiumPins.length} Pins Loaded
+                </div>
+                <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginTop: '0.5rem', fontStyle: 'italic' }}>
+                  ℹ️ Stadium capacity data will be added in a future update
                 </div>
               </div>
               
@@ -3139,9 +3166,74 @@ const map = new MapCtor(mapRef.current, {
                   </p>
                 </div>
               )}
+              {/* League Standings */}
+              {standings && standings.length > 0 && (
+                <div style={{ marginTop: '1.5rem' }}>
+                  <h3 style={{ 
+                    fontSize: '1.1rem', 
+                    fontWeight: '700', 
+                    marginBottom: '1rem',
+                    color: '#1f2937',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    📊 League Standings
+                  </h3>
+                  <div style={{ 
+                    overflowX: 'auto',
+                    backgroundColor: '#fff',
+                    borderRadius: '0.5rem',
+                    border: '1px solid #e5e7eb'
+                  }}>
+                    <table style={{ 
+                      width: '100%', 
+                      fontSize: '0.85rem',
+                      borderCollapse: 'collapse'
+                    }}>
+                      <thead>
+                        <tr style={{ 
+                          backgroundColor: '#f9fafb',
+                          borderBottom: '2px solid #e5e7eb'
+                        }}>
+                          <th style={{ padding: '0.75rem 0.5rem', textAlign: 'center', fontWeight: '600' }}>#</th>
+                          <th style={{ padding: '0.75rem 0.5rem', textAlign: 'left', fontWeight: '600' }}>Team</th>
+                          <th style={{ padding: '0.75rem 0.5rem', textAlign: 'center', fontWeight: '600' }}>P</th>
+                          <th style={{ padding: '0.75rem 0.5rem', textAlign: 'center', fontWeight: '600' }}>W</th>
+                          <th style={{ padding: '0.75rem 0.5rem', textAlign: 'center', fontWeight: '600' }}>D</th>
+                          <th style={{ padding: '0.75rem 0.5rem', textAlign: 'center', fontWeight: '600' }}>L</th>
+                          <th style={{ padding: '0.75rem 0.5rem', textAlign: 'center', fontWeight: '600', color: '#16a34a' }}>Pts</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {standings[0]?.table?.map((team, idx) => (
+                          <tr key={idx} style={{ 
+                            borderBottom: '1px solid #f3f4f6',
+                            backgroundColor: idx % 2 === 0 ? '#ffffff' : '#fafafa'
+                          }}>
+                            <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', fontWeight: '600', color: '#6b7280' }}>
+                              {team.position}
+                            </td>
+                            <td style={{ padding: '0.75rem 0.5rem', fontWeight: '500' }}>
+                              {team.team.name}
+                            </td>
+                            <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>{team.playedGames}</td>
+                            <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>{team.won}</td>
+                            <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>{team.draw}</td>
+                            <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center' }}>{team.lost}</td>
+                            <td style={{ padding: '0.75rem 0.5rem', textAlign: 'center', fontWeight: '700', color: '#16a34a' }}>
+                              {team.points}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
 
               {/* Block 3 Preview */}
-              <div style={{ backgroundColor: '#eff6ff', borderRadius: '0.5rem', padding: '1rem' }}>
+              {/* <div style={{ backgroundColor: '#eff6ff', borderRadius: '0.5rem', padding: '1rem' }}>
                 <h3 style={{ fontWeight: '600', color: '#1e40af', marginBottom: '0.5rem' }}>🚀 Block 3 Preview</h3>
                 <ul style={{ fontSize: '0.875rem', color: '#1e40af', margin: 0, paddingLeft: '1rem' }}>
                   <li>🔄 Real-time data sync</li>
@@ -3149,7 +3241,7 @@ const map = new MapCtor(mapRef.current, {
                   <li>📊 Performance metrics</li>
                   <li>🛡️ Error handling</li>
                 </ul>
-              </div>
+              </div> */} {/* Hide for now */}
             </div>
           </div>
         </aside>
