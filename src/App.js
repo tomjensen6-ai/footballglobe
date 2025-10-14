@@ -59,7 +59,7 @@ const getRestCountriesCode = (footballCode) => {
 const API_CONFIG = {
   football: {
     baseUrl: 'https://v3.football.api-sports.io',
-    key: FOOTBALL_KEY,
+    key: FOOTBALL_KEY, // This is just for compatibility, not used
     endpoints: {
       countries: '/countries',
       leagues: '/leagues',
