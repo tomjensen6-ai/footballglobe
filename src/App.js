@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { fgForwardGeocode, fgReverseGeocode, fgFootball } from './lib/fgApi';
 
+// 🔥 ADD THIS HELPER FUNCTION HERE (NEW CODE)
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 // ===== Normalize API keys into constants (robust against missing nested objects) =====
 const GOOGLE_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
 const FOOTBALL_KEY = 'PROXY_HANDLES_THIS';
@@ -793,6 +796,9 @@ const FootballGlobe = () => {
             for (const team of teamsData.teams) {
               if (team.venue) {
                 try {
+                  // 🔥 ADD THIS LINE - 500ms delay between each geocoding request
+                  await delay(500);
+                  
                   // Geocode the venue
                   const coordinates = await geocodeStadium(
                     team.address,
