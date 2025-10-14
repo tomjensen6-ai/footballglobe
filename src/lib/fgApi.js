@@ -36,3 +36,9 @@ export async function fgFootball(endpoint, params = {}) {
   if (!res.ok) throw new Error(`${endpoint} failed: ${res.status}`);
   return res.json();
 }
+const endpointMap = {
+  'countries': 'football-countries',
+  'leagues': 'football-leagues',
+  'teams': 'football-teams',
+  'competitions': 'football-competitions'  
+};

@@ -682,11 +682,7 @@ const FootballGlobe = () => {
       
       // If not found, fetch from football API to get the correct name
       try {
-        const response = await fetch(`https://v3.football.api-sports.io/countries`, {
-          headers: {
-            'x-apisports-key': FOOTBALL_KEY
-          }
-        });
+        const response = await fgFootball('countries');
         
         const data = await response.json();
         
@@ -895,12 +891,10 @@ const FootballGlobe = () => {
       try {
         // Use current season consistently across all functions
         const currentSeason = new Date().getFullYear();
-        const teamsResponse = await controlledFetch(
-          `https://v3.football.api-sports.io/teams?league=${leagueId}&season=${currentSeason}`,
-          { headers: { 'x-apisports-key': FOOTBALL_KEY } },
-          'football',
-          600000
-        );
+        const teamsResponse = await fgFootball('teams', { 
+          league: leagueId, 
+          season: currentSeason 
+        });
         
         if (!teamsResponse.response) {
           console.warn(`❌ No teams found for league ${leagueName}`);
@@ -1145,11 +1139,7 @@ const FootballGlobe = () => {
       
       try {
         // Get all countries from Football API
-        const footballResponse = await fetch(`https://v3.football.api-sports.io/countries`, {
-          headers: {
-            'x-apisports-key': FOOTBALL_KEY
-          }
-        });
+        const response = await fgFootball('countries');
         const footballData = await footballResponse.json();
         
         if (!footballData.response) {
