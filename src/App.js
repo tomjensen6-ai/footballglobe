@@ -784,8 +784,13 @@ const FootballGlobe = () => {
         const stadiums = [];
         
         // Get teams from the top competition
-        const topCompetition = country.competitions[0];
-        console.log(`🏆 TOP COMPETITION: ${topCompetition.name} (ID: ${topCompetition.id})`);
+        // ✅ FIXED CODE - Prioritize Premier League over Championship
+        const premierLeague = country.competitions.find(c => 
+          c.name.toLowerCase().includes('premier') || c.id === 2021
+        );
+
+        const topCompetition = premierLeague || country.competitions[0];
+        console.log(`🏆 TOP COMPETITION: ${topCompetition.name} (ID: ${topCompetition.id}) ${premierLeague ? '[PREMIER LEAGUE]' : '[FALLBACK]'}`);
         
         try {
           const teamsData = await fgFootball(`competitions/${topCompetition.id}/teams`);
@@ -1118,75 +1123,6 @@ const FootballGlobe = () => {
         if (data3 && data3.status === 'OK' && data3.results && data3.results[0]) {
           const location = data3.results[0].geometry.location;
           console.log(`✅ STRATEGY 3 SUCCESS (City Center): ${city} → ${location.lat}, ${location.lng}`);
-          return { lat: location.lat, lng: location.lng };
-        }
-        
-        console.warn(`❌ ALL GEOCODING STRATEGIES FAILED for ${stadiumName}`);
-        return null;
-        
-      } catch (error) {
-        if (error.message.includes('Rate limit')) {
-          console.warn(`⚠️ GEOCODING RATE LIMITED: ${stadiumName}`);
-          return null;
-        }
-        console.warn(`Geocoding failed for ${stadiumName}:`, error);
-        return null;
-      }
-    };
-
-    // Enhanced geocoding with country context and multiple fallback strategies:
-    const geocodeStadium = async (address, city, stadiumName, countryName) => {
-      try {
-        // Strategy 1: Full address if available
-        if (address && address !== 'null' && address !== '') {
-          const fullQuery = `${stadiumName}, ${address}, ${city}, ${countryName}`;
-          console.log(`🔍 GEOCODING STRATEGY 1: "${fullQuery}"`);
-          
-          const data = await controlledFetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(fullQuery)}&key=${GOOGLE_KEY}`,
-            {},
-            'geocoding',
-            3600000 // 1 hour cache for geocoding
-          );
-          
-          if (data.status === 'OK' && data.results && data.results[0]) {
-            const location = data.results[0].geometry.location;
-            console.log(`✅ STRATEGY 1 SUCCESS: ${stadiumName} -> ${location.lat}, ${location.lng}`);
-            return { lat: location.lat, lng: location.lng };
-          }
-        }
-        
-        // Strategy 2: Stadium + City + Country (your original approach)
-        const cityQuery = `${stadiumName}, ${city}, ${countryName}`;
-        console.log(`🔍 GEOCODING STRATEGY 2: "${cityQuery}"`);
-        
-        const data2 = await controlledFetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityQuery)}&key=${GOOGLE_KEY}`,
-          {},
-          'geocoding',
-          3600000
-        );
-        
-        if (data2.status === 'OK' && data2.results && data2.results[0]) {
-          const location = data2.results[0].geometry.location;
-          console.log(`✅ STRATEGY 2 SUCCESS: ${stadiumName} -> ${location.lat}, ${location.lng}`);
-          return { lat: location.lat, lng: location.lng };
-        }
-        
-        // Strategy 3: Just city center as fallback
-        const cityOnly = `${city}, ${countryName}`;
-        console.log(`🔍 GEOCODING STRATEGY 3 (City Center): "${cityOnly}"`);
-        
-        const data3 = await controlledFetch(
-          `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(cityOnly)}&key=${GOOGLE_KEY}`,
-          {},
-          'geocoding',
-          3600000
-        );
-        
-        if (data3.status === 'OK' && data3.results && data3.results[0]) {
-          const location = data3.results[0].geometry.location;
-          console.log(`✅ STRATEGY 3 SUCCESS (City Center): ${city} -> ${location.lat}, ${location.lng}`);
           return { lat: location.lat, lng: location.lng };
         }
         
