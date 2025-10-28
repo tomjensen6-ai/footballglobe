@@ -18,6 +18,7 @@ const PROXY_BASE = 'https://maprates-proxy.vercel.app/api/fg';
 // Premium competitions (same as stadium export)
 const PREMIUM_COMPETITIONS = [
   { id: 2021, name: 'Premier League', country: 'England' },
+  { id: 2016, name: 'Championship', country: 'England' },
   { id: 2014, name: 'La Liga', country: 'Spain' },
   { id: 2002, name: 'Bundesliga', country: 'Germany' },
   { id: 2019, name: 'Serie A', country: 'Italy' },

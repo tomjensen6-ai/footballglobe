@@ -7,7 +7,7 @@ import {
   fgFootballStandings
 } from './lib/fgApi';
 
-// 🔥 ADD THIS HELPER FUNCTION HERE (NEW CODE)
+// 🔥 HELPER FUNCTION 
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // ===== Normalize API keys into constants (robust against missing nested objects) =====
@@ -62,6 +62,34 @@ const googleToFootballCode = (googleCode) => {
 // Helper function to get REST Countries code
 const getRestCountriesCode = (footballCode) => {
   return COUNTRY_CODE_MAP[footballCode] || footballCode;
+};
+
+// ===== NEW: Translate country NAME to code =====
+const translateCountryNameToCode = (countryNameOrCode) => {
+  // If it's already a 3-letter code, return it as-is
+  if (countryNameOrCode && countryNameOrCode.length === 3 && countryNameOrCode === countryNameOrCode.toUpperCase()) {
+    console.log(`🔍 Already a code: ${countryNameOrCode}`);
+    return countryNameOrCode;
+  }
+  
+  // Otherwise, translate name to code
+  const nameToCode = {
+    'England': 'ENG',
+    'Germany': 'DEU',
+    'France': 'FRA',
+    'Spain': 'ESP',
+    'Italy': 'ITA',
+    'Brazil': 'BRA',
+    'Netherlands': 'NLD',
+    'Portugal': 'POR',
+    'Belgium': 'BEL',
+    'Argentina': 'ARG',
+    'Europe': 'EUR'
+  };
+  
+  const code = nameToCode[countryNameOrCode];
+  console.log(`🔍 Translated: ${countryNameOrCode} → ${code || 'NOT FOUND'}`);
+  return code || null;
 };
 
 // Compatibility shim - uses environment variables but provides API_CONFIG structure
@@ -136,6 +164,29 @@ const FootballGlobe = () => {
     const [isLoadingStadiums, setIsLoadingStadiums] = useState(false);
     const [selectedStadium, setSelectedStadium] = useState(null);
     const [stadiumsCache, setStadiumsCache] = useState({});
+    // ===== CACHE SYSTEM =====
+    const [cachedStadiums, setCachedStadiums] = useState(null);
+    const [cachedStandings, setCachedStandings] = useState(null);
+    const [cacheLoaded, setCacheLoaded] = useState(false);
+    const [cacheLoadError, setCacheLoadError] = useState(null);
+
+    // ===== UNIFIED MARKER MANAGEMENT =====
+    // This ensures ALL markers are cleared regardless of which function created them
+    const clearAllStadiumMarkers = () => {
+      // Clear primary marker array
+      if (window.currentStadiumMarkers) {
+        window.currentStadiumMarkers.forEach(marker => marker.setMap(null));
+        window.currentStadiumMarkers = [];
+      }
+      
+      // Clear legacy marker array (from country clicks)
+      if (window.stadiumMarkers && Array.isArray(window.stadiumMarkers)) {
+        window.stadiumMarkers.forEach(marker => marker.setMap(null));
+        window.stadiumMarkers = [];
+      }
+      
+      console.log('🧹 CLEARED: All stadium markers removed');
+    };
 
     // JOURNEY SYSTEM - Core differentiator (API-driven, no hardcoding)
     const [currentJourney, setCurrentJourney] = useState(null);
@@ -152,6 +203,7 @@ const FootballGlobe = () => {
     });
     const [selectedLeague, setSelectedLeague] = useState(null);
     const [availableLeagues, setAvailableLeagues] = useState([]);
+    
     
     // Journey definitions - Will be populated from football API data
     const JOURNEY_TYPES = {
@@ -199,6 +251,45 @@ const FootballGlobe = () => {
         buildCountryTranslationTable();
       }
     }, [countriesData]);
+    // ===== LOAD CACHE FILES ON STARTUP =====
+    useEffect(() => {
+      async function loadCacheFiles() {
+        console.log('⚡ WEEK 3: Loading cached data...');
+        setCacheLoaded(false);
+        
+        try {
+          const [stadiumsRes, standingsRes] = await Promise.all([
+            fetch('/stadiums-premium.json'),
+            fetch('/standings-premium-cache.json')
+          ]);
+
+          if (!stadiumsRes.ok || !standingsRes.ok) {
+            throw new Error('Failed to fetch cache files');
+          }
+
+          const stadiumsData = await stadiumsRes.json();
+          const standingsData = await standingsRes.json();
+
+          setCachedStadiums(stadiumsData);
+          setCachedStandings(standingsData);
+          setCacheLoaded(true);
+
+          console.log('✅ CACHE LOADED:', {
+            stadiums: stadiumsData.totalStadiums || 'N/A',
+            countries: Object.keys(stadiumsData.countries || {}).length,
+            leagues: standingsData.totalLeagues || 'N/A',
+            lastUpdated: stadiumsData.lastUpdated
+          });
+
+        } catch (error) {
+          console.error('❌ CACHE LOAD FAILED:', error);
+          setCacheLoadError(error.message);
+          setCacheLoaded(true); // Still mark as loaded to avoid infinite loading
+        }
+      }
+
+      loadCacheFiles();
+    }, []); // Run once on mount
     
     // API CONTROL SYSTEM - Critical for cost management
     const API_CONTROLLER = {
@@ -277,6 +368,87 @@ const FootballGlobe = () => {
       getCacheKey: function(url, params = {}) {
         return `${url}_${JSON.stringify(params)}`;
       }
+    };
+
+    // ===== COUNTRY CODE TO NAME MAPPING =====
+    const COUNTRY_CODE_TO_NAME = {
+      'ENG': 'England',
+      'ESP': 'Spain', 
+      'DEU': 'Germany',
+      'FRA': 'France',
+      'ITA': 'Italy',
+      'BRA': 'Brazil',
+      'NLD': 'Netherlands',
+      'POR': 'Portugal',
+      'EUR': 'Europe'
+    };
+    // ===== CACHE HELPER FUNCTIONS =====
+    
+    /**
+     * Get stadiums for a specific country from cache
+     * @param {string} countryName - Country name (e.g., "England", "Spain")
+     * @returns {Array} Array of stadium objects with GPS coordinates
+     */
+    const getStadiumsFromCache = (countryNameOrCode) => {
+      if (!cachedStadiums || !cachedStadiums.countries) {
+        console.warn('⚠️ Cache not loaded yet');
+        return [];
+      }
+
+      // Convert country code to name if needed (ENG → England)
+      const countryName = COUNTRY_CODE_TO_NAME[countryNameOrCode] || countryNameOrCode;
+      console.log(`🔍 Looking up: "${countryNameOrCode}" → "${countryName}"`);
+
+      const country = cachedStadiums.countries[countryName];
+      if (!country) {
+        console.warn(`⚠️ Country "${countryName}" not found in cache`);
+        return [];
+      }
+
+      // Flatten all stadiums from all leagues in this country
+      const stadiums = country.leagues.flatMap(league => 
+        league.stadiums.map(stadium => ({
+          ...stadium,
+          leagueName: league.name,
+          leagueId: league.id,
+          country: countryName
+        }))
+      );
+
+      console.log(`⚡ Loaded ${stadiums.length} stadiums for ${countryName} from cache`);
+      return stadiums;
+    };
+
+    /**
+     * Get standings for a specific league from cache
+     * @param {number} leagueId - League ID (e.g., 39 for Premier League)
+     * @returns {Object|null} League standings object or null
+     */
+    const getStandingsFromCache = (leagueId) => {
+      if (!cachedStandings || !cachedStandings.leagues) {
+        console.warn('⚠️ Standings cache not loaded yet');
+        return null;
+      }
+
+      const standings = cachedStandings.leagues[leagueId];
+      if (!standings) {
+        console.warn(`⚠️ League ${leagueId} not found in cache`);
+        return null;
+      }
+
+      console.log(`⚡ Loaded standings for ${standings.name} from cache`);
+      return standings;
+    };
+
+    /**
+     * Get all available countries from cache
+     * @returns {Array} Array of country names
+     */
+    const getAvailableCountries = () => {
+      if (!cachedStadiums || !cachedStadiums.countries) {
+        return [];
+      }
+      return Object.keys(cachedStadiums.countries);
     };
 
     // EMERGENCY BRAKE - Stop all API calls if limits exceeded
@@ -1432,67 +1604,282 @@ const FootballGlobe = () => {
   };
 
   // GLOBAL FUNCTION: Handle popup button clicks
-  window.clickCountryFromPopup = async (countryCode, countryName, lat, lng) => {
-    console.log(`🎯 POPUP CLICK: ${countryName} (${countryCode})`);
+  window.clickCountryFromPopup = async (countryName) => {
+    console.log(`🎯 CLICKED: ${countryName} - Using cache!`);
+    setIsLoading(true);
+    setSelectedCountry(countryName);
     
-    // Find the map reference
-    const map = googleMapRef.current;
-    if (!map) return;
+    // Translate country name to code (e.g., "England" -> "ENG")
+    const selectedCountryCode = translateCountryNameToCode(countryName);
+    const selectedCountryName = countryName;
     
-    // Close any existing popups
-    const customDivs = mapRef.current?.querySelectorAll('div[style*="position: absolute"][style*="z-index: 9999"]');
-    if (customDivs) {
-      customDivs.forEach(div => {
-        if (div.parentNode) {
-          div.parentNode.removeChild(div);
+    if (!selectedCountryCode) {
+      console.error('❌ Could not find country code for:', countryName);
+      setIsLoading(false);
+      return;
+    }
+    
+    console.log(`🔍 Looking up: "${selectedCountryCode}" → "${selectedCountryName}"`);
+    
+        
+    // Get ALL stadiums for this country from cache
+    const allStadiumsForCountry = getStadiumsFromCache(selectedCountryCode);
+    
+    // Get country data to find top league
+    // IMPORTANT: Convert code to name (ENG → England) because cache uses full names
+    const countryNameForLookup = COUNTRY_CODE_TO_NAME[selectedCountryCode] || selectedCountryName;
+    const countryData = cachedStadiums?.countries?.[countryNameForLookup];
+    const topLeague = countryData?.leagues?.[0]; // First league = top priority (Premier League, Bundesliga, etc)
+    
+    // Filter to TOP LEAGUE ONLY
+    const cachedStadiumsForCountry = topLeague 
+      ? allStadiumsForCountry.filter(stadium => stadium.leagueId === topLeague.id)
+      : allStadiumsForCountry;
+    
+    console.log(`⚡ Loaded ${cachedStadiumsForCountry.length} stadiums for ${selectedCountryName} from cache`);
+    console.log(`🏆 Showing: ${topLeague?.name || 'All leagues'} (filtered from ${allStadiumsForCountry.length} total)`);
+
+    // Transform cached data to match your existing format
+    const stadiumsWithCoords = cachedStadiumsForCountry
+      .map(stadium => {
+        // Debug: log first stadium
+        if (cachedStadiumsForCountry.indexOf(stadium) === 0) {
+          console.log('🔍 FIRST STADIUM RAW:', stadium);
         }
+        
+        // Extract coordinates (handle both formats)
+        const lat = stadium.latitude || stadium.lat;
+        const lng = stadium.longitude || stadium.lng;
+        
+        // Skip if no coordinates
+        if (!lat || !lng) {
+          console.warn(`⚠️ No coordinates for ${stadium.venue || stadium.name}`);
+          return null;
+        }
+        
+        return {
+          name: stadium.venue || stadium.name,
+          team: stadium.teamName || stadium.team,
+          lat: parseFloat(lat),
+          lng: parseFloat(lng),
+          coordinates: { lat: parseFloat(lat), lng: parseFloat(lng) },
+          address: stadium.address || stadium.fullAddress || '',
+          capacity: stadium.capacity || 0,
+          leagueName: stadium.leagueName,
+          leagueId: stadium.leagueId,
+          id: stadium.teamId || stadium.id,
+          crestUrl: stadium.crestUrl,
+          clubColors: stadium.clubColors,
+          founded: stadium.founded
+        };
+      })
+      .filter(stadium => stadium !== null); // Remove null entries
+
+    console.log(`✅ TRANSFORMED: ${stadiumsWithCoords.length} stadiums with coordinates`);
+    console.log('📊 Transformed first stadium:', stadiumsWithCoords[0]);
+
+    // Clear ALL stadium markers (unified system)
+    clearAllStadiumMarkers();
+
+    // Initialize marker array BEFORE creating markers
+    if (!window.currentStadiumMarkers) {
+      window.currentStadiumMarkers = [];
+    }
+
+    // Create new markers directly
+      stadiumsWithCoords.forEach((stadium, index) => {
+        // Validate coordinates exist
+        if (!stadium.lat || !stadium.lng) {
+          console.warn(`⚠️ Stadium "${stadium.name}" missing coordinates`);
+          return;
+        }
+
+        // 🔥 CRITICAL: Validate coordinate ranges for Portugal
+        // 🔥 CRITICAL: Validate coordinate ranges for Portugal (including Azores & Madeira)
+        if (selectedCountryCode === 'POR') {
+          // Mainland Portugal: 36-43°N, 10-6°W
+          // Madeira: 32-33°N, 16-17°W
+          // Azores: 37-40°N, 25-31°W
+          const validLat = stadium.lat >= 32 && stadium.lat <= 43;    // Include all Portuguese territories
+          const validLng = stadium.lng >= -31 && stadium.lng <= -6;   // Include Azores and Madeira
+          
+          if (!validLat || !validLng) {
+            console.error(`❌ INVALID COORDS for ${stadium.name}:`, {
+              lat: stadium.lat,
+              lng: stadium.lng,
+              expected: 'lat: 36-43, lng: -10 to -6'
+            });
+            return; // Skip this marker
+          }
+        }
+
+        // 🔥 DEBUG: Log coordinates being used for marker creation
+        if (selectedCountryCode === 'POR') {
+          console.log(`📍 PORTUGAL MARKER #${index}:`, {
+          name: stadium.name,
+          lat: stadium.lat,
+          lng: stadium.lng,
+          latType: typeof stadium.lat,
+          lngType: typeof stadium.lng,
+          position: { lat: stadium.lat, lng: stadium.lng }
+        });
+      }
+
+      const marker = new window.google.maps.Marker({
+        position: { lat: stadium.lat, lng: stadium.lng },
+        map: googleMapRef.current,
+        title: `${stadium.name} - ${stadium.team}`,
+        icon: {
+          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+            <svg width="36" height="48" viewBox="0 0 36 48" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              
+              <!-- Outer glow -->
+              <circle cx="18" cy="16" r="14" fill="#22c55e" opacity="0.3" filter="url(#glow)"/>
+              
+              <!-- Main pin shape -->
+              <path d="M 18 2 C 10.268 2 4 8.268 4 16 C 4 24 18 44 18 44 C 18 44 32 24 32 16 C 32 8.268 25.732 2 18 2 Z" 
+                    fill="url(#gradient)" 
+                    stroke="#ffffff" 
+                    stroke-width="2.5"
+                    filter="url(#glow)"/>
+              
+              <!-- Gradient definition -->
+              <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#16a34a;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              
+              <!-- Inner stadium icon -->
+              <g transform="translate(18, 16)">
+                <!-- Stadium structure -->
+                <ellipse cx="0" cy="0" rx="7" ry="5" fill="#ffffff" opacity="0.9"/>
+                <ellipse cx="0" cy="0" rx="5" ry="3" fill="#22c55e"/>
+                
+                <!-- Field lines -->
+                <line x1="-5" y1="0" x2="5" y2="0" stroke="#ffffff" stroke-width="0.5"/>
+                <circle cx="0" cy="0" r="1.5" fill="none" stroke="#ffffff" stroke-width="0.5"/>
+              </g>
+            </svg>
+          `),
+          scaledSize: new window.google.maps.Size(36, 48),
+          anchor: new window.google.maps.Point(18, 44)
+        },
+        animation: window.google.maps.Animation.DROP
       });
+
+      // Add click listener to show info
+      marker.addListener('click', () => {
+        const infoWindow = new window.google.maps.InfoWindow({
+          content: createProfessionalStadiumPopup(stadium),
+          maxWidth: 350
+        });
+        
+        // Close other info windows
+        if (window.currentStadiumInfoWindow) {
+          window.currentStadiumInfoWindow.close();
+        }
+        
+        infoWindow.open(googleMapRef.current, marker);
+        window.currentStadiumInfoWindow = infoWindow;
+      });
+
+      // Push to the unified marker array
+      window.currentStadiumMarkers.push(marker);
+    });
+
+    console.log(`✅ Created ${window.currentStadiumMarkers.length} stadium markers!`);
+
+    // Update sidebar with stadium count
+    setStadiumPins(stadiumsWithCoords);
+    console.log(`📊 Updated sidebar: ${stadiumsWithCoords.length} stadiums`);
+
+    // Get standings from cache (use transformed data which has leagueId)
+    if (stadiumsWithCoords.length > 0 && stadiumsWithCoords[0].leagueId) {
+      const leagueId = stadiumsWithCoords[0].leagueId;
+      const leagueStandings = getStandingsFromCache(leagueId);
+      
+      if (leagueStandings) {
+        // Extract the correct nested structure for your UI
+        const standingsData = {
+          competition: leagueStandings.competition,
+          standings: leagueStandings.standings
+        };
+        
+        setStandings([standingsData]); // Your UI expects array
+        setSelectedLeague(topLeague ? topLeague.id.toString() : null);
+        
+        console.log(`⚡ STANDINGS: Loaded ${leagueStandings.standings.table.length} teams for ${leagueStandings.competition.name}`);
+        console.log('📊 First team:', leagueStandings.standings.table[0].team.name, '-', leagueStandings.standings.table[0].points, 'pts');
+      } else {
+        console.warn(`⚠️ No standings found for league ${leagueId}`);
+        setStandings(null);
+      }
+      
+      // Update available leagues list - show leagues from this country
+      if (countryData && countryData.leagues) {
+        const countryLeagues = countryData.leagues.map(league => ({
+          id: league.id,
+          name: league.name,
+          country: selectedCountryCode
+        }));
+        
+        setAvailableLeagues(countryLeagues);
+        console.log(`🏆 Available leagues for ${selectedCountryName}: ${countryLeagues.length}`);
+      }
+    } else {
+      console.warn('⚠️ No leagueId found in stadium data');
     }
     
-    // Find or create country data
-    let countryData = countriesDataRef.current.find(country => 
-      country.code?.toLowerCase() === countryCode.toLowerCase()
-    );
-    
-    if (!countryData) {
-      // 🔥 ENHANCED: Fetch area data for popup clicks too
-      const areaData = await getCountryArea(countryCode);
+    // Auto-zoom to fit all stadiums
+    console.log('🔍 ZOOM CHECK:', {
+      hasArray: !!window.currentStadiumMarkers,
+      length: window.currentStadiumMarkers?.length,
+      hasMap: !!googleMapRef.current
+    });
+
+    if (window.currentStadiumMarkers && 
+        Array.isArray(window.currentStadiumMarkers) && 
+        window.currentStadiumMarkers.length > 0 && 
+        googleMapRef.current) {
       
-      countryData = {
-        name: countryName,
-        code: countryCode,
-        center: { lat, lng },
-        stadiums: 0,
-        topLeagues: [],
-        area: areaData // 🔥 NEW: Add area data for smart zoom
-      };
-      
-      console.log(`📏 POPUP AREA FETCH: ${countryCode} -> ${areaData} km²`);
+      try {
+        const bounds = new window.google.maps.LatLngBounds();
+        
+        window.currentStadiumMarkers.forEach(marker => {
+          if (marker && marker.getPosition) {
+            bounds.extend(marker.getPosition());
+          }
+        });
+        
+        googleMapRef.current.fitBounds(bounds);
+        
+        // Add slight padding after fitBounds completes
+        setTimeout(() => {
+          const currentZoom = googleMapRef.current.getZoom();
+          if (currentZoom > 7) {
+            googleMapRef.current.setZoom(7); // Max zoom for country view
+          }
+        }, 300);
+        
+        console.log(`🗺️ Zoomed to fit ${window.currentStadiumMarkers.length} stadiums`);
+      } catch (error) {
+        console.error('❌ ZOOM ERROR:', error);
+      }
     }
-    
-    // Set selected country with smart zoom based on country size
-    setSelectedCountry(countryData);
 
-      // Simple zoom to country
-      const fallbackCenter = (lat != null && lng != null)
-        ? { lat: Number(lat), lng: Number(lng) }
-        : null;
-      if (countryData.center || fallbackCenter) {
-        map.panTo(countryData.center || fallbackCenter);
-      }
-
-      // Use smart zoom based on country area (now works for ALL countries)
-      const smartZoom = getSmartZoomLevel(countryData);
-      map.setZoom(smartZoom);
-      console.log(`🎯 SMART ZOOM: ${countryData.name} → level ${smartZoom} (area: ${countryData.area || 'fetched on-demand'} km²)`);
-
-      // Load stadiums
-      console.log(`🏟️ Loading stadiums via popup click`);
-      const stadiums = await fetchStadiumsForCountry(countryCode, countryName);
-      if (stadiums.length > 0) {
-        displayStadiumPins(stadiums, map);
-        setStadiumPins(stadiums);
-      }
+    setIsLoading(false);
+    console.log(`✅ COMPLETE: ${selectedCountryCode} loaded in <1 second!`);
   };
   const initializeMap = () => {
     (async () => {
@@ -2440,28 +2827,61 @@ const map = new MapCtor(mapRef.current, {
     })));
     
     // Clear existing pins
-    if (window.currentStadiumMarkers) {
-      window.currentStadiumMarkers.forEach(marker => marker.setMap(null));
-    }
-    window.currentStadiumMarkers = [];
+    clearAllStadiumMarkers();
 
     stadiums.forEach((stadium, index) => {
       if (!stadium.coordinates) return;
 
       // Create custom stadium marker
       const marker = new window.google.maps.Marker({
-      position: stadium.coordinates,
-      map: map,
-      title: `${stadium.name} - ${stadium.team}`, // ADD TEAM NAME TO HOVER
+        position: stadium.coordinates,
+        map: map,
+        title: `${stadium.name} - ${stadium.team}`,
         icon: {
           url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-            <svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="10" cy="10" r="8" fill="#22c55e" stroke="#ffffff" stroke-width="2"/>
-              <text x="10" y="14" text-anchor="middle" fill="white" font-size="12" font-weight="bold">⚽</text>
+            <svg width="36" height="48" viewBox="0 0 36 48" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <filter id="glow">
+                  <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                  <feMerge>
+                    <feMergeNode in="coloredBlur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+              
+              <!-- Outer glow -->
+              <circle cx="18" cy="16" r="14" fill="#22c55e" opacity="0.3" filter="url(#glow)"/>
+              
+              <!-- Main pin shape -->
+              <path d="M 18 2 C 10.268 2 4 8.268 4 16 C 4 24 18 44 18 44 C 18 44 32 24 32 16 C 32 8.268 25.732 2 18 2 Z" 
+                    fill="url(#gradient)" 
+                    stroke="#ffffff" 
+                    stroke-width="2.5"
+                    filter="url(#glow)"/>
+              
+              <!-- Gradient definition -->
+              <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#16a34a;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              
+              <!-- Inner stadium icon -->
+              <g transform="translate(18, 16)">
+                <!-- Stadium structure -->
+                <ellipse cx="0" cy="0" rx="7" ry="5" fill="#ffffff" opacity="0.9"/>
+                <ellipse cx="0" cy="0" rx="5" ry="3" fill="#22c55e"/>
+                
+                <!-- Field lines -->
+                <line x1="-5" y1="0" x2="5" y2="0" stroke="#ffffff" stroke-width="0.5"/>
+                <circle cx="0" cy="0" r="1.5" fill="none" stroke="#ffffff" stroke-width="0.5"/>
+              </g>
             </svg>
           `),
-          scaledSize: new window.google.maps.Size(20, 20),
-          anchor: new window.google.maps.Point(10, 10)
+          scaledSize: new window.google.maps.Size(36, 48),
+          anchor: new window.google.maps.Point(18, 44)
         },
         animation: window.google.maps.Animation.DROP,
         zIndex: 1000 + index
@@ -2475,8 +2895,8 @@ const map = new MapCtor(mapRef.current, {
         
         // Create stadium info window
         const infoWindow = new window.google.maps.InfoWindow({
-          content: createStadiumInfoContent(stadium),
-          maxWidth: 300
+          content: createProfessionalStadiumPopup(stadium),
+          maxWidth: 350
         });
         
         // Close other info windows
@@ -2495,71 +2915,247 @@ const map = new MapCtor(mapRef.current, {
   };
 
   // NEW FUNCTION: Create stadium info window content
-  const createStadiumInfoContent = (stadium) => {
-    const capacityFormatted = stadium.capacity 
+  // PROFESSIONAL 10/10 STADIUM POPUP
+  const createProfessionalStadiumPopup = (stadium) => {
+    const capacityFormatted = stadium.capacity && stadium.capacity > 0
       ? stadium.capacity.toLocaleString() 
-      : 'Unknown';
-      
+      : 'N/A';
+    
+    const teamName = stadium.team || stadium.teamName || 'Unknown Team';
+    const stadiumName = stadium.name || stadium.venue || 'Unknown Stadium';
+    const address = stadium.address || 'Address not available';
+    const league = stadium.leagueName || stadium.league || '';
+    
+    // Get team crest from cache data
+    const teamCrest = stadium.crestUrl || stadium.teamLogo || '';
+    const clubColors = stadium.clubColors || '';
+    const founded = stadium.founded || '';
+    
     return `
       <div style="
-        padding: 12px; 
-        min-width: 250px; 
-        font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-        border-radius: 8px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
+        width: 320px;
+        background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       ">
-        <!-- Stadium Header -->
-        <div style="margin-bottom: 10px;">
-          ${stadium.team ? `
-        <div style="color: #3b82f6; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
-          ⚽ ${stadium.team}
-        </div>
-        ` : ''}
-        ${stadium.team ? `
-        <div style="color: #3b82f6; font-size: 12px; font-weight: 600; margin-bottom: 4px;">
-          ⚽ Home to ${stadium.team}
-        </div>
-        ` : ''}
-          <p style="margin: 0; color: #6b7280; font-size: 12px;">
-            📍 ${stadium.address}
-          </p>
+        <!-- Header with Team Colors -->
+        <div style="
+          background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+          padding: 16px;
+          position: relative;
+          overflow: hidden;
+        ">
+          <!-- Decorative football pattern -->
+          <div style="
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 80px;
+            height: 80px;
+            opacity: 0.15;
+            font-size: 60px;
+          ">⚽</div>
+          
+          <div style="display: flex; align-items: center; gap: 12px; position: relative;">
+            ${teamCrest ? `
+              <img 
+                src="${teamCrest}" 
+                alt="${teamName}" 
+                style="
+                  width: 48px; 
+                  height: 48px; 
+                  border-radius: 8px; 
+                  background: white;
+                  padding: 4px;
+                  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                "
+                onerror="this.style.display='none'"
+              />
+            ` : ''}
+            
+            <div style="flex: 1;">
+              <h3 style="
+                margin: 0 0 4px 0; 
+                color: white; 
+                font-size: 16px; 
+                font-weight: 700;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+              ">${stadiumName}</h3>
+              <p style="
+                margin: 0; 
+                color: rgba(255,255,255,0.95); 
+                font-size: 13px; 
+                font-weight: 500;
+              ">⚽ ${teamName}</p>
+            </div>
+          </div>
         </div>
         
-        <!-- Stadium Details -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
-          <div style="background: rgba(34, 197, 94, 0.1); padding: 6px; border-radius: 6px;">
-            <div style="color: #16a34a; font-size: 10px; font-weight: 600; text-transform: uppercase;">
-              Capacity
+        <!-- Main Content -->
+        <div style="padding: 16px;">
+          
+          <!-- Location -->
+          <div style="
+            display: flex;
+            align-items: start;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding: 10px;
+            background: #f0f9ff;
+            border-radius: 8px;
+            border-left: 3px solid #3b82f6;
+          ">
+            <span style="font-size: 14px;">📍</span>
+            <p style="
+              margin: 0;
+              color: #1e40af;
+              font-size: 12px;
+              line-height: 1.5;
+              font-weight: 500;
+            ">${address}</p>
+          </div>
+          
+          <!-- Stats Grid -->
+          <div style="
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            margin-bottom: 14px;
+          ">
+            <!-- Capacity -->
+            <div style="
+              background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+              padding: 10px;
+              border-radius: 8px;
+              border: 1px solid #86efac;
+            ">
+              <div style="
+                color: #166534;
+                font-size: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 4px;
+              ">
+                👥 Capacity
+              </div>
+              <div style="
+                color: #14532d;
+                font-size: 16px;
+                font-weight: 800;
+              ">
+                ${capacityFormatted}
+              </div>
             </div>
-            <div style="color: #1f2937; font-size: 14px; font-weight: 700;">
-              ${capacityFormatted}
+            
+            <!-- League -->
+            <div style="
+              background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+              padding: 10px;
+              border-radius: 8px;
+              border: 1px solid #93c5fd;
+            ">
+              <div style="
+                color: #1e40af;
+                font-size: 10px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 4px;
+              ">
+                🏆 League
+              </div>
+              <div style="
+                color: #1e3a8a;
+                font-size: 11px;
+                font-weight: 700;
+                line-height: 1.3;
+              ">
+                ${league || 'N/A'}
+              </div>
             </div>
           </div>
           
-          <div style="background: rgba(59, 130, 246, 0.1); padding: 6px; border-radius: 6px;">
-            <div style="color: #3b82f6; font-size: 10px; font-weight: 600; text-transform: uppercase;">
-              Surface
+          <!-- Additional Info Row -->
+          ${founded || clubColors ? `
+            <div style="
+              display: flex;
+              gap: 10px;
+              margin-bottom: 14px;
+            ">
+              ${founded ? `
+                <div style="
+                  flex: 1;
+                  background: #fef3c7;
+                  padding: 8px;
+                  border-radius: 6px;
+                  border: 1px solid #fde047;
+                ">
+                  <div style="
+                    color: #854d0e;
+                    font-size: 9px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    margin-bottom: 2px;
+                  ">
+                    📅 Founded
+                  </div>
+                  <div style="
+                    color: #422006;
+                    font-size: 13px;
+                    font-weight: 700;
+                  ">
+                    ${founded}
+                  </div>
+                </div>
+              ` : ''}
+              
+              ${clubColors ? `
+                <div style="
+                  flex: 1;
+                  background: #fce7f3;
+                  padding: 8px;
+                  border-radius: 6px;
+                  border: 1px solid #fbcfe8;
+                ">
+                  <div style="
+                    color: #831843;
+                    font-size: 9px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    margin-bottom: 2px;
+                  ">
+                    🎨 Colors
+                  </div>
+                  <div style="
+                    color: #500724;
+                    font-size: 11px;
+                    font-weight: 700;
+                  ">
+                    ${clubColors}
+                  </div>
+                </div>
+              ` : ''}
             </div>
-            <div style="color: #1f2937; font-size: 14px; font-weight: 700;">
-              ${stadium.surface}
+          ` : ''}
+          
+          <!-- Footer Badge -->
+          <div style="
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            padding: 8px 12px;
+            border-radius: 8px;
+            text-align: center;
+            border: 1px solid #86efac;
+          ">
+            <div style="
+              color: #166534;
+              font-size: 11px;
+              font-weight: 700;
+            ">
+              ⚽ FootballGlobe - Discover Stadiums Worldwide
             </div>
-          </div>
-        </div>
-        
-        <!-- Premium Features Teaser -->
-        <div style="
-          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); 
-          padding: 8px; 
-          border-radius: 6px; 
-          border-left: 3px solid #f59e0b;
-        ">
-          <div style="color: #92400e; font-size: 10px; font-weight: 600; margin-bottom: 2px;">
-            🔒 PREMIUM FEATURES
-          </div>
-          <div style="color: #78350f; font-size: 11px; line-height: 1.3;">
-            • Stadium photos & history<br>
-            • Match schedules & tickets<br>
-            • Route planning & travel tips
           </div>
         </div>
       </div>
@@ -3070,50 +3666,197 @@ const map = new MapCtor(mapRef.current, {
                   
                   <select 
                     value={selectedLeague || 'top'} 
-                    onChange={async (e) => {
+                    onChange={(e) => {
                       const leagueValue = e.target.value;
                       setSelectedLeague(leagueValue);
                       
+                      console.log(`🔄 League dropdown changed to: ${leagueValue}`);
+                      
                       if (leagueValue === 'top') {
-                        // Show original top league stadiums
-                        console.log('🔄 SWITCHING: Back to top leagues view');
+                        // Show top league stadiums only (matches country-click behavior)
+                        console.log('🔄 SWITCHING: Back to top league view');
+                        
+                        if (selectedCountry) {
+                          // Get country data and top league
+                          const selectedCountryCode = translateCountryNameToCode(selectedCountry) || selectedCountry;
+                          
+                          // IMPORTANT: Convert code to name (ENG → England) because cache uses full names
+                          const countryNameForLookup = COUNTRY_CODE_TO_NAME[selectedCountryCode] || 
+                                                      COUNTRY_CODE_TO_NAME[selectedCountry] || 
+                                                      selectedCountry;
+                          const countryData = cachedStadiums?.countries?.[countryNameForLookup];
+                          const topLeague = countryData?.leagues?.[0];
+                          
+                          // Get all stadiums for country
+                          const allStadiums = getStadiumsFromCache(selectedCountryCode || selectedCountry);
+                          
+                          // Filter to TOP LEAGUE ONLY (same as country click)
+                          const topLeagueStadiums = topLeague 
+                            ? allStadiums.filter(stadium => stadium.leagueId === topLeague.id)
+                            : allStadiums;
+                          
+                          if (topLeagueStadiums.length > 0) {
+                            const stadiumsWithCoords = topLeagueStadiums.map(stadium => ({
+                              name: stadium.venue,
+                              team: stadium.teamName,
+                              lat: stadium.latitude,
+                              lng: stadium.longitude,
+                              coordinates: { lat: stadium.latitude, lng: stadium.longitude },
+                              address: stadium.address || '',
+                              capacity: stadium.capacity || 0,
+                              leagueName: stadium.leagueName,
+                              leagueId: stadium.leagueId,
+                              id: stadium.teamId,
+                              crestUrl: stadium.crestUrl,
+                              clubColors: stadium.clubColors,
+                              founded: stadium.founded
+                            }));
+                            
+                            clearAllStadiumMarkers();
+                            displayStadiumPins(stadiumsWithCoords, googleMapRef.current);
+                            setStadiumPins(stadiumsWithCoords);
+                            
+                            if (window.currentStadiumMarkers.length > 0 && googleMapRef.current) {
+                              const bounds = new window.google.maps.LatLngBounds();
+                              window.currentStadiumMarkers.forEach(marker => {
+                                bounds.extend(marker.getPosition());
+                              });
+                              googleMapRef.current.fitBounds(bounds);
+                              
+                              setTimeout(() => {
+                                const currentZoom = googleMapRef.current.getZoom();
+                                if (currentZoom > 8) {
+                                  googleMapRef.current.setZoom(8);
+                                }
+                              }, 300);
+                            }
+                            
+                            console.log(`✅ Showing ${stadiumsWithCoords.length} top league stadiums (${topLeague?.name || 'default'})`);
+                            
+                            // Load standings for top league
+                            if (topLeague) {
+                              const leagueStandings = getStandingsFromCache(topLeague.id);
+                              if (leagueStandings) {
+                                setStandings([{
+                                  competition: leagueStandings.competition,
+                                  standings: leagueStandings.standings
+                                }]);
+                              }
+                            }
+                          }
+                        }
                         return;
                       }
                       
                       // Find selected league
                       const league = availableLeagues.find(l => l.id.toString() === leagueValue);
-                      if (league && selectedCountry) {
-                        console.log(`🔄 SWITCHING: To ${league.name}`);
+                      if (!league) {
+                        console.warn('⚠️ League not found');
+                        return;
+                      }
+                      
+                      console.log(`🔄 SWITCHING TO: ${league.name} (ID: ${league.id})`);
+                      
+                      // ===== NEW: FIND WHICH COUNTRY THIS LEAGUE BELONGS TO =====
+                      let leagueCountry = null;
+                      let leagueStadiums = [];
+                      
+                      // Search through ALL countries in cache to find this league
+                      if (cachedStadiums && cachedStadiums.countries) {
+                        const allCountries = Object.keys(cachedStadiums.countries);
                         
-                        // Clear existing stadium pins
-                        if (window.currentStadiumMarkers) {
-                          window.currentStadiumMarkers.forEach(marker => marker.setMap(null));
-                          window.currentStadiumMarkers = [];
-                        }
-                        
-                        // CLEAR existing pins first
-                        if (window.currentStadiumMarkers) {
-                          window.currentStadiumMarkers.forEach(marker => marker.setMap(null));
-                          window.currentStadiumMarkers = [];
-                        }
-                        
-                        // Load ONLY this league's stadiums
-                        const leagueStadiums = await fetchStadiumsForLeague(
-                          selectedCountry.code, 
-                          league.id, 
-                          league.name
-                        );
-                        
-                        console.log(`🎯 LEAGUE FILTER: Showing ONLY ${league.name} stadiums`);
-                        
-                        if (leagueStadiums.length > 0) {
-                          displayStadiumPins(leagueStadiums, googleMapRef.current);
-                          setStadiumPins(leagueStadiums);
-                          console.log(`✅ DISPLAYED: ${leagueStadiums.length} stadiums for ${league.name}`);
-                        } else {
-                          console.warn(`⚠️ No stadiums found for ${league.name}`);
+                        for (const countryName of allCountries) {
+                          const countryData = cachedStadiums.countries[countryName];
+                          
+                          // Check if this country has this league
+                          const hasLeague = countryData.leagues.some(l => l.id === league.id);
+                          
+                          if (hasLeague) {
+                            leagueCountry = countryName;
+                            console.log(`🌍 FOUND: ${league.name} belongs to ${countryName}`);
+                            
+                            // Get all stadiums for this country
+                            const allStadiums = getStadiumsFromCache(countryName);
+                            
+                            // Filter to only this league
+                            leagueStadiums = allStadiums.filter(stadium => 
+                              stadium.leagueId === league.id
+                            );
+                            
+                            break; // Found it, stop searching
+                          }
                         }
                       }
+                      
+                      if (!leagueCountry || leagueStadiums.length === 0) {
+                        console.warn(`⚠️ No stadiums found for ${league.name}`);
+                        alert(`No stadiums found for ${league.name}`);
+                        return;
+                      }
+                      
+                      console.log(`⚡ FOUND: ${leagueStadiums.length} stadiums for ${league.name} in ${leagueCountry}`);
+                      
+                      // Transform cache data to display format
+                      const stadiumsWithCoords = leagueStadiums.map(stadium => ({
+                        name: stadium.venue,
+                        team: stadium.teamName,
+                        lat: stadium.latitude,
+                        lng: stadium.longitude,
+                        coordinates: { lat: stadium.latitude, lng: stadium.longitude },
+                        address: stadium.address || '',
+                        capacity: stadium.capacity || 0,
+                        leagueName: stadium.leagueName,
+                        leagueId: stadium.leagueId,
+                        id: stadium.teamId
+                      }));
+                      
+                      // Update selected country if it changed
+                      if (leagueCountry !== selectedCountry) {
+                        console.log(`🌍 AUTO-SWITCHING: From ${selectedCountry} → ${leagueCountry}`);
+                        setSelectedCountry(leagueCountry);
+                      }
+                      
+                      // Clear existing markers
+                      if (window.currentStadiumMarkers) {
+                        window.currentStadiumMarkers.forEach(marker => marker.setMap(null));
+                        window.currentStadiumMarkers = [];
+                      }
+                      
+                      // Display new stadiums
+                      displayStadiumPins(stadiumsWithCoords, googleMapRef.current);
+                      setStadiumPins(stadiumsWithCoords);
+                      
+                      // Auto-zoom to fit all stadiums
+                      if (window.currentStadiumMarkers.length > 0 && googleMapRef.current) {
+                        const bounds = new window.google.maps.LatLngBounds();
+                        
+                        window.currentStadiumMarkers.forEach(marker => {
+                          bounds.extend(marker.getPosition());
+                        });
+                        
+                        googleMapRef.current.fitBounds(bounds);
+                        
+                        setTimeout(() => {
+                          const currentZoom = googleMapRef.current.getZoom();
+                          if (currentZoom > 9) {
+                            googleMapRef.current.setZoom(9);
+                          }
+                        }, 300);
+                        
+                        console.log(`🗺️ Zoomed to fit ${window.currentStadiumMarkers.length} ${league.name} stadiums`);
+                      }
+                      
+                      // Load standings for this league
+                      const leagueStandings = getStandingsFromCache(league.id);
+                      if (leagueStandings) {
+                        setStandings([{
+                          competition: leagueStandings.competition,
+                          standings: leagueStandings.standings
+                        }]);
+                        console.log(`⚡ STANDINGS: Loaded for ${league.name}`);
+                      }
+                      
+                      console.log(`✅ COMPLETE: Switched to ${league.name} (${leagueCountry}) - ${stadiumsWithCoords.length} stadiums`);
                     }}
                     style={{
                       width: '100%',
@@ -3291,7 +4034,7 @@ const map = new MapCtor(mapRef.current, {
                         </tr>
                       </thead>
                       <tbody>
-                        {standings[0]?.table?.map((team, idx) => (
+                        {standings[0]?.standings?.table?.map((team, idx) => (
                           <tr key={idx} style={{ 
                             borderBottom: '1px solid #f3f4f6',
                             backgroundColor: idx % 2 === 0 ? '#ffffff' : '#fafafa'
