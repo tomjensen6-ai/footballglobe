@@ -2640,14 +2640,30 @@ const map = new MapCtor(mapRef.current, {
         }
         
         // Store polygons with country data
+        country.polygons = polygons;
         polygons.forEach(polygon => {
           polygon.countryData = country;
           window.countryPolygons.push(polygon);
-          
+
           // Add click listener to polygon
           polygon.addListener('click', () => {
             console.log(`🎯 POLYGON CLICKED: ${country.name}`);
-            window.clickCountryFromPopup(country.code, country.name, country.center.lat, country.center.lng);
+
+            let lat = country.center?.lat;
+            let lng = country.center?.lng;
+
+            if (lat == null || lng == null) {
+              const bounds = new window.google.maps.LatLngBounds();
+              (country.polygons || [polygon]).forEach(p => {
+                p.getPath().forEach(pt => bounds.extend(pt));
+              });
+              const center = bounds.getCenter();
+              lat = center.lat();
+              lng = center.lng();
+              console.log(`📐 CENTER FROM BOUNDS: ${country.name} → ${lat}, ${lng}`);
+            }
+
+            window.clickCountryFromPopup(country.code, country.name, lat, lng);
           });
           
           // Add hover effects
