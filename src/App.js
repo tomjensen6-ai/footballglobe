@@ -684,11 +684,8 @@ const FootballGlobe = () => {
         // Update progress
         setLoadingProgress(processedCountries.length + 1);
         
-        // Get country coordinates via geocoding
-        const coordinates = await geocodeCountry(country.name, country.code);
-        
         // Use competitions data directly (no need for separate API call)
-        const competitionNames = country.competitions 
+        const competitionNames = country.competitions
           ? country.competitions.slice(0, 3).map(c => c.name)
           : [];
 
@@ -697,12 +694,9 @@ const FootballGlobe = () => {
           name: country.name,
           code: country.code,
           flag: country.flag || await getFlagFromRestCountries(country.code),
-          center: coordinates,
           stadiums: country.competitions ? country.competitions.length * 10 : 0, // Estimate
           topLeagues: competitionNames,
           competitions: country.competitions || [],
-          continent: await determineContinent(country.code, country.name),
-          area: await getCountryArea(country.code)
         });
       } catch (error) {
         console.warn(`⚠️ Skipping ${country.name}:`, error.message);
@@ -712,87 +706,8 @@ const FootballGlobe = () => {
     return processedCountries;
   };
 
-  // Geocode country name to coordinates with enhanced debugging (NO HARDCODING)
-  const geocodeCountry = async (countryName, countryCode) => {
-    try {
-      // Use REST Countries for reliable coordinates
-      const restCode = getRestCountriesCode(countryCode);
-      
-      console.log(`🔍 Geocoding ${countryName} (${countryCode} → ${restCode})`);
-      
-      const response = await fetch(`https://restcountries.com/v3.1/alpha/${restCode}`);
-      
-      if (!response.ok) {
-        throw new Error(`REST Countries HTTP ${response.status}`);
-      }
-      
-      const json = await response.json();
-      const latlng = json?.[0]?.latlng || json?.[0]?.capitalInfo?.latlng;
-      
-      if (!latlng) {
-        throw new Error('No latlng in REST Countries');
-      }
-      
-      const [lat, lng] = latlng;
-      console.log(`✅ Geocode SUCCESS: ${countryName} → ${lat}, ${lng}`);
-      
-      return { lat, lng, countryCode: restCode, countryName: json[0].name.common };
-      
-    } catch (error) {
-      console.error(`⛔ Geocoding failed for ${countryName}:`, error.message);
-      return null;
-    }
-  };
 
 
-  // Determine continent using REST Countries API (NO HARDCODING - covers all 195+ countries)
-  const determineContinent = async (countryCode, countryName) => {
-    try {
-      if (countryCode) {
-        const restCode = getRestCountriesCode(countryCode);
-        const response = await fetch(`https://restcountries.com/v3.1/alpha/${restCode}`);
-        if (response.ok) {
-          const data = await response.json();
-          return data[0]?.continents?.[0] || 'Unknown';
-        }
-      }
-      
-      // Fallback: try with country name
-      const response = await fetch(`https://restcountries.com/v3.1/name/${encodeURIComponent(countryName)}?exact=true`);
-      if (response.ok) {
-        const data = await response.json();
-        return data[0]?.continents?.[0] || 'Unknown';
-      }
-      
-      return 'Unknown';
-    } catch (error) {
-      console.warn(`Continent lookup failed for ${countryName}:`, error);
-      return 'Unknown';
-    }
-  };
-
-  // Get country area from REST Countries API (NO HARDCODING)
-  const getCountryArea = async (countryCode) => {
-    try {
-      if (!countryCode) return null;
-      
-      const restCode = getRestCountriesCode(countryCode);
-      const response = await fetch(`https://restcountries.com/v3.1/alpha/${restCode}`);
-      if (response.ok) {
-        const data = await response.json();
-        const area = data[0]?.area || null;
-        console.log(`📏 AREA LOOKUP: ${countryCode} -> ${area} km²`);
-        return area;
-      }
-      
-      return null;
-    } catch (error) {
-      console.warn(`Area lookup failed for ${countryCode}:`, error);
-      return null;
-    }
-  };
-
-  
 
   // API-driven flag fallback
   const getFlagFromRestCountries = async (countryCode) => {
@@ -1584,23 +1499,6 @@ const FootballGlobe = () => {
         }
       ];
     }
-  };
-
-  // Smart zoom level based on country characteristics - GLOBAL SCOPE
-  const getSmartZoomLevel = (country) => {
-    // Use area from REST Countries API if available
-    if (country.area) {
-      console.log(`🎯 SMART ZOOM: ${country.name} (${country.area} km²)`);
-      if (country.area > 5000000) return 4;   // Russia, Canada, USA, China, Australia, Brazil
-      if (country.area > 1000000) return 5;   // Large countries like India, Argentina
-      if (country.area > 500000) return 5.5;    // Medium countries like Spain, France
-      if (country.area > 100000) return 5.5;    // Small countries like UK, Italy, Germany
-      return 8;                               // Very small countries like Netherlands
-    }
-    
-    // Fallback for countries without area data
-    console.log(`⚠️ NO AREA DATA: ${country.name} -> using fallback zoom 6`);
-    return 6;
   };
 
   // GLOBAL FUNCTION: Handle popup button clicks
@@ -2481,7 +2379,6 @@ const map = new MapCtor(mapRef.current, {
                 center: { lat: event.latLng.lat(), lng: event.latLng.lng() },
                 ...onDemandData // Contains stadiums, topLeagues, area, etc.
               };
-              console.log(`✅ LAZY COUNTRY DATA: ${detectedCountryName} area = ${countryData.area} km²`);
             }
           }
 
@@ -2491,10 +2388,12 @@ const map = new MapCtor(mapRef.current, {
             // Simple zoom to country
             map.panTo(countryData.center || { lat: event.latLng.lat(), lng: event.latLng.lng() });
 
-            // Use smart zoom based on country area (now works for lazy-loaded countries too)
-            const smartZoom = getSmartZoomLevel(countryData);
-            map.setZoom(smartZoom);
-            console.log(`🎯 SMART ZOOM: ${countryData.name} → level ${smartZoom} (area: ${countryData.area || 'fetched on-demand'} km²)`);
+            const countryPolys = (window.countryPolygons || []).filter(p => p.countryData?.code === countryData.code);
+            if (countryPolys.length > 0) {
+              const bounds = new window.google.maps.LatLngBounds();
+              countryPolys.forEach(p => p.getPath().forEach(pt => bounds.extend(pt)));
+              map.fitBounds(bounds);
+            }
 
             
             // Load and display stadium pins - Enhanced with better error handling
@@ -2707,16 +2606,12 @@ const map = new MapCtor(mapRef.current, {
         const country = countriesDataRef.current.find(c => c.code === countryCode);
         const competitions = country?.competitions || [];
 
-        const areaData = await getCountryArea(countryCode);
-        console.log(`📍 LAZY LOAD AREA: ${countryCode} -> ${areaData} km²`);
-
         const countryData = {
           name: countryName || countryCode,
           code: countryCode,
           stadiums: competitions.length * 10, // Estimate
           topLeagues: competitions.slice(0, 2).map(c => c.name),
           hasWomensLeagues: false, // Football-Data.org doesn't have women's data
-          area: areaData,
           competitions: competitions,
           cachedAt: Date.now()
         };
@@ -3161,22 +3056,6 @@ const map = new MapCtor(mapRef.current, {
         </div>
       </div>
     `;
-  };
-
-  const handleCountrySelect = (country) => {
-    setIsLoading(true);
-    setStandings(null); // Clear old standings (only need once!)
-    setSelectedCountry(country);
-    
-    if (googleMapRef.current) {
-      googleMapRef.current.panTo(country.center);
-      googleMapRef.current.setZoom(6);
-    }
-    
-    // Simulate loading stadium data (will be real API call in Block 2)
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
   };
 
   const resetMap = () => {
