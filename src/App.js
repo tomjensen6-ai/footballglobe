@@ -1642,10 +1642,7 @@ const FootballGlobe = () => {
     // Transform cached data to match your existing format
     const stadiumsWithCoords = cachedStadiumsForCountry
       .map(stadium => {
-        // Debug: log first stadium
-        if (cachedStadiumsForCountry.indexOf(stadium) === 0) {
-          console.log('🔍 FIRST STADIUM RAW:', stadium);
-        }
+        
         
         // Extract coordinates (handle both formats)
         const lat = stadium.latitude || stadium.lat;
@@ -1675,8 +1672,7 @@ const FootballGlobe = () => {
       })
       .filter(stadium => stadium !== null); // Remove null entries
 
-    console.log(`✅ TRANSFORMED: ${stadiumsWithCoords.length} stadiums with coordinates`);
-    console.log('📊 Transformed first stadium:', stadiumsWithCoords[0]);
+    
 
     // Clear ALL stadium markers (unified system)
     clearAllStadiumMarkers();
@@ -1713,18 +1709,7 @@ const FootballGlobe = () => {
           }
         }
 
-        // 🔥 DEBUG: Log coordinates being used for marker creation
-        if (selectedCountryCode === 'POR') {
-          console.log(`📍 PORTUGAL MARKER #${index}:`, {
-          name: stadium.name,
-          lat: stadium.lat,
-          lng: stadium.lng,
-          latType: typeof stadium.lat,
-          lngType: typeof stadium.lng,
-          position: { lat: stadium.lat, lng: stadium.lng }
-        });
-      }
-
+        
       const marker = new window.google.maps.Marker({
         position: { lat: stadium.lat, lng: stadium.lng },
         map: googleMapRef.current,
