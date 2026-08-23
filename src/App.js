@@ -3946,11 +3946,6 @@ const map = new MapCtor(mapRef.current, {
                               </div>
                               <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '2px' }}>
                                 📍 {stadium.city} • 👥 {stadium.capacity?.toLocaleString() || 'Unknown'} capacity
-                                {stadium.name === 'Goodison Park' && (
-                                  <div style={{ fontSize: '0.7rem', color: '#f59e0b', marginTop: '4px', fontStyle: 'italic' }}>
-                                    ℹ️ Everton moving to new stadium in 2024/25 season
-                                  </div>
-                                )}
                               </div>
                             </div>
                           ))}
