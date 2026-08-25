@@ -9,9 +9,35 @@
 
 const https = require('https');
 const fs = require('fs');
+const path = require('path');
 
 // Your existing backend proxy
 const PROXY_BASE = 'https://maprates-proxy.vercel.app/api/fg';
+
+// Manual corrections for venues football-data.org hasn't updated yet, keyed by teamId
+const { _comment: _venueOverridesComment, ...VENUE_OVERRIDES } = JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'venue-overrides.json'), 'utf8')
+);
+
+/**
+ * Apply a manual venue override to a stadium record, if one exists for its teamId
+ */
+function applyVenueOverride(stadium) {
+  const override = VENUE_OVERRIDES[stadium.teamId];
+  if (!override) return stadium;
+
+  console.log(`   🔧 OVERRIDE: ${stadium.teamName} venue → "${override.venue}" (${override.reason})`);
+
+  const venue = override.venue || stadium.venue;
+  const address = override.address || stadium.address;
+
+  return {
+    ...stadium,
+    venue,
+    address,
+    fullAddress: `${venue}, ${address}`
+  };
+}
 
 // Premium competitions to export
 const PREMIUM_COMPETITIONS = [
@@ -126,7 +152,7 @@ async function exportStadiums() {
           fullAddress = team.address;
         }
         
-        return {
+        const stadium = {
           teamId: team.id,
           teamName: team.name,
           shortName: team.shortName || team.name,
@@ -147,6 +173,8 @@ async function exportStadiums() {
             flag: team.area.flag
           } : null
         };
+
+        return applyVenueOverride(stadium);
       });
 
       // Add to output

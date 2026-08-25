@@ -1,0 +1,9 @@
+{
+  "_comment": "Corrections for venues football-data.org has not updated. Their club metadata has lastUpdated 2022. Remove entries once upstream is fixed.",
+  "62": {
+    "venue": "Hill Dickinson Stadium",
+    "address": "Regent Road, Liverpool L3 0BE",
+    "reason": "Everton moved from Goodison Park for the 2025/26 season",
+    "added": "2026-08-25"
+  }
+}
