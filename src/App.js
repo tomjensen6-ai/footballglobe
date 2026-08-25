@@ -1667,7 +1667,7 @@ const FootballGlobe = () => {
       marker.addListener('click', () => {
         const infoWindow = new window.google.maps.InfoWindow({
           content: createProfessionalStadiumPopup(stadium),
-          maxWidth: 350
+          maxWidth: window.innerWidth <= 390 ? 280 : 350
         });
         
         // Close other info windows
@@ -2794,11 +2794,11 @@ const map = new MapCtor(mapRef.current, {
       // Add click listener for stadium details
       marker.addListener('click', () => {
         setSelectedStadium(stadium);
-        
+
         // Create stadium info window
         const infoWindow = new window.google.maps.InfoWindow({
           content: createProfessionalStadiumPopup(stadium),
-          maxWidth: 350
+          maxWidth: window.innerWidth <= 390 ? 280 : 350
         });
         
         // Close other info windows
@@ -2881,18 +2881,35 @@ const map = new MapCtor(mapRef.current, {
       : '';
 
     return `
-      <div style="
+      <style>
+        .stadium-popup-card { width: 320px; }
+        .stadium-popup-card .popup-header { padding: 16px; }
+        .stadium-popup-card .popup-strip { padding: 8px 16px; font-size: 12px; gap: 4px; }
+        .stadium-popup-card .popup-travel { padding: 16px 16px 0; }
+        .stadium-popup-card .popup-travel-buttons { gap: 10px; }
+        .stadium-popup-card .popup-travel-btn { padding: 10px; font-size: 13px; }
+        .stadium-popup-card .popup-footer { padding: 16px; }
+
+        @media (max-width: 390px) {
+          .stadium-popup-card { width: 260px; }
+          .stadium-popup-card .popup-header { padding: 12px; }
+          .stadium-popup-card .popup-strip { padding: 6px 12px; font-size: 11px; gap: 3px; }
+          .stadium-popup-card .popup-travel { padding: 12px 12px 0; }
+          .stadium-popup-card .popup-travel-buttons { gap: 8px; }
+          .stadium-popup-card .popup-travel-btn { padding: 8px 6px; font-size: 12px; }
+          .stadium-popup-card .popup-footer { padding: 12px; }
+        }
+      </style>
+      <div class="stadium-popup-card" style="
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
-        width: 320px;
         background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
         border-radius: 12px;
         overflow: hidden;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
       ">
         <!-- Header with Team Colors -->
-        <div style="
+        <div class="popup-header" style="
           background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-          padding: 16px;
           position: relative;
           overflow: hidden;
         ">
@@ -2943,13 +2960,10 @@ const map = new MapCtor(mapRef.current, {
         </div>
 
         <!-- Context Strip -->
-        <div style="
+        <div class="popup-strip" style="
           display: flex;
           flex-wrap: wrap;
           align-items: center;
-          gap: 4px;
-          padding: 8px 16px;
-          font-size: 12px;
           color: #6b7280;
           background: #fafafa;
           border-bottom: 1px solid #f0f0f0;
@@ -2962,7 +2976,7 @@ const map = new MapCtor(mapRef.current, {
 
         <!-- Travel -->
         ${cityEncoded ? `
-          <div style="padding: 16px 16px 0;">
+          <div class="popup-travel">
             <div style="
               font-size: 10px;
               font-weight: 700;
@@ -2973,37 +2987,37 @@ const map = new MapCtor(mapRef.current, {
             ">
               Plan a trip
             </div>
-            <div style="display: flex; gap: 10px;">
-              <a href="https://www.google.com/travel/flights?q=Flights%20to%20${travelLocation}" target="_blank" rel="noopener noreferrer" style="
+            <div class="popup-travel-buttons" style="display: flex;">
+              <a href="https://www.google.com/travel/flights?q=Flights%20to%20${travelLocation}" target="_blank" rel="noopener noreferrer" class="popup-travel-btn" style="
                 flex: 1;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 gap: 6px;
-                padding: 10px;
+                min-height: 44px;
                 background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
                 color: #ffffff;
-                font-size: 13px;
                 font-weight: 700;
                 border-radius: 8px;
                 text-decoration: none;
+                box-sizing: border-box;
               ">
                 ✈️ Flights
               </a>
 
-              <a href="https://www.google.com/travel/search?q=${travelLocation}" target="_blank" rel="noopener noreferrer" style="
+              <a href="https://www.google.com/travel/search?q=${travelLocation}" target="_blank" rel="noopener noreferrer" class="popup-travel-btn" style="
                 flex: 1;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 gap: 6px;
-                padding: 10px;
+                min-height: 44px;
                 background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
                 color: #ffffff;
-                font-size: 13px;
                 font-weight: 700;
                 border-radius: 8px;
                 text-decoration: none;
+                box-sizing: border-box;
               ">
                 🏨 Hotels
               </a>
@@ -3012,7 +3026,7 @@ const map = new MapCtor(mapRef.current, {
         ` : ''}
 
         <!-- Footer -->
-        <div style="padding: 16px;">
+        <div class="popup-footer">
           <p style="
             margin: 0 0 10px 0;
             font-size: 11px;
@@ -3304,15 +3318,16 @@ const map = new MapCtor(mapRef.current, {
       )}
 
       {/* Main Map Container */}
-      <main style={{ position: 'relative', zIndex: 10, flex: 1, padding: '0 1.5rem 1.5rem' }}>
+      <main className="app-main" style={{ position: 'relative', zIndex: 10, flex: 1, padding: '0 1.5rem 1.5rem' }}>
         <div className="premium-map-container hover-lift" style={{ position: 'relative', borderRadius: '1.5rem', overflow: 'visible', margin: '2rem 0' }}>
           
           {/* Map Container */}
-          <div 
-            ref={mapRef} 
-            style={{ 
+          <div
+            ref={mapRef}
+            className="stadium-map-canvas"
+            style={{
               width: selectedCountry ? 'calc(100% - 400px)' : '100%', // Reserve space for sidebar
-              height: '520px', 
+              height: '520px',
               display: countriesData.length > 0 ? 'block' : 'none',
               pointerEvents: 'auto',
               position: 'relative',
@@ -3404,8 +3419,8 @@ const map = new MapCtor(mapRef.current, {
 
       {/* Country Detail Sidebar */}
       {selectedCountry && !isLoading && (
-        <aside style={{ position: 'fixed', right: 0, top: 0, bottom: 0, width: '24rem', backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', zIndex: 50, transition: 'transform 0.3s' }}>
-          <div style={{ padding: '1.5rem', height: '100%', overflowY: 'auto' }}>
+        <aside className="country-sidebar" style={{ position: 'fixed', right: 0, top: 0, bottom: 0, width: '24rem', backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', zIndex: 50, transition: 'transform 0.3s' }}>
+          <div className="country-sidebar-inner" style={{ padding: '1.5rem', height: '100%', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
               <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
                 <img 
@@ -4099,6 +4114,59 @@ const map = new MapCtor(mapRef.current, {
             background-size: 200% 100%;
             animation: shimmerTop 2s linear infinite;
           }
+
+        /* Portrait phones: stack the map on top (sticky) with the sidebar scrolling below it */
+        @media (max-width: 768px) and (orientation: portrait) {
+          .app-main {
+            padding: 0 !important;
+          }
+
+          .premium-map-container {
+            margin: 0 !important;
+            border-radius: 0 !important;
+            max-height: none !important;
+          }
+
+          .stadium-map-canvas {
+            width: 100% !important;
+            height: 55vh !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 5 !important;
+          }
+
+          .country-sidebar {
+            position: static !important;
+            width: 100% !important;
+            top: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            box-shadow: none !important;
+          }
+
+          .country-sidebar-inner {
+            height: auto !important;
+            max-height: 45vh !important;
+            overflow-y: auto !important;
+          }
+        }
+
+        /* Landscape phones (wide but short): keep the side-by-side layout, but size the map from
+           viewport height instead of the fixed 520px so it fills the available space */
+        @media (orientation: landscape) and (max-height: 500px) {
+          .app-main {
+            padding: 0 1rem 0.5rem !important;
+          }
+
+          .premium-map-container {
+            margin: 0.5rem 0 !important;
+            max-height: none !important;
+          }
+
+          .stadium-map-canvas {
+            height: calc(100vh - 90px) !important;
+          }
+        }
       `}</style>
     </div>
   );
