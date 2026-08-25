@@ -2813,20 +2813,17 @@ const map = new MapCtor(mapRef.current, {
   // NEW FUNCTION: Create stadium info window content
   // PROFESSIONAL 10/10 STADIUM POPUP
   const createProfessionalStadiumPopup = (stadium) => {
-    const capacityFormatted = stadium.capacity && stadium.capacity > 0
-      ? stadium.capacity.toLocaleString() 
-      : 'N/A';
-    
     const teamName = stadium.team || stadium.teamName || 'Unknown Team';
     const stadiumName = stadium.name || stadium.venue || 'Unknown Stadium';
     const address = stadium.address || 'Address not available';
     const league = stadium.leagueName || stadium.league || '';
-    
+
     // Get team crest from cache data
     const teamCrest = stadium.crestUrl || stadium.teamLogo || '';
     const clubColors = stadium.clubColors || '';
     const founded = stadium.founded || '';
-    
+    const addressEncoded = stadium.address ? encodeURIComponent(stadium.address) : '';
+
     return `
       <div style="
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif;
@@ -2915,37 +2912,11 @@ const map = new MapCtor(mapRef.current, {
           
           <!-- Stats Grid -->
           <div style="
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 10px; 
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
             margin-bottom: 14px;
           ">
-            <!-- Capacity -->
-            <div style="
-              background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
-              padding: 10px;
-              border-radius: 8px;
-              border: 1px solid #86efac;
-            ">
-              <div style="
-                color: #166534;
-                font-size: 10px;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                margin-bottom: 4px;
-              ">
-                👥 Capacity
-              </div>
-              <div style="
-                color: #14532d;
-                font-size: 16px;
-                font-weight: 800;
-              ">
-                ${capacityFormatted}
-              </div>
-            </div>
-            
             <!-- League -->
             <div style="
               background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
@@ -2973,7 +2944,73 @@ const map = new MapCtor(mapRef.current, {
               </div>
             </div>
           </div>
-          
+
+          <!-- Travel -->
+          ${addressEncoded ? `
+            <div style="
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 10px;
+              margin-bottom: 14px;
+            ">
+              <a href="https://www.google.com/travel/flights?q=Flights%20to%20${addressEncoded}" target="_blank" rel="noopener noreferrer" style="
+                display: block;
+                background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+                padding: 10px;
+                border-radius: 8px;
+                border: 1px solid #a5b4fc;
+                text-decoration: none;
+                cursor: pointer;
+              ">
+                <div style="
+                  color: #3730a3;
+                  font-size: 10px;
+                  font-weight: 700;
+                  text-transform: uppercase;
+                  letter-spacing: 0.5px;
+                  margin-bottom: 4px;
+                ">
+                  ✈️ Flights
+                </div>
+                <div style="
+                  color: #312e81;
+                  font-size: 12px;
+                  font-weight: 700;
+                ">
+                  Search flights
+                </div>
+              </a>
+
+              <a href="https://www.google.com/travel/hotels/${addressEncoded}" target="_blank" rel="noopener noreferrer" style="
+                display: block;
+                background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+                padding: 10px;
+                border-radius: 8px;
+                border: 1px solid #fdba74;
+                text-decoration: none;
+                cursor: pointer;
+              ">
+                <div style="
+                  color: #9a3412;
+                  font-size: 10px;
+                  font-weight: 700;
+                  text-transform: uppercase;
+                  letter-spacing: 0.5px;
+                  margin-bottom: 4px;
+                ">
+                  🏨 Hotels
+                </div>
+                <div style="
+                  color: #7c2d12;
+                  font-size: 12px;
+                  font-weight: 700;
+                ">
+                  Search hotels
+                </div>
+              </a>
+            </div>
+          ` : ''}
+
           <!-- Additional Info Row -->
           ${founded || clubColors ? `
             <div style="
