@@ -121,6 +121,9 @@ const FootballGlobe = () => {
   const googleMapRef = useRef(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(null);
+  // Mobile-only slide-over drawer state for the country sidebar (desktop ignores this - the
+  // sidebar is a permanent pane there). Starts closed each time a new country is selected.
+  const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false);
   const [hoveredCountry, setHoveredCountry] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [countriesData, setCountriesData] = useState([]);
@@ -146,6 +149,12 @@ const FootballGlobe = () => {
     const [cachedStandings, setCachedStandings] = useState(null);
     const [cacheLoaded, setCacheLoaded] = useState(false);
     const [cacheLoadError, setCacheLoadError] = useState(null);
+
+    // Reset the mobile drawer to closed whenever the selected country changes,
+    // so re-selecting a country always starts with the drawer collapsed.
+    useEffect(() => {
+      setIsSidebarDrawerOpen(false);
+    }, [selectedCountry?.code]);
 
     // ===== UNIFIED MARKER MANAGEMENT =====
     // This ensures ALL markers are cleared regardless of which function created them
@@ -3372,9 +3381,29 @@ const map = new MapCtor(mapRef.current, {
         </div>
       </main>
 
+      {/* Mobile-only floating toggle: opens the sidebar drawer. Hidden whenever no
+          country is selected (nothing to show) or the drawer is already open. */}
+      {selectedCountry && !isLoading && !isSidebarDrawerOpen && (
+        <button
+          className="mobile-drawer-toggle"
+          onClick={() => setIsSidebarDrawerOpen(true)}
+          aria-label={`Show ${stadiumPins.length} stadiums for ${selectedCountry.name}`}
+        >
+          🏟️ {stadiumPins.length}
+        </button>
+      )}
+
+      {/* Mobile-only backdrop: tap outside the drawer to dismiss it */}
+      {selectedCountry && !isLoading && isSidebarDrawerOpen && (
+        <div
+          className="mobile-drawer-backdrop"
+          onClick={() => setIsSidebarDrawerOpen(false)}
+        />
+      )}
+
       {/* Country Detail Sidebar */}
       {selectedCountry && !isLoading && (
-        <aside className="country-sidebar" style={{ position: 'fixed', right: 0, top: 0, bottom: 0, width: '24rem', backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', zIndex: 50, transition: 'transform 0.3s' }}>
+        <aside className={`country-sidebar${isSidebarDrawerOpen ? ' drawer-open' : ''}`} style={{ position: 'fixed', right: 0, top: 0, bottom: 0, width: '24rem', backgroundColor: 'white', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', zIndex: 50, transition: 'transform 0.3s' }}>
           <div className="country-sidebar-inner" style={{ padding: '1.5rem', height: '100%', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
               <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
@@ -3387,14 +3416,25 @@ const map = new MapCtor(mapRef.current, {
                 )}
                 {selectedCountry.name}
               </h2>
-              <button 
+              {/* Desktop: resets to world view (unchanged, permanent-pane behavior) */}
+              <button
+                className="sidebar-reset-btn"
                 onClick={resetMap}
                 style={{ color: '#6b7280', background: 'none', border: 'none', fontSize: '1.5rem', cursor: 'pointer' }}
               >
                 ×
               </button>
+              {/* Mobile: just closes the drawer, keeping the country/stadium data loaded
+                  so the floating toggle re-opens the same view instantly */}
+              <button
+                className="sidebar-drawer-close-btn"
+                onClick={() => setIsSidebarDrawerOpen(false)}
+                aria-label="Close"
+              >
+                ×
+              </button>
             </div>
-            
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               {/* Stadium Overview */}
               <div className="stadium-count-card" style={{ backgroundColor: '#f0fdf4', borderRadius: '0.5rem', padding: '1rem', position: 'relative', overflow: 'hidden' }}>
@@ -4061,6 +4101,51 @@ const map = new MapCtor(mapRef.current, {
           border: 1px solid rgba(34, 197, 94, 0.3);
           color: #22c55e;
         }
+
+        /* Mobile drawer components - hidden by default, shown only under the mobile media
+           query below. Desktop never sees these regardless of the isSidebarDrawerOpen state. */
+        .mobile-drawer-toggle {
+          display: none;
+          position: fixed;
+          top: 50%;
+          right: 0;
+          transform: translateY(-50%);
+          align-items: center;
+          gap: 6px;
+          background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+          color: white;
+          border: none;
+          padding: 10px 14px 10px 12px;
+          border-radius: 999px 0 0 999px;
+          font-weight: 700;
+          font-size: 0.95rem;
+          min-height: 44px;
+          box-shadow: -2px 2px 10px rgba(0, 0, 0, 0.25);
+          z-index: 190;
+          cursor: pointer;
+        }
+
+        .mobile-drawer-backdrop {
+          display: none;
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.45);
+          z-index: 200;
+        }
+
+        .sidebar-drawer-close-btn {
+          display: none;
+          background: none;
+          border: none;
+          color: #6b7280;
+          font-size: 1.5rem;
+          cursor: pointer;
+          min-width: 44px;
+          min-height: 44px;
+          align-items: center;
+          justify-content: center;
+        }
+
         .info-window-enhanced::before {
             content: '';
             position: absolute;
@@ -4072,42 +4157,6 @@ const map = new MapCtor(mapRef.current, {
             background-size: 200% 100%;
             animation: shimmerTop 2s linear infinite;
           }
-
-        /* Portrait phones: stack the map on top (sticky) with the sidebar scrolling below it */
-        @media (max-width: 768px) and (orientation: portrait) {
-          .app-main {
-            padding: 0 !important;
-          }
-
-          .premium-map-container {
-            margin: 0 !important;
-            border-radius: 0 !important;
-            max-height: none !important;
-          }
-
-          .stadium-map-canvas {
-            width: 100% !important;
-            height: 55vh !important;
-            position: sticky !important;
-            top: 0 !important;
-            z-index: 5 !important;
-          }
-
-          .country-sidebar {
-            position: static !important;
-            width: 100% !important;
-            top: auto !important;
-            right: auto !important;
-            bottom: auto !important;
-            box-shadow: none !important;
-          }
-
-          .country-sidebar-inner {
-            height: auto !important;
-            max-height: 45vh !important;
-            overflow-y: auto !important;
-          }
-        }
 
         /* Landscape phones (wide but short): keep the side-by-side layout, but size the map from
            viewport height instead of the fixed 520px so it fills the available space */
@@ -4179,6 +4228,67 @@ const map = new MapCtor(mapRef.current, {
           .country-sidebar-inner th,
           .country-sidebar-inner td {
             padding: 0.4rem 0.3rem !important;
+          }
+        }
+
+        /* Mobile (under 768px wide, either orientation): map fills the full screen below the
+           header, and the sidebar becomes a slide-over drawer instead of a permanent pane.
+           This is more specific than the landscape rule above for any viewport both narrow
+           and short, so it wins the cascade there - the drawer treatment is what we want. */
+        @media (max-width: 767px) {
+          .app-main {
+            padding: 0 !important;
+          }
+
+          .premium-map-container {
+            margin: 0 !important;
+            border-radius: 0 !important;
+            max-height: none !important;
+          }
+
+          .stadium-map-canvas {
+            width: 100% !important;
+            height: calc(100vh - 48px) !important;
+            /* Let Google Maps' own gesture handling own touch drags instead of the browser
+               trying to scroll the page underneath them */
+            touch-action: none;
+          }
+
+          .mobile-drawer-toggle {
+            display: flex !important;
+          }
+
+          .mobile-drawer-backdrop {
+            display: block !important;
+          }
+
+          .country-sidebar {
+            position: fixed !important;
+            top: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 85% !important;
+            max-width: 85% !important;
+            transform: translateX(100%);
+            z-index: 210 !important;
+          }
+
+          .country-sidebar.drawer-open {
+            transform: translateX(0);
+          }
+
+          .country-sidebar-inner {
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+          }
+
+          .sidebar-reset-btn {
+            display: none !important;
+          }
+
+          .sidebar-drawer-close-btn {
+            display: inline-flex !important;
           }
         }
 
