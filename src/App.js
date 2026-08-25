@@ -3324,7 +3324,7 @@ const map = new MapCtor(mapRef.current, {
           {/* Map Container */}
           <div
             ref={mapRef}
-            className="stadium-map-canvas"
+            className={`stadium-map-canvas${selectedCountry ? ' with-sidebar' : ''}`}
             style={{
               width: selectedCountry ? 'calc(100% - 400px)' : '100%', // Reserve space for sidebar
               height: '520px',
@@ -3717,6 +3717,7 @@ const map = new MapCtor(mapRef.current, {
                           {filteredStadiums.slice(0, 10).map((stadium, index) => (
                             <div
                               key={stadium.id}
+                              className="stadium-row"
                               style={{
                                 backgroundColor: selectedStadium?.id === stadium.id ? '#e0f2fe' : '#f9fafb',
                                 borderRadius: '0.5rem',
@@ -3733,7 +3734,7 @@ const map = new MapCtor(mapRef.current, {
                                 }
                               }}
                             >
-                              <div style={{ fontWeight: '500', color: '#1f2937', fontSize: '0.9rem' }}>
+                              <div className="stadium-row-name" style={{ fontWeight: '500', color: '#1f2937', fontSize: '0.9rem' }}>
                                 {stadium.name}
                                 {stadium.team && (
                                   <span style={{ fontWeight: '400', color: '#6b7280', marginLeft: '0.5rem' }}>
@@ -3741,7 +3742,7 @@ const map = new MapCtor(mapRef.current, {
                                   </span>
                                 )}
                               </div>
-                              <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '2px' }}>
+                              <div className="stadium-row-meta" style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '2px' }}>
                                 📍 {stadium.city} • 👥 {stadium.capacity?.toLocaleString() || 'Unknown'} capacity
                               </div>
                             </div>
@@ -4165,6 +4166,62 @@ const map = new MapCtor(mapRef.current, {
 
           .stadium-map-canvas {
             height: calc(100vh - 90px) !important;
+            /* Let Google Maps' own gesture handling own touch drags instead of the browser
+               trying to scroll the page underneath them */
+            touch-action: none;
+          }
+
+          .stadium-map-canvas.with-sidebar {
+            width: 65% !important;
+          }
+
+          .country-sidebar {
+            width: 35% !important;
+          }
+
+          .country-sidebar-inner {
+            padding: 0.75rem !important;
+            touch-action: pan-y;
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain;
+          }
+
+          .country-sidebar-inner h2 {
+            font-size: 1.1rem !important;
+          }
+
+          .country-sidebar-inner h3 {
+            font-size: 0.85rem !important;
+            margin-bottom: 0.5rem !important;
+          }
+
+          .country-sidebar-inner .stadium-count-card {
+            padding: 0.5rem !important;
+          }
+
+          .country-sidebar-inner .stadium-number {
+            font-size: 1.5rem !important;
+          }
+
+          .country-sidebar-inner .stadium-row {
+            padding: 0.4rem 0.5rem !important;
+          }
+
+          .country-sidebar-inner .stadium-row-name {
+            font-size: 0.75rem !important;
+          }
+
+          .country-sidebar-inner .stadium-row-meta {
+            font-size: 0.65rem !important;
+          }
+
+          .country-sidebar-inner table {
+            font-size: 0.7rem !important;
+          }
+
+          .country-sidebar-inner th,
+          .country-sidebar-inner td {
+            padding: 0.4rem 0.3rem !important;
           }
         }
       `}</style>
