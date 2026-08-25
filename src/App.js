@@ -1560,6 +1560,7 @@ const FootballGlobe = () => {
           coordinates: { lat: parseFloat(lat), lng: parseFloat(lng) },
           address: stadium.address || stadium.fullAddress || '',
           city: stadium.city || '',
+          country: stadium.area?.name || '',
           capacity: stadium.capacity || 0,
           leagueName: stadium.leagueName,
           leagueId: stadium.leagueId,
@@ -1674,6 +1675,10 @@ const FootballGlobe = () => {
           window.currentStadiumInfoWindow.close();
         }
         
+        window.google.maps.event.addListenerOnce(infoWindow, 'domready', () => {
+          injectStadiumWeather(stadium);
+        });
+
         infoWindow.open(googleMapRef.current, marker);
         window.currentStadiumInfoWindow = infoWindow;
       });
@@ -2801,6 +2806,10 @@ const map = new MapCtor(mapRef.current, {
           window.currentStadiumInfoWindow.close();
         }
         
+        window.google.maps.event.addListenerOnce(infoWindow, 'domready', () => {
+          injectStadiumWeather(stadium);
+        });
+
         infoWindow.open(map, marker);
         window.currentStadiumInfoWindow = infoWindow;
       });
@@ -2813,6 +2822,47 @@ const map = new MapCtor(mapRef.current, {
 
   // NEW FUNCTION: Create stadium info window content
   // PROFESSIONAL 10/10 STADIUM POPUP
+  // Map a WMO weather code (Open-Meteo) to a representative emoji
+  const getWeatherEmoji = (code) => {
+    if (code === 0) return '☀️';
+    if (code >= 1 && code <= 3) return '⛅';
+    if (code === 45 || code === 48) return '🌫️';
+    if (code >= 51 && code <= 67) return '🌧️';
+    if (code >= 71 && code <= 77) return '❄️';
+    if (code >= 80 && code <= 82) return '🌦️';
+    if (code >= 95 && code <= 99) return '⛈️';
+    return '🌡️';
+  };
+
+  // NEW FUNCTION: Fetch current weather for a stadium and inject it into the open InfoWindow.
+  // The popup is an HTML string handed to Google Maps, so weather can't be rendered inline -
+  // it has to be fetched after the window opens and patched into the DOM.
+  const injectStadiumWeather = async (stadium) => {
+    const lat = stadium.coordinates?.lat ?? stadium.lat;
+    const lng = stadium.coordinates?.lng ?? stadium.lng;
+    if (lat == null || lng == null) return;
+
+    try {
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code`
+      );
+      if (!response.ok) return;
+
+      const data = await response.json();
+      const temperature = data?.current?.temperature_2m;
+      const weatherCode = data?.current?.weather_code;
+      if (temperature == null || weatherCode == null) return;
+
+      const strip = document.getElementById('stadium-weather-strip');
+      if (!strip) return;
+
+      strip.innerHTML = `· <a href="https://www.windy.com/?${lat},${lng},11" target="_blank" rel="noopener noreferrer" style="color: #0284c7; text-decoration: none; font-weight: 600;">${getWeatherEmoji(weatherCode)} ${Math.round(temperature)}°C</a>`;
+      strip.style.display = 'inline';
+    } catch (err) {
+      // Fetch failed (offline, CORS, etc) - leave the strip item hidden rather than showing an error
+    }
+  };
+
   const createProfessionalStadiumPopup = (stadium) => {
     const teamName = stadium.team || stadium.teamName || 'Unknown Team';
     const stadiumName = stadium.name || stadium.venue || 'Unknown Stadium';
@@ -2823,7 +2873,12 @@ const map = new MapCtor(mapRef.current, {
     const teamCrest = stadium.crestUrl || stadium.teamLogo || '';
     const clubColors = stadium.clubColors || '';
     const founded = stadium.founded || '';
-    const cityEncoded = stadium.city ? encodeURIComponent(stadium.city) : '';
+    const city = stadium.city || '';
+    const cityEncoded = city ? encodeURIComponent(city) : '';
+    const countryEncoded = stadium.country ? encodeURIComponent(stadium.country) : '';
+    const travelLocation = cityEncoded
+      ? (countryEncoded ? `${cityEncoded}%2C%20${countryEncoded}` : cityEncoded)
+      : '';
 
     return `
       <div style="
@@ -2878,204 +2933,93 @@ const map = new MapCtor(mapRef.current, {
                 text-shadow: 0 1px 2px rgba(0,0,0,0.2);
               ">${stadiumName}</h3>
               <p style="
-                margin: 0; 
-                color: rgba(255,255,255,0.95); 
-                font-size: 13px; 
+                margin: 0;
+                color: rgba(255,255,255,0.95);
+                font-size: 13px;
                 font-weight: 500;
-              ">⚽ ${teamName}</p>
+              ">${teamName}${league ? ` · ${league}` : ''}</p>
             </div>
           </div>
         </div>
-        
-        <!-- Main Content -->
+
+        <!-- Context Strip -->
+        <div style="
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 4px;
+          padding: 8px 16px;
+          font-size: 12px;
+          color: #6b7280;
+          background: #fafafa;
+          border-bottom: 1px solid #f0f0f0;
+        ">
+          ${city ? `<span>📍 ${city}</span>` : ''}
+          <span id="stadium-weather-strip" style="display: none;"></span>
+          ${founded ? `<span>· 📅 ${founded}</span>` : ''}
+          ${clubColors ? `<span>· 👕 ${clubColors}</span>` : ''}
+        </div>
+
+        <!-- Travel -->
+        ${cityEncoded ? `
+          <div style="padding: 16px 16px 0;">
+            <div style="
+              font-size: 10px;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              color: #9ca3af;
+              margin-bottom: 8px;
+            ">
+              Plan a trip
+            </div>
+            <div style="display: flex; gap: 10px;">
+              <a href="https://www.google.com/travel/flights?q=Flights%20to%20${travelLocation}" target="_blank" rel="noopener noreferrer" style="
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                padding: 10px;
+                background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+                color: #ffffff;
+                font-size: 13px;
+                font-weight: 700;
+                border-radius: 8px;
+                text-decoration: none;
+              ">
+                ✈️ Flights
+              </a>
+
+              <a href="https://www.google.com/travel/search?q=${travelLocation}" target="_blank" rel="noopener noreferrer" style="
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                padding: 10px;
+                background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
+                color: #ffffff;
+                font-size: 13px;
+                font-weight: 700;
+                border-radius: 8px;
+                text-decoration: none;
+              ">
+                🏨 Hotels
+              </a>
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Footer -->
         <div style="padding: 16px;">
-          
-          <!-- Location -->
-          <div style="
-            display: flex;
-            align-items: start;
-            gap: 8px;
-            margin-bottom: 14px;
-            padding: 10px;
-            background: #f0f9ff;
-            border-radius: 8px;
-            border-left: 3px solid #3b82f6;
-          ">
-            <span style="font-size: 14px;">📍</span>
-            <p style="
-              margin: 0;
-              color: #1e40af;
-              font-size: 12px;
-              line-height: 1.5;
-              font-weight: 500;
-            ">${address}</p>
-          </div>
-          
-          <!-- Stats Grid -->
-          <div style="
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 10px;
-            margin-bottom: 14px;
-          ">
-            <!-- League -->
-            <div style="
-              background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
-              padding: 10px;
-              border-radius: 8px;
-              border: 1px solid #93c5fd;
-            ">
-              <div style="
-                color: #1e40af;
-                font-size: 10px;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.5px;
-                margin-bottom: 4px;
-              ">
-                🏆 League
-              </div>
-              <div style="
-                color: #1e3a8a;
-                font-size: 11px;
-                font-weight: 700;
-                line-height: 1.3;
-              ">
-                ${league || 'N/A'}
-              </div>
-            </div>
-          </div>
+          <p style="
+            margin: 0 0 10px 0;
+            font-size: 11px;
+            color: #9ca3af;
+            line-height: 1.4;
+          ">${address}</p>
 
-          <!-- Travel -->
-          ${cityEncoded ? `
-            <div style="
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 10px;
-              margin-bottom: 14px;
-            ">
-              <a href="https://www.google.com/travel/flights?q=Flights%20to%20${cityEncoded}" target="_blank" rel="noopener noreferrer" style="
-                display: block;
-                background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
-                padding: 10px;
-                border-radius: 8px;
-                border: 1px solid #a5b4fc;
-                text-decoration: none;
-                cursor: pointer;
-              ">
-                <div style="
-                  color: #3730a3;
-                  font-size: 10px;
-                  font-weight: 700;
-                  text-transform: uppercase;
-                  letter-spacing: 0.5px;
-                  margin-bottom: 4px;
-                ">
-                  ✈️ Flights
-                </div>
-                <div style="
-                  color: #312e81;
-                  font-size: 12px;
-                  font-weight: 700;
-                ">
-                  Search flights
-                </div>
-              </a>
-
-              <a href="https://www.google.com/travel/hotels/${cityEncoded}" target="_blank" rel="noopener noreferrer" style="
-                display: block;
-                background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
-                padding: 10px;
-                border-radius: 8px;
-                border: 1px solid #fdba74;
-                text-decoration: none;
-                cursor: pointer;
-              ">
-                <div style="
-                  color: #9a3412;
-                  font-size: 10px;
-                  font-weight: 700;
-                  text-transform: uppercase;
-                  letter-spacing: 0.5px;
-                  margin-bottom: 4px;
-                ">
-                  🏨 Hotels
-                </div>
-                <div style="
-                  color: #7c2d12;
-                  font-size: 12px;
-                  font-weight: 700;
-                ">
-                  Search hotels
-                </div>
-              </a>
-            </div>
-          ` : ''}
-
-          <!-- Additional Info Row -->
-          ${founded || clubColors ? `
-            <div style="
-              display: flex;
-              gap: 10px;
-              margin-bottom: 14px;
-            ">
-              ${founded ? `
-                <div style="
-                  flex: 1;
-                  background: #fef3c7;
-                  padding: 8px;
-                  border-radius: 6px;
-                  border: 1px solid #fde047;
-                ">
-                  <div style="
-                    color: #854d0e;
-                    font-size: 9px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    margin-bottom: 2px;
-                  ">
-                    📅 Founded
-                  </div>
-                  <div style="
-                    color: #422006;
-                    font-size: 13px;
-                    font-weight: 700;
-                  ">
-                    ${founded}
-                  </div>
-                </div>
-              ` : ''}
-              
-              ${clubColors ? `
-                <div style="
-                  flex: 1;
-                  background: #fce7f3;
-                  padding: 8px;
-                  border-radius: 6px;
-                  border: 1px solid #fbcfe8;
-                ">
-                  <div style="
-                    color: #831843;
-                    font-size: 9px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    margin-bottom: 2px;
-                  ">
-                    🎨 Colors
-                  </div>
-                  <div style="
-                    color: #500724;
-                    font-size: 11px;
-                    font-weight: 700;
-                  ">
-                    ${clubColors}
-                  </div>
-                </div>
-              ` : ''}
-            </div>
-          ` : ''}
-          
-          <!-- Footer Badge -->
           <div style="
             background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
             padding: 8px 12px;
