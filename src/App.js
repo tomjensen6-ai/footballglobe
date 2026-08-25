@@ -22,24 +22,6 @@ const CACHE_CONFIG = {
   enableProgressiveLoading: true
 };
 
-// Map Football-Data.org codes to REST Countries codes
-const COUNTRY_CODE_MAP = {
-  'ENG': 'GBR',  // England → Great Britain
-  'SCO': 'GBR',  // Scotland → Great Britain
-  'WAL': 'GBR',  // Wales → Great Britain
-  'NIR': 'GBR',  // Northern Ireland → Great Britain
-  'DEU': 'DEU',  // Germany (same)
-  'FRA': 'FRA',  // France (same)
-  'ESP': 'ESP',  // Spain (same)
-  'ITA': 'ITA',  // Italy (same)
-  'BRA': 'BRA',  // Brazil (same)
-  'ARG': 'ARG',  // Argentina (same)
-  'NLD': 'NLD',  // Netherlands (same)
-  'POR': 'POR',  // Portugal (same)
-  'BEL': 'BEL',  // Belgium (same)
-  'INT': 'WRL'   // International → World
-};
-
 // Map Google's 2-letter codes to Football-Data.org's 3-letter codes
 const GOOGLE_TO_FOOTBALL_CODE = {
   'GB': 'ENG',  // Google's GB → Football's ENG
@@ -57,11 +39,6 @@ const GOOGLE_TO_FOOTBALL_CODE = {
 // Helper to convert Google code to Football code
 const googleToFootballCode = (googleCode) => {
   return GOOGLE_TO_FOOTBALL_CODE[googleCode] || googleCode;
-};
-
-// Helper function to get REST Countries code
-const getRestCountriesCode = (footballCode) => {
-  return COUNTRY_CODE_MAP[footballCode] || footballCode;
 };
 
 // ===== NEW: Translate country NAME to code =====
@@ -693,7 +670,7 @@ const FootballGlobe = () => {
           id: country.code || country.name.replace(/\s+/g, ''),
           name: country.name,
           code: country.code,
-          flag: country.flag || await getFlagFromRestCountries(country.code),
+          flag: country.flag || null, // football-data.org's area.flag; no flag URL means render nothing
           stadiums: country.competitions ? country.competitions.length * 10 : 0, // Estimate
           topLeagues: competitionNames,
           competitions: country.competitions || [],
@@ -704,29 +681,6 @@ const FootballGlobe = () => {
     }
     
     return processedCountries;
-  };
-
-
-
-
-  // API-driven flag fallback
-  const getFlagFromRestCountries = async (countryCode) => {
-    try {
-      if (!countryCode) return '🏳️';
-      
-      const restCode = getRestCountriesCode(countryCode);
-      const response = await fetch(`https://restcountries.com/v3.1/alpha/${restCode}`);
-      if (response.ok) {
-        const data = await response.json();
-        // REST Countries API provides emoji flags in the 'flag' field
-        return data[0]?.flag || '🏳️';
-      }
-      
-      return '🏳️';
-    } catch (error) {
-      console.warn(`Flag lookup failed for ${countryCode}:`, error);
-      return '🏳️'; // Unicode fallback only if API fails
-    }
   };
 
     // Get leagues for country (NO HARDCODING)
@@ -2145,8 +2099,7 @@ const map = new MapCtor(mapRef.current, {
                 matchingCountry = {
                   name: detectedCountryName,
                   code: detectedCountryCode,
-                  flag: await getFlagFromRestCountries(detectedCountryCode),
-                  ...onDemandData
+                  ...onDemandData // Contains flag, stadiums, topLeagues, competitions, etc.
                 };
               }
             }
@@ -2615,6 +2568,7 @@ const map = new MapCtor(mapRef.current, {
         const countryData = {
           name: countryName || countryCode,
           code: countryCode,
+          flag: country?.flag || null, // football-data.org's area.flag; no flag URL means render nothing
           stadiums: competitions.length * 10, // Estimate
           topLeagues: competitions.slice(0, 2).map(c => c.name),
           hasWomensLeagues: false, // Football-Data.org doesn't have women's data
@@ -3424,11 +3378,13 @@ const map = new MapCtor(mapRef.current, {
           <div className="country-sidebar-inner" style={{ padding: '1.5rem', height: '100%', overflowY: 'auto' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
               <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
-                <img 
-                  src={selectedCountry.flag} 
-                  alt={selectedCountry.name}
-                  style={{ width: '32px', height: '24px', marginRight: '8px', borderRadius: '2px' }}
-                />
+                {selectedCountry.flag && (
+                  <img
+                    src={selectedCountry.flag}
+                    alt={selectedCountry.name}
+                    style={{ width: '32px', height: '24px', marginRight: '8px', borderRadius: '2px' }}
+                  />
+                )}
                 {selectedCountry.name}
               </h2>
               <button 
