@@ -4146,6 +4146,30 @@ const map = new MapCtor(mapRef.current, {
           justify-content: center;
         }
 
+        /* Google Maps InfoWindow chrome: collapse the reserved close-button row (the source of
+           the large blank area above the card) and let the window size to its content up to
+           85vh instead of Google's own computed max-height. The stadium popup has no close
+           button of its own, so the native "x" stays - it just no longer reserves layout space. */
+        .gm-style .gm-style-iw-c {
+          padding: 0 !important;
+        }
+
+        .gm-style .gm-style-iw-d {
+          overflow: visible !important;
+          max-height: 85vh !important;
+        }
+
+        .gm-style .gm-style-iw-chr {
+          height: 0 !important;
+          min-height: 0 !important;
+          overflow: visible !important;
+        }
+
+        .gm-style .gm-style-iw-chr button.gm-ui-hover-effect {
+          top: 4px !important;
+          right: 4px !important;
+        }
+
         .info-window-enhanced::before {
             content: '';
             position: absolute;
