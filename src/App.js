@@ -3174,14 +3174,15 @@ const map = new MapCtor(mapRef.current, {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-  <img 
+  <img
     src="/footballglobe-logo.png"
-    alt="FootballGlobe Logo" 
+    alt="FootballGlobe Logo"
+    className="header-logo"
     style={{ width: '60px', height: '60px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }}
   />
-    <h1 style={{ 
-        fontSize: '2.5rem', 
-        fontWeight: '800', 
+    <h1 className="header-title" style={{
+        fontSize: '2.5rem',
+        fontWeight: '800',
         background: 'linear-gradient(135deg, #ffffff 0%, #22c55e 100%)',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
@@ -3192,7 +3193,7 @@ const map = new MapCtor(mapRef.current, {
       FootballGlobe
     </h1>
   </div>
-            <p style={{ fontSize: '1.125rem', color: 'rgba(255,255,255,0.9)', fontWeight: '500' }}>
+            <p className="header-tagline" style={{ fontSize: '1.125rem', color: 'rgba(255,255,255,0.9)', fontWeight: '500' }}>
               Dream Away - Discover Football Worldwide
             </p>
           </div>
@@ -3216,10 +3217,10 @@ const map = new MapCtor(mapRef.current, {
           )}
         </div>
         
-        <div style={{ 
-            marginTop: '1rem', 
-            display: 'flex', 
-            flexWrap: 'wrap', 
+        <div className="header-badges" style={{
+            marginTop: '1rem',
+            display: 'flex',
+            flexWrap: 'wrap',
             gap: '0.75rem'
           }}>
           <div className="stats-badge" style={{ padding: '0.5rem 1rem', borderRadius: '2rem', fontSize: '0.875rem', fontWeight: '500' }}>
@@ -3249,7 +3250,7 @@ const map = new MapCtor(mapRef.current, {
         
         {/* Journey Mode Selector - Only show in world view */}
         {!selectedCountry && (
-          <div style={{ marginTop: '1rem' }}>
+          <div className="header-journey" style={{ marginTop: '1rem' }}>
             <select 
               value={currentJourney?.id || ''}
               onChange={(e) => {
@@ -3870,7 +3871,7 @@ const map = new MapCtor(mapRef.current, {
       )}
 
       {/* Footer */}
-      <footer style={{ 
+      <footer className="hover-tooltip-footer" style={{
         position: 'fixed',
         bottom: '10px',
         left: '50%',
@@ -4222,6 +4223,35 @@ const map = new MapCtor(mapRef.current, {
           .country-sidebar-inner th,
           .country-sidebar-inner td {
             padding: 0.4rem 0.3rem !important;
+          }
+        }
+
+        /* Compact header: under 768px wide OR under 500px tall (covers both portrait and
+           landscape phones) - collapse to a single ~44px bar with just the logo and title */
+        @media (max-width: 767px), (max-height: 499px) {
+          .premium-header {
+            padding: 0.5rem 1rem !important;
+          }
+
+          .header-logo {
+            width: 28px !important;
+            height: 28px !important;
+          }
+
+          .header-title {
+            font-size: 1.1rem !important;
+            margin-bottom: 0 !important;
+          }
+
+          .header-tagline,
+          .header-badges,
+          .header-journey {
+            display: none !important;
+          }
+
+          /* References hovering, which doesn't exist on touch */
+          .hover-tooltip-footer {
+            display: none !important;
           }
         }
       `}</style>
