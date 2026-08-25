@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-23",
+  "lastUpdated": "2026-08-25",
   "season": "2024-2025",
   "source": "football-data.org",
   "exportMethod": "maprates-proxy",
@@ -33,7 +33,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "London"
             },
             {
               "teamId": 58,
@@ -53,7 +54,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Birmingham"
             },
             {
               "teamId": 61,
@@ -73,7 +75,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "London"
             },
             {
               "teamId": 62,
@@ -93,7 +96,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Liverpool"
             },
             {
               "teamId": 63,
@@ -113,7 +117,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "London"
             },
             {
               "teamId": 64,
@@ -133,7 +138,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Liverpool"
             },
             {
               "teamId": 65,
@@ -153,7 +159,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Manchester"
             },
             {
               "teamId": 66,
@@ -173,7 +180,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Stretford"
             },
             {
               "teamId": 67,
@@ -193,7 +201,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Newcastle upon Tyne"
             },
             {
               "teamId": 71,
@@ -213,7 +222,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Sunderland"
             },
             {
               "teamId": 73,
@@ -233,7 +243,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "London"
             },
             {
               "teamId": 322,
@@ -253,7 +264,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Kingston upon Hull"
             },
             {
               "teamId": 341,
@@ -273,7 +285,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Leeds"
             },
             {
               "teamId": 349,
@@ -293,7 +306,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Ipswich"
             },
             {
               "teamId": 351,
@@ -313,7 +327,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "West Bridgford"
             },
             {
               "teamId": 354,
@@ -333,7 +348,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "London"
             },
             {
               "teamId": 397,
@@ -353,7 +369,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Brighton and Hove"
             },
             {
               "teamId": 402,
@@ -373,7 +390,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Brentford"
             },
             {
               "teamId": 1044,
@@ -393,7 +411,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Bournemouth"
             },
             {
               "teamId": 1076,
@@ -413,7 +432,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Coventry"
             }
           ]
         },
@@ -439,7 +459,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Blackburn"
             },
             {
               "teamId": 60,
@@ -459,7 +480,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Horwich"
             },
             {
               "teamId": 68,
@@ -479,7 +501,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Norwich"
             },
             {
               "teamId": 69,
@@ -499,7 +522,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "London"
             },
             {
               "teamId": 70,
@@ -519,7 +543,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Stoke-on-Trent"
             },
             {
               "teamId": 72,
@@ -539,7 +564,8 @@
                 "name": "Wales",
                 "code": "WAL",
                 "flag": "https://crests.football-data.org/833.svg"
-              }
+              },
+              "city": "Plasmarl"
             },
             {
               "teamId": 74,
@@ -559,7 +585,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "West Bromwich"
             },
             {
               "teamId": 76,
@@ -579,7 +606,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Wolverhampton"
             },
             {
               "teamId": 325,
@@ -599,7 +627,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Portsmouth"
             },
             {
               "teamId": 328,
@@ -619,7 +648,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Burnley"
             },
             {
               "teamId": 332,
@@ -639,7 +669,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Birmingham"
             },
             {
               "teamId": 340,
@@ -659,7 +690,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Southampton"
             },
             {
               "teamId": 342,
@@ -679,7 +711,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Derby"
             },
             {
               "teamId": 343,
@@ -699,7 +732,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Middlesbrough"
             },
             {
               "teamId": 346,
@@ -719,7 +753,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Watford"
             },
             {
               "teamId": 348,
@@ -739,7 +774,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "London"
             },
             {
               "teamId": 356,
@@ -759,7 +795,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Sheffield"
             },
             {
               "teamId": 384,
@@ -779,7 +816,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "London"
             },
             {
               "teamId": 387,
@@ -799,7 +837,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Bristol"
             },
             {
               "teamId": 404,
@@ -819,7 +858,8 @@
                 "name": "Wales",
                 "code": "WAL",
                 "flag": "https://crests.football-data.org/833.svg"
-              }
+              },
+              "city": "Wrexham"
             },
             {
               "teamId": 563,
@@ -839,7 +879,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "London"
             },
             {
               "teamId": 715,
@@ -859,7 +900,8 @@
                 "name": "Wales",
                 "code": "WAL",
                 "flag": "https://crests.football-data.org/833.svg"
-              }
+              },
+              "city": "Cardiff"
             },
             {
               "teamId": 1081,
@@ -879,7 +921,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Preston"
             },
             {
               "teamId": 1126,
@@ -899,7 +942,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Lincoln"
             }
           ]
         }
@@ -931,7 +975,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Bilbao"
             },
             {
               "teamId": 78,
@@ -951,7 +996,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Madrid"
             },
             {
               "teamId": 79,
@@ -971,7 +1017,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Pamplona"
             },
             {
               "teamId": 80,
@@ -991,7 +1038,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Cornellà de Llobregat"
             },
             {
               "teamId": 81,
@@ -1011,7 +1059,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Barcelona"
             },
             {
               "teamId": 82,
@@ -1031,7 +1080,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Getafe"
             },
             {
               "teamId": 84,
@@ -1051,7 +1101,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Málaga"
             },
             {
               "teamId": 86,
@@ -1071,7 +1122,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Madrid"
             },
             {
               "teamId": 87,
@@ -1091,7 +1143,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Madrid"
             },
             {
               "teamId": 88,
@@ -1111,7 +1164,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "València"
             },
             {
               "teamId": 90,
@@ -1131,7 +1185,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Sevilla"
             },
             {
               "teamId": 92,
@@ -1151,7 +1206,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Donostia / San Sebastián"
             },
             {
               "teamId": 94,
@@ -1171,7 +1227,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Vila-real"
             },
             {
               "teamId": 95,
@@ -1191,7 +1248,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "València"
             },
             {
               "teamId": 263,
@@ -1211,7 +1269,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Vitoria-Gasteiz"
             },
             {
               "teamId": 285,
@@ -1231,7 +1290,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Elx"
             },
             {
               "teamId": 558,
@@ -1251,7 +1311,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Vigo"
             },
             {
               "teamId": 559,
@@ -1271,7 +1332,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Sevilla"
             },
             {
               "teamId": 560,
@@ -1291,7 +1353,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "A Coruña"
             },
             {
               "teamId": 5335,
@@ -1311,7 +1374,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Santander"
             }
           ]
         }
@@ -1343,7 +1407,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Köln"
             },
             {
               "teamId": 2,
@@ -1363,7 +1428,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Zuzenhausen"
             },
             {
               "teamId": 3,
@@ -1383,7 +1449,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Leverkusen"
             },
             {
               "teamId": 4,
@@ -1403,7 +1470,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Dortmund"
             },
             {
               "teamId": 5,
@@ -1423,7 +1491,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "München"
             },
             {
               "teamId": 6,
@@ -1443,7 +1512,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Gelsenkirchen"
             },
             {
               "teamId": 7,
@@ -1463,7 +1533,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Hamburg"
             },
             {
               "teamId": 10,
@@ -1483,7 +1554,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Stuttgart"
             },
             {
               "teamId": 12,
@@ -1503,7 +1575,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Bremen"
             },
             {
               "teamId": 15,
@@ -1523,7 +1596,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Mainz"
             },
             {
               "teamId": 16,
@@ -1543,7 +1617,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Augsburg"
             },
             {
               "teamId": 17,
@@ -1563,7 +1638,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Freiburg im Breisgau"
             },
             {
               "teamId": 18,
@@ -1583,7 +1659,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Mönchengladbach"
             },
             {
               "teamId": 19,
@@ -1603,7 +1680,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Frankfurt am Main"
             },
             {
               "teamId": 28,
@@ -1623,7 +1701,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Berlin"
             },
             {
               "teamId": 29,
@@ -1643,7 +1722,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Paderborn"
             },
             {
               "teamId": 719,
@@ -1663,7 +1743,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Spiesen-Elversberg"
             },
             {
               "teamId": 721,
@@ -1683,7 +1764,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Leipzig"
             }
           ]
         }
@@ -1715,7 +1797,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Milano"
             },
             {
               "teamId": 99,
@@ -1735,7 +1818,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Firenze"
             },
             {
               "teamId": 100,
@@ -1755,7 +1839,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Roma"
             },
             {
               "teamId": 102,
@@ -1775,7 +1860,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Zingonia"
             },
             {
               "teamId": 103,
@@ -1795,7 +1881,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Bologna"
             },
             {
               "teamId": 104,
@@ -1815,7 +1902,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Cagliari"
             },
             {
               "teamId": 107,
@@ -1835,7 +1923,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Genova"
             },
             {
               "teamId": 108,
@@ -1855,7 +1944,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Milano"
             },
             {
               "teamId": 109,
@@ -1875,7 +1965,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Torino"
             },
             {
               "teamId": 110,
@@ -1895,7 +1986,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Città metropolitana di Roma Capitale"
             },
             {
               "teamId": 112,
@@ -1915,7 +2007,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Parma"
             },
             {
               "teamId": 113,
@@ -1935,7 +2028,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Province of Caserta"
             },
             {
               "teamId": 115,
@@ -1955,7 +2049,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Ente di decentramento regionale di Udine"
             },
             {
               "teamId": 454,
@@ -1975,7 +2070,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Venezia"
             },
             {
               "teamId": 470,
@@ -1995,7 +2091,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Frosinone"
             },
             {
               "teamId": 471,
@@ -2015,7 +2112,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Sassuolo"
             },
             {
               "teamId": 586,
@@ -2035,7 +2133,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Torino"
             },
             {
               "teamId": 5890,
@@ -2055,7 +2154,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Lecce"
             },
             {
               "teamId": 5911,
@@ -2075,7 +2175,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Monza"
             },
             {
               "teamId": 7397,
@@ -2095,7 +2196,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Como"
             }
           ]
         }
@@ -2127,7 +2229,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Toulouse"
             },
             {
               "teamId": 512,
@@ -2147,7 +2250,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Brest"
             },
             {
               "teamId": 516,
@@ -2167,7 +2271,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Marseille"
             },
             {
               "teamId": 519,
@@ -2187,7 +2292,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Auxerre"
             },
             {
               "teamId": 521,
@@ -2207,7 +2313,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Camphin-en-Pévèle"
             },
             {
               "teamId": 522,
@@ -2227,7 +2334,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Nice"
             },
             {
               "teamId": 523,
@@ -2247,7 +2355,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Lyon"
             },
             {
               "teamId": 524,
@@ -2267,7 +2376,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Paris"
             },
             {
               "teamId": 525,
@@ -2287,7 +2397,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Lorient"
             },
             {
               "teamId": 529,
@@ -2307,7 +2418,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Rennes"
             },
             {
               "teamId": 531,
@@ -2327,7 +2439,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Pont-Sainte-Marie"
             },
             {
               "teamId": 532,
@@ -2347,7 +2460,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Angers"
             },
             {
               "teamId": 533,
@@ -2367,7 +2481,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Saint Laurent de Brévedent - Harfleur"
             },
             {
               "teamId": 535,
@@ -2387,7 +2502,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Mulsanne"
             },
             {
               "teamId": 546,
@@ -2407,7 +2523,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Avion"
             },
             {
               "teamId": 548,
@@ -2427,7 +2544,8 @@
                 "name": "Monaco",
                 "code": "MCO",
                 "flag": null
-              }
+              },
+              "city": "Monaco"
             },
             {
               "teamId": 576,
@@ -2447,7 +2565,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Strasbourg"
             },
             {
               "teamId": 1045,
@@ -2467,7 +2586,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Paris"
             }
           ]
         }
@@ -2499,7 +2619,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Enschede"
             },
             {
               "teamId": 670,
@@ -2519,7 +2640,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Rotterdam"
             },
             {
               "teamId": 672,
@@ -2539,7 +2661,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Tilburg"
             },
             {
               "teamId": 673,
@@ -2559,7 +2682,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Heerenveen"
             },
             {
               "teamId": 674,
@@ -2579,7 +2703,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Eindhoven"
             },
             {
               "teamId": 675,
@@ -2599,7 +2724,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Rotterdam"
             },
             {
               "teamId": 676,
@@ -2619,7 +2745,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Utrecht"
             },
             {
               "teamId": 677,
@@ -2639,7 +2766,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Groningen"
             },
             {
               "teamId": 678,
@@ -2659,7 +2787,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Amsterdam"
             },
             {
               "teamId": 680,
@@ -2679,7 +2808,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Den Haag"
             },
             {
               "teamId": 682,
@@ -2699,7 +2829,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Alkmaar"
             },
             {
               "teamId": 684,
@@ -2719,7 +2850,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Zwolle"
             },
             {
               "teamId": 718,
@@ -2739,7 +2871,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Deventer"
             },
             {
               "teamId": 1909,
@@ -2759,7 +2892,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Leeuwarden"
             },
             {
               "teamId": 1912,
@@ -2779,7 +2913,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Velsen-Zuid"
             },
             {
               "teamId": 1915,
@@ -2799,7 +2934,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Nijmegen"
             },
             {
               "teamId": 1920,
@@ -2819,7 +2955,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Sittard"
             },
             {
               "teamId": 6806,
@@ -2839,7 +2976,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Rotterdam"
             }
           ]
         }
@@ -2871,7 +3009,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Vila do Conde"
             },
             {
               "teamId": 498,
@@ -2891,7 +3030,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Lisbon"
             },
             {
               "teamId": 503,
@@ -2911,7 +3051,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Porto"
             },
             {
               "teamId": 582,
@@ -2931,7 +3072,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Estoril"
             },
             {
               "teamId": 583,
@@ -2951,7 +3093,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Guimarães"
             },
             {
               "teamId": 712,
@@ -2971,7 +3114,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Arouca"
             },
             {
               "teamId": 1903,
@@ -2991,7 +3135,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Lisboa"
             },
             {
               "teamId": 5527,
@@ -3011,7 +3156,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Viseu"
             },
             {
               "teamId": 5529,
@@ -3031,7 +3177,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Funchal"
             },
             {
               "teamId": 5530,
@@ -3051,7 +3198,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Ponta Delgada"
             },
             {
               "teamId": 5531,
@@ -3071,7 +3219,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Vila Nova de Famalicão"
             },
             {
               "teamId": 5533,
@@ -3091,7 +3240,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Barcelos"
             },
             {
               "teamId": 5543,
@@ -3111,7 +3261,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Guimarães"
             },
             {
               "teamId": 5575,
@@ -3131,7 +3282,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Funchal"
             },
             {
               "teamId": 5613,
@@ -3151,7 +3303,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Braga"
             },
             {
               "teamId": 6618,
@@ -3171,7 +3324,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Lisboa"
             },
             {
               "teamId": 7822,
@@ -3191,7 +3345,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Alverca do Ribatejo"
             },
             {
               "teamId": 9136,
@@ -3243,7 +3398,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Rio de Janeiro"
             },
             {
               "teamId": 1766,
@@ -3263,7 +3419,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Belo Horizonte"
             },
             {
               "teamId": 1767,
@@ -3283,7 +3440,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Porto Alegre"
             },
             {
               "teamId": 1768,
@@ -3303,7 +3461,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Curitiba"
             },
             {
               "teamId": 1769,
@@ -3323,7 +3482,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "São Paulo"
             },
             {
               "teamId": 1770,
@@ -3343,7 +3503,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Rio de Janeiro"
             },
             {
               "teamId": 1771,
@@ -3363,7 +3524,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Belo Horizonte"
             },
             {
               "teamId": 1772,
@@ -3383,7 +3545,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Chapecó"
             },
             {
               "teamId": 1776,
@@ -3403,7 +3566,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "São Paulo"
             },
             {
               "teamId": 1777,
@@ -3423,7 +3587,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Salvador"
             },
             {
               "teamId": 1779,
@@ -3443,7 +3608,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "São Paulo"
             },
             {
               "teamId": 1780,
@@ -3463,7 +3629,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Rio de Janeiro"
             },
             {
               "teamId": 1782,
@@ -3483,7 +3650,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Salvador"
             },
             {
               "teamId": 1783,
@@ -3503,7 +3671,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Rio de Janeiro"
             },
             {
               "teamId": 4241,
@@ -3523,7 +3692,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Curitiba"
             },
             {
               "teamId": 4286,
@@ -3543,7 +3713,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Bragança Paulista"
             },
             {
               "teamId": 4287,
@@ -3563,7 +3734,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Belém"
             },
             {
               "teamId": 4364,
@@ -3583,7 +3755,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Mirassol"
             },
             {
               "teamId": 6684,
@@ -3603,7 +3776,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Porto Alegre"
             },
             {
               "teamId": 6685,
@@ -3623,7 +3797,8 @@
                 "name": "Brazil",
                 "code": "BRA",
                 "flag": "https://crests.football-data.org/764.svg"
-              }
+              },
+              "city": "Santos"
             }
           ]
         }
@@ -3655,7 +3830,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Leverkusen"
             },
             {
               "teamId": 4,
@@ -3675,7 +3851,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Dortmund"
             },
             {
               "teamId": 5,
@@ -3695,7 +3872,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "München"
             },
             {
               "teamId": 19,
@@ -3715,7 +3893,8 @@
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
-              }
+              },
+              "city": "Frankfurt am Main"
             },
             {
               "teamId": 57,
@@ -3735,7 +3914,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "London"
             },
             {
               "teamId": 61,
@@ -3755,7 +3935,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "London"
             },
             {
               "teamId": 64,
@@ -3775,7 +3956,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Liverpool"
             },
             {
               "teamId": 65,
@@ -3795,7 +3977,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Manchester"
             },
             {
               "teamId": 67,
@@ -3815,7 +3998,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "Newcastle upon Tyne"
             },
             {
               "teamId": 73,
@@ -3835,7 +4019,8 @@
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
-              }
+              },
+              "city": "London"
             },
             {
               "teamId": 77,
@@ -3855,7 +4040,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Bilbao"
             },
             {
               "teamId": 78,
@@ -3875,7 +4061,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Madrid"
             },
             {
               "teamId": 81,
@@ -3895,7 +4082,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Barcelona"
             },
             {
               "teamId": 86,
@@ -3915,7 +4103,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Madrid"
             },
             {
               "teamId": 94,
@@ -3935,7 +4124,8 @@
                 "name": "Spain",
                 "code": "ESP",
                 "flag": "https://crests.football-data.org/760.svg"
-              }
+              },
+              "city": "Vila-real"
             },
             {
               "teamId": 102,
@@ -3955,7 +4145,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Zingonia"
             },
             {
               "teamId": 108,
@@ -3975,7 +4166,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Milano"
             },
             {
               "teamId": 109,
@@ -3995,7 +4187,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Torino"
             },
             {
               "teamId": 113,
@@ -4015,7 +4208,8 @@
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
-              }
+              },
+              "city": "Province of Caserta"
             },
             {
               "teamId": 498,
@@ -4035,7 +4229,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Lisbon"
             },
             {
               "teamId": 516,
@@ -4055,7 +4250,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Marseille"
             },
             {
               "teamId": 524,
@@ -4075,7 +4271,8 @@
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
-              }
+              },
+              "city": "Paris"
             },
             {
               "teamId": 548,
@@ -4095,7 +4292,8 @@
                 "name": "Monaco",
                 "code": "MCO",
                 "flag": null
-              }
+              },
+              "city": "Monaco"
             },
             {
               "teamId": 610,
@@ -4115,7 +4313,8 @@
                 "name": "Turkey",
                 "code": "TUR",
                 "flag": "https://crests.football-data.org/803.svg"
-              }
+              },
+              "city": "Şişli"
             },
             {
               "teamId": 611,
@@ -4135,7 +4334,8 @@
                 "name": "Azerbaijan",
                 "code": "AZE",
                 "flag": null
-              }
+              },
+              "city": "Baku"
             },
             {
               "teamId": 654,
@@ -4155,7 +4355,8 @@
                 "name": "Greece",
                 "code": "GRC",
                 "flag": "https://crests.football-data.org/775.svg"
-              }
+              },
+              "city": "Pireas"
             },
             {
               "teamId": 674,
@@ -4175,7 +4376,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Eindhoven"
             },
             {
               "teamId": 678,
@@ -4195,7 +4397,8 @@
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
-              }
+              },
+              "city": "Amsterdam"
             },
             {
               "teamId": 851,
@@ -4215,7 +4418,8 @@
                 "name": "Belgium",
                 "code": "BEL",
                 "flag": "https://crests.football-data.org/805.svg"
-              }
+              },
+              "city": "Brugge"
             },
             {
               "teamId": 930,
@@ -4235,7 +4439,8 @@
                 "name": "Czech Republic",
                 "code": "CZE",
                 "flag": "https://crests.football-data.org/798.svg"
-              }
+              },
+              "city": "Hlavní město Praha"
             },
             {
               "teamId": 1876,
@@ -4255,7 +4460,8 @@
                 "name": "Denmark",
                 "code": "DNK",
                 "flag": "https://crests.football-data.org/782.svg"
-              }
+              },
+              "city": "København"
             },
             {
               "teamId": 1903,
@@ -4275,7 +4481,8 @@
                 "name": "Portugal",
                 "code": "POR",
                 "flag": "https://crests.football-data.org/765.svg"
-              }
+              },
+              "city": "Lisboa"
             },
             {
               "teamId": 3929,
@@ -4295,7 +4502,8 @@
                 "name": "Belgium",
                 "code": "BEL",
                 "flag": "https://crests.football-data.org/805.svg"
-              }
+              },
+              "city": "Forest"
             },
             {
               "teamId": 5721,
@@ -4315,7 +4523,8 @@
                 "name": "Norway",
                 "code": "NOR",
                 "flag": "https://crests.football-data.org/813.svg"
-              }
+              },
+              "city": "Bodø"
             },
             {
               "teamId": 10601,
@@ -4355,14 +4564,15 @@
                 "name": "Cyprus",
                 "code": "CYP",
                 "flag": null
-              }
+              },
+              "city": "Kolossi"
             }
           ]
         }
       ]
     }
   },
-  "lastGeocoded": "2026-08-23",
+  "lastGeocoded": "2026-08-25",
   "geocodingStats": {
     "successful": 210,
     "skipped": 0,

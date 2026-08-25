@@ -2822,7 +2822,7 @@ const map = new MapCtor(mapRef.current, {
     const teamCrest = stadium.crestUrl || stadium.teamLogo || '';
     const clubColors = stadium.clubColors || '';
     const founded = stadium.founded || '';
-    const addressEncoded = stadium.address ? encodeURIComponent(stadium.address) : '';
+    const cityEncoded = stadium.city ? encodeURIComponent(stadium.city) : '';
 
     return `
       <div style="
@@ -2946,14 +2946,14 @@ const map = new MapCtor(mapRef.current, {
           </div>
 
           <!-- Travel -->
-          ${addressEncoded ? `
+          ${cityEncoded ? `
             <div style="
               display: grid;
               grid-template-columns: 1fr 1fr;
               gap: 10px;
               margin-bottom: 14px;
             ">
-              <a href="https://www.google.com/travel/flights?q=Flights%20to%20${addressEncoded}" target="_blank" rel="noopener noreferrer" style="
+              <a href="https://www.google.com/travel/flights?q=Flights%20to%20${cityEncoded}" target="_blank" rel="noopener noreferrer" style="
                 display: block;
                 background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
                 padding: 10px;
@@ -2981,7 +2981,7 @@ const map = new MapCtor(mapRef.current, {
                 </div>
               </a>
 
-              <a href="https://www.google.com/travel/hotels/${addressEncoded}" target="_blank" rel="noopener noreferrer" style="
+              <a href="https://www.google.com/travel/hotels/${cityEncoded}" target="_blank" rel="noopener noreferrer" style="
                 display: block;
                 background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
                 padding: 10px;
