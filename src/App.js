@@ -4254,6 +4254,14 @@ const map = new MapCtor(mapRef.current, {
             touch-action: none;
           }
 
+          /* The landscape rule above sets .stadium-map-canvas.with-sidebar to 65% width, and
+             that two-class selector outranks the single-class rule above on specificity alone
+             (source order doesn't matter once specificity differs) - so it has to be matched
+             here explicitly, on any viewport narrow enough to be a drawer instead of a pane. */
+          .stadium-map-canvas.with-sidebar {
+            width: 100% !important;
+          }
+
           .mobile-drawer-toggle {
             display: flex !important;
           }
