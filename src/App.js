@@ -1559,6 +1559,7 @@ const FootballGlobe = () => {
           lng: parseFloat(lng),
           coordinates: { lat: parseFloat(lat), lng: parseFloat(lng) },
           address: stadium.address || stadium.fullAddress || '',
+          city: stadium.city || '',
           capacity: stadium.capacity || 0,
           leagueName: stadium.leagueName,
           leagueId: stadium.leagueId,
