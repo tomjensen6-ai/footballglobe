@@ -124,6 +124,9 @@ const FootballGlobe = () => {
   // Mobile-only slide-over drawer state for the country sidebar (desktop ignores this - the
   // sidebar is a permanent pane there). Starts closed each time a new country is selected.
   const [isSidebarDrawerOpen, setIsSidebarDrawerOpen] = useState(false);
+  // Mobile-only stadium card: on viewports under 768px, tapping a stadium pin renders our own
+  // bottom-sheet overlay instead of Google's InfoWindow. Desktop keeps using the InfoWindow.
+  const [mobileStadiumCard, setMobileStadiumCard] = useState(null);
   const [hoveredCountry, setHoveredCountry] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [countriesData, setCountriesData] = useState([]);
@@ -155,6 +158,14 @@ const FootballGlobe = () => {
     useEffect(() => {
       setIsSidebarDrawerOpen(false);
     }, [selectedCountry?.code]);
+
+    // Fetch weather for the mobile stadium card once it's mounted (mirrors the
+    // domready-triggered fetch used for the desktop InfoWindow).
+    useEffect(() => {
+      if (mobileStadiumCard) {
+        injectStadiumWeather(mobileStadiumCard);
+      }
+    }, [mobileStadiumCard]);
 
     // ===== UNIFIED MARKER MANAGEMENT =====
     // This ensures ALL markers are cleared regardless of which function created them
@@ -1628,16 +1639,22 @@ const FootballGlobe = () => {
 
       // Add click listener to show info
       marker.addListener('click', () => {
+        // Under 768px, use our own bottom-sheet overlay instead of Google's InfoWindow
+        if (window.innerWidth < 768) {
+          setMobileStadiumCard(stadium);
+          return;
+        }
+
         const infoWindow = new window.google.maps.InfoWindow({
           content: createProfessionalStadiumPopup(stadium),
-          maxWidth: window.innerWidth <= 390 ? 280 : 350
+          maxWidth: 350
         });
-        
+
         // Close other info windows
         if (window.currentStadiumInfoWindow) {
           window.currentStadiumInfoWindow.close();
         }
-        
+
         window.google.maps.event.addListenerOnce(infoWindow, 'domready', () => {
           injectStadiumWeather(stadium);
         });
@@ -2758,17 +2775,23 @@ const map = new MapCtor(mapRef.current, {
       marker.addListener('click', () => {
         setSelectedStadium(stadium);
 
+        // Under 768px, use our own bottom-sheet overlay instead of Google's InfoWindow
+        if (window.innerWidth < 768) {
+          setMobileStadiumCard(stadium);
+          return;
+        }
+
         // Create stadium info window
         const infoWindow = new window.google.maps.InfoWindow({
           content: createProfessionalStadiumPopup(stadium),
-          maxWidth: window.innerWidth <= 390 ? 280 : 350
+          maxWidth: 350
         });
-        
+
         // Close other info windows
         if (window.currentStadiumInfoWindow) {
           window.currentStadiumInfoWindow.close();
         }
-        
+
         window.google.maps.event.addListenerOnce(infoWindow, 'domready', () => {
           injectStadiumWeather(stadium);
         });
@@ -3380,6 +3403,30 @@ const map = new MapCtor(mapRef.current, {
           )}
         </div>
       </main>
+
+      {/* Mobile-only stadium card: replaces Google's InfoWindow under 768px with our own
+          bottom-sheet overlay, since InfoWindow's injected styles can't be reliably controlled. */}
+      {mobileStadiumCard && (
+        <>
+          <div
+            className="mobile-stadium-backdrop"
+            onClick={() => setMobileStadiumCard(null)}
+          />
+          <div className="mobile-stadium-panel" key={mobileStadiumCard.id || mobileStadiumCard.name} role="dialog" aria-modal="true">
+            <button
+              className="mobile-stadium-close-btn"
+              onClick={() => setMobileStadiumCard(null)}
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <div
+              className="mobile-stadium-panel-scroll"
+              dangerouslySetInnerHTML={{ __html: createProfessionalStadiumPopup(mobileStadiumCard) }}
+            />
+          </div>
+        </>
+      )}
 
       {/* Mobile-only floating toggle: opens the sidebar drawer. Hidden whenever no
           country is selected (nothing to show) or the drawer is already open. */}
@@ -4146,28 +4193,68 @@ const map = new MapCtor(mapRef.current, {
           justify-content: center;
         }
 
-        /* Google Maps InfoWindow chrome: collapse the reserved close-button row (the source of
-           the large blank area above the card) and let the window size to its content up to
-           85vh instead of Google's own computed max-height. The stadium popup has no close
-           button of its own, so the native "x" stays - it just no longer reserves layout space. */
-        .gm-style .gm-style-iw-c {
-          padding: 0 !important;
+        /* Mobile stadium card: our own bottom-sheet overlay, replacing Google's InfoWindow
+           under 768px so we control scrolling, the close button, and sizing directly instead
+           of fighting Google's injected chrome styles. */
+        .mobile-stadium-backdrop {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.45);
+          z-index: 220;
         }
 
-        .gm-style .gm-style-iw-d {
-          overflow: visible !important;
-          max-height: 85vh !important;
+        @keyframes mobileStadiumSlideUp {
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
         }
 
-        .gm-style .gm-style-iw-chr {
-          height: 0 !important;
-          min-height: 0 !important;
-          overflow: visible !important;
+        .mobile-stadium-panel {
+          position: fixed;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          max-height: 70vh;
+          background: #ffffff;
+          border-radius: 16px 16px 0 0;
+          box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.3);
+          overflow: hidden;
+          z-index: 230;
+          animation: mobileStadiumSlideUp 0.25s ease-out;
         }
 
-        .gm-style .gm-style-iw-chr button.gm-ui-hover-effect {
-          top: 4px !important;
-          right: 4px !important;
+        .mobile-stadium-panel-scroll {
+          max-height: 70vh;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior: contain;
+          touch-action: pan-y;
+        }
+
+        /* The injected card was designed to sit inside Google's InfoWindow bubble - drop its
+           own width cap and outer chrome so it fills our panel instead of a card-in-a-card. */
+        .mobile-stadium-panel-scroll .stadium-popup-card {
+          width: 100% !important;
+          border-radius: 0 !important;
+          box-shadow: none !important;
+        }
+
+        .mobile-stadium-close-btn {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          width: 44px;
+          height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(0, 0, 0, 0.35);
+          color: #ffffff;
+          border: none;
+          border-radius: 50%;
+          font-size: 1.5rem;
+          line-height: 1;
+          cursor: pointer;
+          z-index: 240;
         }
 
         .info-window-enhanced::before {
