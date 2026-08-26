@@ -30,12 +30,16 @@ function applyVenueOverride(stadium) {
 
   const venue = override.venue || stadium.venue;
   const address = override.address || stadium.address;
+  const latitude = override.latitude || stadium.latitude;
+  const longitude = override.longitude || stadium.longitude;
 
   return {
     ...stadium,
     venue,
     address,
-    fullAddress: `${venue}, ${address}`
+    fullAddress: `${venue}, ${address}`,
+    latitude,
+    longitude
   };
 }
 

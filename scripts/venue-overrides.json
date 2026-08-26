@@ -5,5 +5,11 @@
     "address": "Regent Road, Liverpool L3 0BE",
     "reason": "Everton moved from Goodison Park for the 2025/26 season",
     "added": "2026-08-25"
+  },
+  "1076": {
+    "venue": "Coventry Building Society Arena",
+    "address": "Judds Lane, Coventry CV6 6GE",
+    "reason": "football-data still lists St Andrew's from the Birmingham groundshare; their coordinates are already correct for Coventry, but their address was also corrected - it resolved to Gallagher Retail Park, a neighbouring site, rather than the stadium",
+    "added": "2026-08-26"
   }
 }

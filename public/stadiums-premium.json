@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-25",
+  "lastUpdated": "2026-08-26",
   "season": "2024-2025",
   "source": "football-data.org",
   "exportMethod": "maprates-proxy",
@@ -419,11 +419,11 @@
               "teamName": "Coventry City FC",
               "shortName": "Coventry City",
               "tla": "COV",
-              "venue": "St Andrew's Trillion Trophy Stadium",
-              "address": "Gallagher Retail Park, Stoney Stanton Road Coventry CV6 5QE",
-              "fullAddress": "St Andrew's Trillion Trophy Stadium, Gallagher Retail Park, Stoney Stanton Road Coventry CV6 5QE",
-              "latitude": 52.430192,
-              "longitude": -1.4898382,
+              "venue": "Coventry Building Society Arena",
+              "address": "Judds Lane, Coventry CV6 6GE",
+              "fullAddress": "Coventry Building Society Arena, Judds Lane, Coventry CV6 6GE",
+              "latitude": 52.4483481,
+              "longitude": -1.4966347,
               "clubColors": "Sky Blue / White",
               "website": "http://www.ccfc.co.uk",
               "founded": 1883,
@@ -4572,7 +4572,7 @@
       ]
     }
   },
-  "lastGeocoded": "2026-08-25",
+  "lastGeocoded": "2026-08-26",
   "geocodingStats": {
     "successful": 210,
     "skipped": 0,
