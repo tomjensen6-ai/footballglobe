@@ -92,3 +92,14 @@ export async function fgFootballStandings(competitionId) {
   if (!res.ok) throw new Error(`standings failed: ${res.status}`);
   return res.json();
 }
+
+export async function fgFootballMatches(competitionId, dateFrom, dateTo) {
+  let url = `${BASE}/football-matches?competition=${competitionId}`;
+  if (dateFrom) url += `&dateFrom=${dateFrom}`;
+  if (dateTo) url += `&dateTo=${dateTo}`;
+  console.log(`📡 Calling proxy: ${url}`);
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`matches failed: ${res.status}`);
+  return res.json();
+}

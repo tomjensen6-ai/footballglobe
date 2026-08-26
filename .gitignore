@@ -33,3 +33,6 @@ yarn-debug.log*
 yarn-error.log*
 .env.development
 .env.production
+/stadiums-premium.json
+/stadiums-premium-geocoded.json
+/standings-premium-cache.json

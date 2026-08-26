@@ -4,7 +4,8 @@ import {
   fgFootballCompetitions, 
   fgFootballCountries, 
   fgFootballTeams,
-  fgFootballStandings
+  fgFootballStandings,
+  fgFootballMatches
 } from './lib/fgApi';
 
 // 🔥 HELPER FUNCTION
@@ -19,6 +20,56 @@ const buildTravelLinks = (city, country) => {
     hotels:  `https://www.google.com/travel/search?q=${q}`
   };
 };
+
+// Same shape/size/anchor as the default stadium marker icon (inlined at marker
+// creation) - amber instead of green, used to recolor markers for teams with a
+// fixture in the next 7 days. Colour only; never touches shape, size, or position.
+const buildMatchDayMarkerIcon = () => ({
+  url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+    <svg width="36" height="48" viewBox="0 0 36 48" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+
+      <!-- Outer glow -->
+      <circle cx="18" cy="16" r="14" fill="#f59e0b" opacity="0.3" filter="url(#glow)"/>
+
+      <!-- Main pin shape -->
+      <path d="M 18 2 C 10.268 2 4 8.268 4 16 C 4 24 18 44 18 44 C 18 44 32 24 32 16 C 32 8.268 25.732 2 18 2 Z"
+            fill="url(#matchDayGradient)"
+            stroke="#ffffff"
+            stroke-width="2.5"
+            filter="url(#glow)"/>
+
+      <!-- Gradient definition -->
+      <defs>
+        <linearGradient id="matchDayGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
+          <stop offset="100%" style="stop-color:#b45309;stop-opacity:1" />
+        </linearGradient>
+      </defs>
+
+      <!-- Inner stadium icon -->
+      <g transform="translate(18, 16)">
+        <!-- Stadium structure -->
+        <ellipse cx="0" cy="0" rx="7" ry="5" fill="#ffffff" opacity="0.9"/>
+        <ellipse cx="0" cy="0" rx="5" ry="3" fill="#f59e0b"/>
+
+        <!-- Field lines -->
+        <line x1="-5" y1="0" x2="5" y2="0" stroke="#ffffff" stroke-width="0.5"/>
+        <circle cx="0" cy="0" r="1.5" fill="none" stroke="#ffffff" stroke-width="0.5"/>
+      </g>
+    </svg>
+  `),
+  scaledSize: new window.google.maps.Size(36, 48),
+  anchor: new window.google.maps.Point(18, 44)
+});
 
 // ===== Normalize API keys into constants (robust against missing nested objects) =====
 const GOOGLE_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
@@ -1647,6 +1698,10 @@ const FootballGlobe = () => {
         animation: window.google.maps.Animation.DROP
       });
 
+      // Tag the marker with its team id so match-day fixture data (loaded async,
+      // below) can be correlated back to the right marker after creation.
+      marker.stadiumTeamId = stadium.id;
+
       // Add click listener to show info
       marker.addListener('click', () => {
         // Under 768px, use our own bottom-sheet overlay instead of Google's InfoWindow
@@ -1720,6 +1775,42 @@ const FootballGlobe = () => {
       console.warn('⚠️ No leagueId found in stadium data');
     }
     
+    // Match-day highlighting: fetch upcoming fixtures for this league and recolor
+    // markers for teams playing within the next 7 days. Fetched in parallel (not
+    // awaited) so it never delays marker/map rendering above; markers already look
+    // and behave exactly as they do today by the time this resolves or fails.
+    if (topLeague) {
+      const today = new Date();
+      const weekOut = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const toYMD = (d) => d.toISOString().slice(0, 10);
+
+      fgFootballMatches(topLeague.id, toYMD(today), toYMD(weekOut))
+        .then((fixturesData) => {
+          const matchDayByTeamId = new Map();
+          (fixturesData.matches || []).forEach((match) => {
+            if (match.homeTeam && match.homeTeam.id != null) {
+              matchDayByTeamId.set(match.homeTeam.id, {
+                utcDate: match.utcDate,
+                opponent: match.awayTeam?.name || null
+              });
+            }
+          });
+
+          (window.currentStadiumMarkers || []).forEach((marker) => {
+            if (matchDayByTeamId.has(marker.stadiumTeamId)) {
+              marker.setIcon(buildMatchDayMarkerIcon());
+            }
+          });
+
+          // Stashed for createProfessionalStadiumPopup, which renders on-demand
+          // (on marker click) and needs this same fixture data at that later point.
+          window.currentMatchDayByTeamId = matchDayByTeamId;
+        })
+        .catch((err) => {
+          console.warn('⚠️ Match-day fixtures fetch failed, markers unchanged:', err);
+        });
+    }
+
     // Auto-zoom to fit all stadiums
     console.log('🔍 ZOOM CHECK:', {
       hasArray: !!window.currentStadiumMarkers,
@@ -2872,6 +2963,19 @@ const map = new MapCtor(mapRef.current, {
     const city = stadium.city || '';
     const travelLinks = city ? buildTravelLinks(city, stadium.country || '') : null;
 
+    // Match-day fixture (if any) for this team, stashed on window when the
+    // fixtures fetch resolved. Absent/missing map just means no fixture line.
+    const fixture = window.currentMatchDayByTeamId?.get(stadium.id) || null;
+    const fixtureLine = fixture
+      ? `⚽ vs ${fixture.opponent || 'TBD'} — ${new Date(fixture.utcDate).toLocaleString(undefined, {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+          hour: '2-digit',
+          minute: '2-digit'
+        })}`
+      : '';
+
     return `
       <style>
         .stadium-popup-card { width: 320px; }
@@ -2965,6 +3069,20 @@ const map = new MapCtor(mapRef.current, {
           ${founded ? `<span>· 📅 ${founded}</span>` : ''}
           ${clubColors ? `<span>· 👕 ${clubColors}</span>` : ''}
         </div>
+
+        <!-- Next match (match-day highlight) -->
+        ${fixtureLine ? `
+          <div class="popup-next-match" style="
+            margin: 12px 16px 0;
+            padding: 8px 12px;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-radius: 8px;
+            color: #b45309;
+            font-size: 12px;
+            font-weight: 700;
+          ">${fixtureLine}</div>
+        ` : ''}
 
         <!-- Travel -->
         ${travelLinks ? `
@@ -3408,6 +3526,29 @@ const map = new MapCtor(mapRef.current, {
             </div>
           )}
         </div>
+
+        {/* Marker colour legend: explains the amber (match-day) vs green (no match-day)
+            stadium marker colours. Hidden under 768px (see .stadium-marker-legend media
+            rule) since the map grows near full-screen there and this would sit off-screen. */}
+        {selectedCountry && (
+          <div className="stadium-marker-legend" style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1.25rem',
+            padding: '0.5rem 0.25rem',
+            fontSize: '0.8rem',
+            color: '#374151'
+          }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }}></span>
+              Home match in next 7 days
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>
+              No home match
+            </span>
+          </div>
+        )}
       </main>
 
       {/* Mobile-only stadium card: replaces Google's InfoWindow under 768px with our own
@@ -4414,6 +4555,10 @@ const map = new MapCtor(mapRef.current, {
 
           .sidebar-drawer-close-btn {
             display: inline-flex !important;
+          }
+
+          .stadium-marker-legend {
+            display: none !important;
           }
         }
 
