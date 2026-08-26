@@ -14,6 +14,24 @@ const https = require('https');
 const GOOGLE_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || 'YOUR_KEY_HERE';
 
 /**
+ * Extract a city name from a Geocoding API address_components array.
+ * Prefers locality, then falls back to postal_town, then
+ * administrative_area_level_2. Returns undefined if none match.
+ */
+function extractCity(addressComponents) {
+  const preferredTypes = ['locality', 'postal_town', 'administrative_area_level_2'];
+
+  for (const type of preferredTypes) {
+    const component = addressComponents.find(c => c.types.includes(type));
+    if (component) {
+      return component.long_name;
+    }
+  }
+
+  return undefined;
+}
+
+/**
  * Geocode an address using Google Maps
  */
 function geocodeAddress(address) {
@@ -33,7 +51,8 @@ function geocodeAddress(address) {
           const result = JSON.parse(data);
           if (result.status === 'OK' && result.results.length > 0) {
             const location = result.results[0].geometry.location;
-            resolve({ lat: location.lat, lng: location.lng });
+            const city = extractCity(result.results[0].address_components || []);
+            resolve({ lat: location.lat, lng: location.lng, city });
           } else {
             console.log(`    ⚠️  Geocode failed: ${result.status}`);
             resolve(null);
@@ -117,7 +136,10 @@ async function geocodeStadiums() {
           if (coords) {
             stadium.latitude = coords.lat;
             stadium.longitude = coords.lng;
-            console.log(`    ✅ Found: ${coords.lat}, ${coords.lng}`);
+            if (coords.city) {
+              stadium.city = coords.city;
+            }
+            console.log(`    ✅ Found: ${coords.lat}, ${coords.lng}${coords.city ? ` (${coords.city})` : ''}`);
             geocoded++;
           } else {
             console.log(`    ❌ Failed to geocode`);

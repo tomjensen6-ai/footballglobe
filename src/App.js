@@ -7,8 +7,18 @@ import {
   fgFootballStandings
 } from './lib/fgApi';
 
-// 🔥 HELPER FUNCTION 
+// 🔥 HELPER FUNCTION
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Builds the outbound travel links for a stadium's city/country. Centralized so
+// swapping to affiliate providers later only touches this one function.
+const buildTravelLinks = (city, country) => {
+  const q = encodeURIComponent(`${city}, ${country}`);
+  return {
+    flights: `https://www.google.com/travel/flights?q=Flights%20to%20${q}`,
+    hotels:  `https://www.google.com/travel/search?q=${q}`
+  };
+};
 
 // ===== Normalize API keys into constants (robust against missing nested objects) =====
 const GOOGLE_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
@@ -2860,11 +2870,7 @@ const map = new MapCtor(mapRef.current, {
     const clubColors = stadium.clubColors || '';
     const founded = stadium.founded || '';
     const city = stadium.city || '';
-    const cityEncoded = city ? encodeURIComponent(city) : '';
-    const countryEncoded = stadium.country ? encodeURIComponent(stadium.country) : '';
-    const travelLocation = cityEncoded
-      ? (countryEncoded ? `${cityEncoded}%2C%20${countryEncoded}` : cityEncoded)
-      : '';
+    const travelLinks = city ? buildTravelLinks(city, stadium.country || '') : null;
 
     return `
       <style>
@@ -2961,7 +2967,7 @@ const map = new MapCtor(mapRef.current, {
         </div>
 
         <!-- Travel -->
-        ${cityEncoded ? `
+        ${travelLinks ? `
           <div class="popup-travel">
             <div style="
               font-size: 10px;
@@ -2974,7 +2980,7 @@ const map = new MapCtor(mapRef.current, {
               Plan a trip
             </div>
             <div class="popup-travel-buttons" style="display: flex;">
-              <a href="https://www.google.com/travel/flights?q=Flights%20to%20${travelLocation}" target="_blank" rel="noopener noreferrer" class="popup-travel-btn" style="
+              <a href="${travelLinks.flights}" target="_blank" rel="noopener noreferrer" class="popup-travel-btn" style="
                 flex: 1;
                 display: flex;
                 align-items: center;
@@ -2991,7 +2997,7 @@ const map = new MapCtor(mapRef.current, {
                 ✈️ Flights
               </a>
 
-              <a href="https://www.google.com/travel/search?q=${travelLocation}" target="_blank" rel="noopener noreferrer" class="popup-travel-btn" style="
+              <a href="${travelLinks.hotels}" target="_blank" rel="noopener noreferrer" class="popup-travel-btn" style="
                 flex: 1;
                 display: flex;
                 align-items: center;
@@ -4199,7 +4205,7 @@ const map = new MapCtor(mapRef.current, {
         .mobile-stadium-backdrop {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.45);
+          background: rgba(0, 0, 0, 0.2);
           z-index: 220;
         }
 
