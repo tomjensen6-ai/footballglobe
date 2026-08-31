@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-26",
+  "lastUpdated": "2026-08-31",
   "season": "2024-2025",
   "source": "football-data.org",
   "exportMethod": "maprates-proxy",
@@ -1850,8 +1850,8 @@
               "venue": "Stadio Atleti Azzurri d'Italia",
               "address": "Corso Europa, 46, Zingonia Ciserano 24040",
               "fullAddress": "Stadio Atleti Azzurri d'Italia, Corso Europa, 46, Zingonia Ciserano 24040",
-              "latitude": 45.5964767,
-              "longitude": 9.6051319,
+              "latitude": 45.5942226,
+              "longitude": 9.6043454,
               "clubColors": "Black / Blue",
               "website": "http://www.atalanta.it",
               "founded": 1904,
@@ -1861,7 +1861,7 @@
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
               },
-              "city": "Zingonia"
+              "city": "Provincia di Bergamo"
             },
             {
               "teamId": 103,
@@ -3661,8 +3661,8 @@
               "venue": "Estadio Jornalista Mário Filho",
               "address": "null Rio de Janeiro, RJ null",
               "fullAddress": "Estadio Jornalista Mário Filho, null Rio de Janeiro, RJ null",
-              "latitude": -22.9121465,
-              "longitude": -43.230189,
+              "latitude": -22.9121867,
+              "longitude": -43.2302839,
               "clubColors": "Red / Black / White",
               "website": "https://www.flamengo.com.br/pagina-inicial-basquete",
               "founded": 1919,
@@ -3813,27 +3813,6 @@
           "name": "UEFA Champions League",
           "stadiums": [
             {
-              "teamId": 3,
-              "teamName": "Bayer 04 Leverkusen",
-              "shortName": "Leverkusen",
-              "tla": "B04",
-              "venue": "BayArena",
-              "address": "Bismarckstr. 122-124 Leverkusen 51373",
-              "fullAddress": "BayArena, Bismarckstr. 122-124 Leverkusen 51373",
-              "latitude": 51.0382091,
-              "longitude": 7.0022566,
-              "clubColors": "Red / White / Black",
-              "website": "http://www.bayer04.de",
-              "founded": 1904,
-              "crestUrl": "https://crests.football-data.org/3.png",
-              "area": {
-                "name": "Germany",
-                "code": "DEU",
-                "flag": "https://crests.football-data.org/759.svg"
-              },
-              "city": "Leverkusen"
-            },
-            {
               "teamId": 4,
               "teamName": "Borussia Dortmund",
               "shortName": "Dortmund",
@@ -3876,25 +3855,25 @@
               "city": "München"
             },
             {
-              "teamId": 19,
-              "teamName": "Eintracht Frankfurt",
-              "shortName": "Frankfurt",
-              "tla": "SGE",
-              "venue": "Deutsche Bank Park",
-              "address": "Mörfelder Landstraße 362 Frankfurt am Main 60528",
-              "fullAddress": "Deutsche Bank Park, Mörfelder Landstraße 362 Frankfurt am Main 60528",
-              "latitude": 50.0685807,
-              "longitude": 8.645472,
-              "clubColors": "Red / Black",
-              "website": "http://www.eintracht.de",
-              "founded": 1899,
-              "crestUrl": "https://crests.football-data.org/19.png",
+              "teamId": 10,
+              "teamName": "VfB Stuttgart",
+              "shortName": "Stuttgart",
+              "tla": "VFB",
+              "venue": "Mercedes-Benz Arena",
+              "address": "Mercedesstraße 109 Stuttgart 70372",
+              "fullAddress": "Mercedes-Benz Arena, Mercedesstraße 109 Stuttgart 70372",
+              "latitude": 48.7922577,
+              "longitude": 9.23208,
+              "clubColors": "White / Red",
+              "website": "http://www.vfb.de",
+              "founded": 1893,
+              "crestUrl": "https://crests.football-data.org/10.png",
               "area": {
                 "name": "Germany",
                 "code": "DEU",
                 "flag": "https://crests.football-data.org/759.svg"
               },
-              "city": "Frankfurt am Main"
+              "city": "Stuttgart"
             },
             {
               "teamId": 57,
@@ -3918,25 +3897,25 @@
               "city": "London"
             },
             {
-              "teamId": 61,
-              "teamName": "Chelsea FC",
-              "shortName": "Chelsea",
-              "tla": "CHE",
-              "venue": "Stamford Bridge",
-              "address": "Fulham Road London SW6 1HS",
-              "fullAddress": "Stamford Bridge, Fulham Road London SW6 1HS",
-              "latitude": 51.4817241,
-              "longitude": -0.1909471,
-              "clubColors": "Royal Blue / White",
-              "website": "http://www.chelseafc.com",
-              "founded": 1905,
-              "crestUrl": "https://crests.football-data.org/61.png",
+              "teamId": 58,
+              "teamName": "Aston Villa FC",
+              "shortName": "Aston Villa",
+              "tla": "AVL",
+              "venue": "Villa Park",
+              "address": "Villa Park Birmingham B6 6HE",
+              "fullAddress": "Villa Park, Villa Park Birmingham B6 6HE",
+              "latitude": 52.5091117,
+              "longitude": -1.8847828,
+              "clubColors": "Claret / Sky Blue",
+              "website": "http://www.avfc.co.uk",
+              "founded": 1872,
+              "crestUrl": "https://crests.football-data.org/58.png",
               "area": {
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
               },
-              "city": "London"
+              "city": "Birmingham"
             },
             {
               "teamId": 64,
@@ -3981,67 +3960,25 @@
               "city": "Manchester"
             },
             {
-              "teamId": 67,
-              "teamName": "Newcastle United FC",
-              "shortName": "Newcastle",
-              "tla": "NEW",
-              "venue": "St. James' Park",
-              "address": "Sports Direct Arena Newcastle upon Tyne NE1 4ST",
-              "fullAddress": "St. James' Park, Sports Direct Arena Newcastle upon Tyne NE1 4ST",
-              "latitude": 54.9755502,
-              "longitude": -1.6216284,
-              "clubColors": "Black / White",
-              "website": "http://www.nufc.co.uk",
-              "founded": 1881,
-              "crestUrl": "https://crests.football-data.org/67.png",
+              "teamId": 66,
+              "teamName": "Manchester United FC",
+              "shortName": "Man United",
+              "tla": "MUN",
+              "venue": "Old Trafford",
+              "address": "Sir Matt Busby Way Manchester M16 0RA",
+              "fullAddress": "Old Trafford, Sir Matt Busby Way Manchester M16 0RA",
+              "latitude": 53.463882,
+              "longitude": -2.2897037,
+              "clubColors": "Red / White",
+              "website": "http://www.manutd.com",
+              "founded": 1878,
+              "crestUrl": "https://crests.football-data.org/66.png",
               "area": {
                 "name": "England",
                 "code": "ENG",
                 "flag": "https://crests.football-data.org/770.svg"
               },
-              "city": "Newcastle upon Tyne"
-            },
-            {
-              "teamId": 73,
-              "teamName": "Tottenham Hotspur FC",
-              "shortName": "Tottenham",
-              "tla": "TOT",
-              "venue": "Tottenham Hotspur Stadium",
-              "address": "Bill Nicholson Way, 748 High Road London N17 0AP",
-              "fullAddress": "Tottenham Hotspur Stadium, Bill Nicholson Way, 748 High Road London N17 0AP",
-              "latitude": 51.60325959999999,
-              "longitude": -0.06494509999999999,
-              "clubColors": "Navy Blue / White",
-              "website": "http://www.tottenhamhotspur.com",
-              "founded": 1882,
-              "crestUrl": "https://crests.football-data.org/73.png",
-              "area": {
-                "name": "England",
-                "code": "ENG",
-                "flag": "https://crests.football-data.org/770.svg"
-              },
-              "city": "London"
-            },
-            {
-              "teamId": 77,
-              "teamName": "Athletic Club",
-              "shortName": "Athletic",
-              "tla": "ATH",
-              "venue": "San Mamés",
-              "address": "Ibaigane, Alameda Mazarredo, 23 Bilbao 48009",
-              "fullAddress": "San Mamés, Ibaigane, Alameda Mazarredo, 23 Bilbao 48009",
-              "latitude": 43.2658974,
-              "longitude": -2.930574,
-              "clubColors": "Red / White / Black",
-              "website": "http://www.athletic-club.eus",
-              "founded": 1898,
-              "crestUrl": "https://crests.football-data.org/77.png",
-              "area": {
-                "name": "Spain",
-                "code": "ESP",
-                "flag": "https://crests.football-data.org/760.svg"
-              },
-              "city": "Bilbao"
+              "city": "Stretford"
             },
             {
               "teamId": 78,
@@ -4107,6 +4044,27 @@
               "city": "Madrid"
             },
             {
+              "teamId": 90,
+              "teamName": "Real Betis Balompié",
+              "shortName": "Real Betis",
+              "tla": "BET",
+              "venue": "Estadio Benito Villamarín",
+              "address": "Avenida de Heliópolis, s/n Sevilla 41012",
+              "fullAddress": "Estadio Benito Villamarín, Avenida de Heliópolis, s/n Sevilla 41012",
+              "latitude": 37.3564922,
+              "longitude": -5.9817117,
+              "clubColors": "Green / White",
+              "website": "http://www.realbetisbalompie.es",
+              "founded": 1907,
+              "crestUrl": "https://crests.football-data.org/90.png",
+              "area": {
+                "name": "Spain",
+                "code": "ESP",
+                "flag": "https://crests.football-data.org/760.svg"
+              },
+              "city": "Sevilla"
+            },
+            {
               "teamId": 94,
               "teamName": "Villarreal CF",
               "shortName": "Villarreal",
@@ -4128,25 +4086,25 @@
               "city": "Vila-real"
             },
             {
-              "teamId": 102,
-              "teamName": "Atalanta BC",
-              "shortName": "Atalanta",
-              "tla": "ATA",
-              "venue": "Stadio Atleti Azzurri d'Italia",
-              "address": "Corso Europa, 46, Zingonia Ciserano 24040",
-              "fullAddress": "Stadio Atleti Azzurri d'Italia, Corso Europa, 46, Zingonia Ciserano 24040",
-              "latitude": 45.5964767,
-              "longitude": 9.6051319,
-              "clubColors": "Black / Blue",
-              "website": "http://www.atalanta.it",
-              "founded": 1904,
-              "crestUrl": "https://crests.football-data.org/102.png",
+              "teamId": 100,
+              "teamName": "AS Roma",
+              "shortName": "Roma",
+              "tla": "ROM",
+              "venue": "Stadio Olimpico",
+              "address": "Via di Trigoria km. 3,600 Roma 00128",
+              "fullAddress": "Stadio Olimpico, Via di Trigoria km. 3,600 Roma 00128",
+              "latitude": 41.7719737,
+              "longitude": 12.4797301,
+              "clubColors": "Maroon / Orange / White",
+              "website": "http://www.asroma.it",
+              "founded": 1927,
+              "crestUrl": "https://crests.football-data.org/100.png",
               "area": {
                 "name": "Italy",
                 "code": "ITA",
                 "flag": "https://crests.football-data.org/784.svg"
               },
-              "city": "Zingonia"
+              "city": "Roma"
             },
             {
               "teamId": 108,
@@ -4168,27 +4126,6 @@
                 "flag": "https://crests.football-data.org/784.svg"
               },
               "city": "Milano"
-            },
-            {
-              "teamId": 109,
-              "teamName": "Juventus FC",
-              "shortName": "Juventus",
-              "tla": "JUV",
-              "venue": "Allianz Stadium",
-              "address": "Corso Galileo Ferraris, 32 Torino 10128",
-              "fullAddress": "Allianz Stadium, Corso Galileo Ferraris, 32 Torino 10128",
-              "latitude": 45.0651631,
-              "longitude": 7.6691866,
-              "clubColors": "White / Black",
-              "website": "http://www.juventus.com",
-              "founded": 1897,
-              "crestUrl": "https://crests.football-data.org/109.png",
-              "area": {
-                "name": "Italy",
-                "code": "ITA",
-                "flag": "https://crests.football-data.org/784.svg"
-              },
-              "city": "Torino"
             },
             {
               "teamId": 113,
@@ -4233,25 +4170,46 @@
               "city": "Lisbon"
             },
             {
-              "teamId": 516,
-              "teamName": "Olympique de Marseille",
-              "shortName": "Marseille",
-              "tla": "MAR",
-              "venue": "Orange Vélodrome",
-              "address": "La Commanderie, 33, traverse de La Martine Marseille 13012",
-              "fullAddress": "Orange Vélodrome, La Commanderie, 33, traverse de La Martine Marseille 13012",
-              "latitude": 43.3019504,
-              "longitude": 5.462257999999999,
-              "clubColors": "White / Blue",
-              "website": "http://www.om.net",
-              "founded": 1898,
-              "crestUrl": "https://crests.football-data.org/516.png",
+              "teamId": 503,
+              "teamName": "FC Porto",
+              "shortName": "Porto",
+              "tla": "FCP",
+              "venue": "Estádio Do Dragão",
+              "address": "Estádio do Dragão, Entrada Poente - Piso 3 Porto 4350-451",
+              "fullAddress": "Estádio Do Dragão, Estádio do Dragão, Entrada Poente - Piso 3 Porto 4350-451",
+              "latitude": 41.16177,
+              "longitude": -8.583591,
+              "clubColors": "Blue / White",
+              "website": "http://www.fcporto.pt",
+              "founded": 1893,
+              "crestUrl": "https://crests.football-data.org/503.png",
+              "area": {
+                "name": "Portugal",
+                "code": "POR",
+                "flag": "https://crests.football-data.org/765.svg"
+              },
+              "city": "Porto"
+            },
+            {
+              "teamId": 521,
+              "teamName": "Lille OSC",
+              "shortName": "Lille",
+              "tla": "LIL",
+              "venue": "Stade Pierre-Mauroy",
+              "address": "Grand Rue 59, 780 Camphin-en-Pévèle Lille null",
+              "fullAddress": "Stade Pierre-Mauroy, Grand Rue 59, 780 Camphin-en-Pévèle Lille null",
+              "latitude": 50.5952071,
+              "longitude": 3.2610137,
+              "clubColors": "White / Red",
+              "website": "http://www.losc.fr",
+              "founded": 1944,
+              "crestUrl": "https://crests.football-data.org/521.png",
               "area": {
                 "name": "France",
                 "code": "FRA",
                 "flag": "https://crests.football-data.org/773.svg"
               },
-              "city": "Marseille"
+              "city": "Camphin-en-Pévèle"
             },
             {
               "teamId": 524,
@@ -4275,25 +4233,25 @@
               "city": "Paris"
             },
             {
-              "teamId": 548,
-              "teamName": "AS Monaco FC",
-              "shortName": "Monaco",
-              "tla": "ASM",
-              "venue": "Stade Louis II.",
-              "address": "Avenue des Castellans Monaco 98000",
-              "fullAddress": "Stade Louis II., Avenue des Castellans Monaco 98000",
-              "latitude": 43.7275946,
-              "longitude": 7.4155435,
-              "clubColors": "Red / White",
-              "website": "http://www.asmonaco.com",
-              "founded": 1919,
-              "crestUrl": "https://crests.football-data.org/548.png",
+              "teamId": 546,
+              "teamName": "Racing Club de Lens",
+              "shortName": "RC Lens",
+              "tla": "RCL",
+              "venue": "Stade Bollaert-Delelis",
+              "address": "33 rue Arthur Lamendin Avion 62210",
+              "fullAddress": "Stade Bollaert-Delelis, 33 rue Arthur Lamendin Avion 62210",
+              "latitude": 50.4068537,
+              "longitude": 2.8416891,
+              "clubColors": "Red / Yellow",
+              "website": "http://www.rclens.fr",
+              "founded": 1906,
+              "crestUrl": "https://crests.football-data.org/546.png",
               "area": {
-                "name": "Monaco",
-                "code": "MCO",
-                "flag": null
+                "name": "France",
+                "code": "FRA",
+                "flag": "https://crests.football-data.org/773.svg"
               },
-              "city": "Monaco"
+              "city": "Avion"
             },
             {
               "teamId": 610,
@@ -4317,46 +4275,25 @@
               "city": "Şişli"
             },
             {
-              "teamId": 611,
-              "teamName": "Qarabağ Ağdam FK",
-              "shortName": "Qarabağ Ağdam",
-              "tla": "QAR",
-              "venue": "Tofiq Bəhramov adına Respublika stadionu",
-              "address": "Bakı şəhəri.Suraxanı, qəsəbəsi Ağdam null",
-              "fullAddress": "Tofiq Bəhramov adına Respublika stadionu, Bakı şəhəri.Suraxanı, qəsəbəsi Ağdam null",
-              "latitude": 40.3872279,
-              "longitude": 50.02088759999999,
-              "clubColors": "Black / White",
-              "website": "http://www.qarabagh.com",
-              "founded": 1951,
-              "crestUrl": "https://crests.football-data.org/611.png",
+              "teamId": 613,
+              "teamName": "Fenerbahçe SK",
+              "shortName": "Fenerbahçe",
+              "tla": "FEN",
+              "venue": "Ülker Stadyumu Fenerbahçe Şükrü Saracoğlu Spor Kompleksi",
+              "address": "Fenerbahçe Şükrü Saracoğlu Stadyumu, Bağdat Caddesi, Kadıköy İstanbul 34724",
+              "fullAddress": "Ülker Stadyumu Fenerbahçe Şükrü Saracoğlu Spor Kompleksi, Fenerbahçe Şükrü Saracoğlu Stadyumu, Bağdat Caddesi, Kadıköy İstanbul 34724",
+              "latitude": 40.9876722,
+              "longitude": 29.0368903,
+              "clubColors": "Yellow / Blue",
+              "website": "http://www.fenerbahce.org",
+              "founded": 1907,
+              "crestUrl": "https://crests.football-data.org/613.png",
               "area": {
-                "name": "Azerbaijan",
-                "code": "AZE",
-                "flag": null
+                "name": "Turkey",
+                "code": "TUR",
+                "flag": "https://crests.football-data.org/803.svg"
               },
-              "city": "Baku"
-            },
-            {
-              "teamId": 654,
-              "teamName": "PAE Olympiakos SFP",
-              "shortName": "Olympiakos",
-              "tla": "OLY",
-              "venue": "Stadio Georgios Karaiskáki",
-              "address": "Plateia Alexandras Piraeus 18534",
-              "fullAddress": "Stadio Georgios Karaiskáki, Plateia Alexandras Piraeus 18534",
-              "latitude": 37.9464257,
-              "longitude": 23.6643956,
-              "clubColors": "Red / White",
-              "website": "http://www.olympiacos.org",
-              "founded": 1925,
-              "crestUrl": "https://crests.football-data.org/654.png",
-              "area": {
-                "name": "Greece",
-                "code": "GRC",
-                "flag": "https://crests.football-data.org/775.svg"
-              },
-              "city": "Pireas"
+              "city": "Kadıköy"
             },
             {
               "teamId": 674,
@@ -4380,25 +4317,46 @@
               "city": "Eindhoven"
             },
             {
-              "teamId": 678,
-              "teamName": "AFC Ajax",
-              "shortName": "Ajax",
-              "tla": "AJA",
-              "venue": "Johan Cruyff ArenA",
-              "address": "ArenA Boulevard 29 Amsterdam 1101 AX",
-              "fullAddress": "Johan Cruyff ArenA, ArenA Boulevard 29 Amsterdam 1101 AX",
-              "latitude": 52.3143557,
-              "longitude": 4.9418487,
-              "clubColors": "Red / White",
-              "website": "http://www.ajax.nl",
-              "founded": 1900,
-              "crestUrl": "https://crests.football-data.org/678.png",
+              "teamId": 675,
+              "teamName": "Feyenoord Rotterdam",
+              "shortName": "Feyenoord",
+              "tla": "FEY",
+              "venue": "Stadion Feijenoord",
+              "address": "Van Zandvlietplein 3 Rotterdam 3007 AP",
+              "fullAddress": "Stadion Feijenoord, Van Zandvlietplein 3 Rotterdam 3007 AP",
+              "latitude": 51.8938645,
+              "longitude": 4.523191499999999,
+              "clubColors": "Red / White / Black",
+              "website": "http://www.feyenoord.nl",
+              "founded": 1908,
+              "crestUrl": "https://crests.football-data.org/675.png",
               "area": {
                 "name": "Netherlands",
                 "code": "NLD",
                 "flag": "https://crests.football-data.org/8601.svg"
               },
-              "city": "Amsterdam"
+              "city": "Rotterdam"
+            },
+            {
+              "teamId": 721,
+              "teamName": "RB Leipzig",
+              "shortName": "RB Leipzig",
+              "tla": "RBL",
+              "venue": "Red Bull Arena",
+              "address": "Neumarkt 29-33 Leipzig 04109",
+              "fullAddress": "Red Bull Arena, Neumarkt 29-33 Leipzig 04109",
+              "latitude": 51.3377494,
+              "longitude": 12.3766889,
+              "clubColors": "White / Red",
+              "website": "http://www.dierotenbullen.com",
+              "founded": 2009,
+              "crestUrl": "https://crests.football-data.org/721.png",
+              "area": {
+                "name": "Germany",
+                "code": "DEU",
+                "flag": "https://crests.football-data.org/759.svg"
+              },
+              "city": "Leipzig"
             },
             {
               "teamId": 851,
@@ -4443,67 +4401,88 @@
               "city": "Hlavní město Praha"
             },
             {
-              "teamId": 1876,
-              "teamName": "FC København",
-              "shortName": "København",
-              "tla": "KOB",
-              "venue": "Telia Parken",
-              "address": "Per Henrik Lings Allé 2 København 2100",
-              "fullAddress": "Telia Parken, Per Henrik Lings Allé 2 København 2100",
-              "latitude": 55.7027203,
-              "longitude": 12.5723096,
-              "clubColors": "White / Blue",
-              "website": "http://www.fck.dk",
-              "founded": 1992,
-              "crestUrl": "https://crests.football-data.org/1876.png",
+              "teamId": 1887,
+              "teamName": "FK Shakhtar Donetsk",
+              "shortName": "Shaktar",
+              "tla": "SHD",
+              "venue": "Oblasny SportKomplex Metalist",
+              "address": "vul. Artema, 86-a Donets’k 83050",
+              "fullAddress": "Oblasny SportKomplex Metalist, vul. Artema, 86-a Donets’k 83050",
+              "latitude": 1.8740743,
+              "longitude": 102.9278102,
+              "clubColors": "Orange / Black",
+              "website": "https://shakhtar.com/",
+              "founded": 1936,
+              "crestUrl": "https://crests.football-data.org/1887.png",
               "area": {
-                "name": "Denmark",
-                "code": "DNK",
-                "flag": "https://crests.football-data.org/782.svg"
+                "name": "Ukraine",
+                "code": "UKR",
+                "flag": "https://crests.football-data.org/790.svg"
               },
-              "city": "København"
+              "city": "Batu Pahat"
             },
             {
-              "teamId": 1903,
-              "teamName": "Sport Lisboa e Benfica",
-              "shortName": "SL Benfica",
-              "tla": "BEN",
-              "venue": "Estádio do Sport Lisboa e Benfica",
-              "address": "Avenida General Norton de Matos 1500 Lissabon null",
-              "fullAddress": "Estádio do Sport Lisboa e Benfica, Avenida General Norton de Matos 1500 Lissabon null",
-              "latitude": 38.7526905,
-              "longitude": -9.184692,
-              "clubColors": "",
-              "website": "https://www.slbenfica.pt",
-              "founded": 1904,
-              "crestUrl": "https://crests.football-data.org/1903.png",
+              "teamId": 1899,
+              "teamName": "PAE AEK",
+              "shortName": "PAE AEK",
+              "tla": "AEK",
+              "venue": "Olympiako Stadio Spyros Louis",
+              "address": "37 Kifisias Av. Athína 15123",
+              "fullAddress": "Olympiako Stadio Spyros Louis, 37 Kifisias Av. Athína 15123",
+              "latitude": 38.0359096,
+              "longitude": 23.7869732,
+              "clubColors": "Yellow / Black",
+              "website": "http://www.aekfc.gr",
+              "founded": 1924,
+              "crestUrl": "https://crests.football-data.org/1899.png",
               "area": {
-                "name": "Portugal",
-                "code": "POR",
-                "flag": "https://crests.football-data.org/765.svg"
+                "name": "Greece",
+                "code": "GRC",
+                "flag": "https://crests.football-data.org/775.svg"
               },
-              "city": "Lisboa"
+              "city": "Marousi"
             },
             {
-              "teamId": 3929,
-              "teamName": "Royale Union Saint-Gilloise",
-              "shortName": "Union SG",
-              "tla": "USG",
-              "venue": "Stade Joseph Mariën",
-              "address": "Chaussée de Bruxelles, 223 Forest 1190",
-              "fullAddress": "Stade Joseph Mariën, Chaussée de Bruxelles, 223 Forest 1190",
-              "latitude": 50.8177884,
-              "longitude": 4.329338799999999,
-              "clubColors": "Blue / Yellow",
-              "website": "http://www.rusg.brussels",
-              "founded": 1897,
-              "crestUrl": "https://crests.football-data.org/3929.png",
+              "teamId": 2016,
+              "teamName": "LASK Linz",
+              "shortName": "LASK",
+              "tla": "LIN",
+              "venue": "Raiffeisen Arena",
+              "address": "Poststr. 38 Pasching 4061",
+              "fullAddress": "Raiffeisen Arena, Poststr. 38 Pasching 4061",
+              "latitude": 48.2361799,
+              "longitude": 14.2283031,
+              "clubColors": "Black / White",
+              "website": "http://www.lask.at",
+              "founded": 1908,
+              "crestUrl": "https://crests.football-data.org/2016.png",
               "area": {
-                "name": "Belgium",
-                "code": "BEL",
-                "flag": "https://crests.football-data.org/805.svg"
+                "name": "Austria",
+                "code": "AUT",
+                "flag": "https://crests.football-data.org/816.svg"
               },
-              "city": "Forest"
+              "city": "Pasching"
+            },
+            {
+              "teamId": 5720,
+              "teamName": "Viking FK",
+              "shortName": "Viking",
+              "tla": "VIK",
+              "venue": "SR-Bank Arena",
+              "address": "Jåttåvågveien 11A Stavanger 4020",
+              "fullAddress": "SR-Bank Arena, Jåttåvågveien 11A Stavanger 4020",
+              "latitude": 58.91457749999999,
+              "longitude": 5.7310361,
+              "clubColors": "Dark Blue / White",
+              "website": "http://www.viking-fk.no",
+              "founded": 1899,
+              "crestUrl": "https://crests.football-data.org/5720.png",
+              "area": {
+                "name": "Norway",
+                "code": "NOR",
+                "flag": "https://crests.football-data.org/813.svg"
+              },
+              "city": "Stavanger"
             },
             {
               "teamId": 5721,
@@ -4527,10 +4506,52 @@
               "city": "Bodø"
             },
             {
-              "teamId": 10601,
-              "teamName": "FK Kairat",
-              "shortName": "FK Kairat",
-              "tla": "KAI",
+              "teamId": 7397,
+              "teamName": "Como 1907",
+              "shortName": "Como 1907",
+              "tla": "COM",
+              "venue": "Stadio Giuseppe Sinigaglia",
+              "address": "Viale Sinigaglia 2 Como 22100",
+              "fullAddress": "Stadio Giuseppe Sinigaglia, Viale Sinigaglia 2 Como 22100",
+              "latitude": 45.8138711,
+              "longitude": 9.0723755,
+              "clubColors": "Sky Blue / White",
+              "website": "http://www.como1907.net/",
+              "founded": 1907,
+              "crestUrl": "https://crests.football-data.org/7397.png",
+              "area": {
+                "name": "Italy",
+                "code": "ITA",
+                "flag": "https://crests.football-data.org/784.svg"
+              },
+              "city": "Como"
+            },
+            {
+              "teamId": 7509,
+              "teamName": "ŠK Slovan Bratislava",
+              "shortName": "Sl. Bratislava",
+              "tla": "SBA",
+              "venue": "Štadión Tehelné pole",
+              "address": "Viktoria Tegelhoffa 4 Bratislava 83104",
+              "fullAddress": "Štadión Tehelné pole, Viktoria Tegelhoffa 4 Bratislava 83104",
+              "latitude": 48.1632445,
+              "longitude": 17.1367963,
+              "clubColors": "Light Blue / White",
+              "website": "http://www.skslovan.com",
+              "founded": 1919,
+              "crestUrl": "https://crests.football-data.org/7509.png",
+              "area": {
+                "name": "Slovakia",
+                "code": "SVK",
+                "flag": "https://crests.football-data.org/768.svg"
+              },
+              "city": "Bratislava III"
+            },
+            {
+              "teamId": 10233,
+              "teamName": "Sabah FK",
+              "shortName": "Sabah FK",
+              "tla": "SAB",
               "venue": "Unknown",
               "address": "null null null",
               "fullAddress": "null null null",
@@ -4539,40 +4560,19 @@
               "clubColors": "",
               "website": "",
               "founded": null,
-              "crestUrl": "https://crests.football-data.org/10601.png",
+              "crestUrl": "https://crests.football-data.org/10233.png",
               "area": {
-                "name": "Kazakhstan",
-                "code": "KAZ",
+                "name": "Azerbaijan",
+                "code": "AZE",
                 "flag": null
               }
-            },
-            {
-              "teamId": 11034,
-              "teamName": "Paphos FC",
-              "shortName": "Paphos FC",
-              "tla": "AEP",
-              "venue": "Alphamega Stadium",
-              "address": "null null null",
-              "fullAddress": "Alphamega Stadium, null null null",
-              "latitude": 34.6934509,
-              "longitude": 32.9391987,
-              "clubColors": "",
-              "website": "",
-              "founded": null,
-              "crestUrl": "https://crests.football-data.org/11034.png",
-              "area": {
-                "name": "Cyprus",
-                "code": "CYP",
-                "flag": null
-              },
-              "city": "Kolossi"
             }
           ]
         }
       ]
     }
   },
-  "lastGeocoded": "2026-08-26",
+  "lastGeocoded": "2026-08-31",
   "geocodingStats": {
     "successful": 210,
     "skipped": 0,
