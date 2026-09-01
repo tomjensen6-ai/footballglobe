@@ -10,6 +10,11 @@
 
 const fs = require('fs');
 const https = require('https');
+const path = require('path');
+
+// Resolved from __dirname so the script writes the repo-root file no matter
+// which directory it is run from.
+const ROOT = path.join(__dirname, '..');
 
 // Your football-data.org API token
 // Get from: /Users/tje/projects/footballglobe/.env
@@ -228,7 +233,7 @@ async function exportStadiums() {
   }
 
   // Save to file
-  const outputPath = './stadiums-premium.json';
+  const outputPath = path.join(ROOT, 'stadiums-premium.json');
   fs.writeFileSync(outputPath, JSON.stringify(output, null, 2));
 
   console.log('\n' + '='.repeat(60));

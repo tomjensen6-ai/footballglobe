@@ -11,6 +11,7 @@
 
 const https = require('https');
 const fs = require('fs');
+const path = require('path');
 
 // Your existing backend proxy
 const PROXY_BASE = 'https://maprates-proxy.vercel.app/api/fg';
@@ -20,7 +21,10 @@ const PROXY_BASE = 'https://maprates-proxy.vercel.app/api/fg';
 // Switch to 1100 if/when this runs on a paid tier (much higher ceiling).
 const CALL_DELAY_MS = 6500; // free tier: 10 calls/min. Paid tier: 1100.
 
-const CACHE_PATH = './standings-premium-cache.json';
+// Resolved from __dirname so the script writes the repo-root cache no matter
+// which directory it is run from.
+const ROOT = path.join(__dirname, '..');
+const CACHE_PATH = path.join(ROOT, 'standings-premium-cache.json');
 
 // Premium competitions (same as stadium export)
 const PREMIUM_COMPETITIONS = [

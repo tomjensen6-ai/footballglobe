@@ -19,7 +19,10 @@ const PROXY_BASE = 'https://maprates-proxy.vercel.app/api/fg';
 // Switch to 1100 if/when this runs on a paid tier (much higher ceiling).
 const CALL_DELAY_MS = 6500; // free tier: 10 calls/min. Paid tier: 1100.
 
-const CACHE_PATH = './stadiums-premium.json';
+// Resolved from __dirname so the script writes the repo-root cache no matter
+// which directory it is run from.
+const ROOT = path.join(__dirname, '..');
+const CACHE_PATH = path.join(ROOT, 'stadiums-premium.json');
 
 // Manual corrections for venues football-data.org hasn't updated yet, keyed by teamId
 const { _comment: _venueOverridesComment, ...VENUE_OVERRIDES } = JSON.parse(

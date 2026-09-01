@@ -9,6 +9,11 @@
 
 const fs = require('fs');
 const https = require('https');
+const path = require('path');
+
+// Resolved from __dirname so the script reads and writes the repo-root files
+// no matter which directory it is run from.
+const ROOT = path.join(__dirname, '..');
 
 // Read Google API key from environment
 const GOOGLE_API_KEY = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || 'YOUR_KEY_HERE';
@@ -79,7 +84,7 @@ async function geocodeStadiums() {
   console.log('🗺️  GEOCODING STADIUMS\n');
 
   // Read existing JSON
-  const inputPath = './stadiums-premium.json';
+  const inputPath = path.join(ROOT, 'stadiums-premium.json');
   if (!fs.existsSync(inputPath)) {
     console.error('❌ ERROR: stadiums-premium.json not found!');
     console.error('   Run export-stadiums-proxy.js first');
@@ -167,7 +172,7 @@ async function geocodeStadiums() {
   };
 
   // Save updated JSON
-  const outputPath = './stadiums-premium-geocoded.json';
+  const outputPath = path.join(ROOT, 'stadiums-premium-geocoded.json');
   fs.writeFileSync(outputPath, JSON.stringify(data, null, 2));
 
   // Also overwrite original
