@@ -15,6 +15,13 @@ const fs = require('fs');
 // Your existing backend proxy
 const PROXY_BASE = 'https://maprates-proxy.vercel.app/api/fg';
 
+// Delay between fetches, in ms. football-data.org's free tier allows 10
+// calls/minute, so anything under ~6000ms risks a 429; 6500ms leaves margin.
+// Switch to 1100 if/when this runs on a paid tier (much higher ceiling).
+const CALL_DELAY_MS = 6500; // free tier: 10 calls/min. Paid tier: 1100.
+
+const CACHE_PATH = './standings-premium-cache.json';
+
 // Premium competitions (same as stadium export)
 const PREMIUM_COMPETITIONS = [
   { id: 2021, name: 'Premier League', country: 'England' },
@@ -28,6 +35,13 @@ const PREMIUM_COMPETITIONS = [
   { id: 2013, name: 'Brasileiro Série A', country: 'Brazil' },
   { id: 2001, name: 'UEFA Champions League', country: 'Europe' },
 ];
+
+// Competition ids currently accessible on this subscription. Anything in
+// PREMIUM_COMPETITIONS but not here is "frozen" - we leave its cached entry
+// untouched instead of attempting (and failing) to fetch it.
+const LIVE_COMPETITIONS = new Set([
+  2021, 2016, 2014, 2002, 2019, 2015, 2003, 2017, 2013, 2001
+]);
 
 /**
  * Fetch data from proxy
@@ -132,6 +146,23 @@ function processStandings(standingsData, competitionId, competitionName, country
 }
 
 /**
+ * Load the existing cache's leagues, if any. Returns {} on a missing or
+ * unparseable file so a first-ever run still works.
+ */
+function loadExistingLeagues() {
+  try {
+    const raw = fs.readFileSync(CACHE_PATH, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed.leagues === 'object' && parsed.leagues !== null) {
+      return parsed.leagues;
+    }
+    return {};
+  } catch (err) {
+    return {};
+  }
+}
+
+/**
  * Export all standings
  */
 async function exportStandings() {
@@ -140,53 +171,100 @@ async function exportStandings() {
   console.log('Competitions:', PREMIUM_COMPETITIONS.length);
   console.log('');
 
+  const existingLeagues = loadExistingLeagues();
+  const existingCount = Object.keys(existingLeagues).length;
+
+  // Seed from the existing cache so a failed/frozen league keeps its last
+  // known good data instead of vanishing from the output.
   const output = {
     lastUpdated: new Date().toISOString(),
     source: 'football-data.org',
     exportMethod: 'maprates-proxy',
     totalLeagues: 0,
-    leagues: {}
+    leagues: { ...existingLeagues }
   };
 
+  let fetchedFresh = 0;
+  let keptFrozen = 0;
+  let failedKept = 0;
+
   for (const comp of PREMIUM_COMPETITIONS) {
+    const key = String(comp.id);
+    const isLive = LIVE_COMPETITIONS.has(comp.id);
+
     console.log(`\n📋 ${comp.name} (${comp.country})`);
     console.log('─'.repeat(50));
+
+    if (!isLive) {
+      console.log('  ⏸️  Skipped (frozen - not on current subscription)');
+      if (output.leagues[key]) {
+        output.leagues[key].live = false;
+      }
+      keptFrozen++;
+      continue;
+    }
 
     try {
       // Fetch standings through proxy
       const standingsData = await fetchFromProxy(`football-standings?competition=${comp.id}`);
-      
+
       const processedData = processStandings(standingsData, comp.id, comp.name, comp.country);
-      
+
       if (processedData) {
-        output.leagues[comp.id] = processedData;
-        output.totalLeagues++;
+        processedData.capturedAt = new Date().toISOString();
+        processedData.live = true;
+        output.leagues[key] = processedData;
+        fetchedFresh++;
+      } else {
+        // A null return here is expected for e.g. Champions League before
+        // the league phase starts - not a fetch failure. Keep whatever is
+        // cached (if anything) rather than dropping the league.
+        console.log('  ℹ️  No table returned - keeping cached data');
+        if (output.leagues[key]) {
+          output.leagues[key].live = true;
+        }
+        failedKept++;
       }
-
-      // Rate limiting
-      await sleep(1000);
-
     } catch (err) {
       console.error(`  ❌ ERROR: ${err.message}`);
+      if (output.leagues[key]) {
+        output.leagues[key].live = true;
+      }
+      failedKept++;
     }
+
+    // Rate limiting - only needed when we actually made a call
+    await sleep(CALL_DELAY_MS);
+  }
+
+  output.totalLeagues = Object.keys(output.leagues).length;
+
+  // Pre-write guard: never let a bad run shrink the cache.
+  const requiredMinimum = existingCount > 0 ? existingCount : 5;
+  if (output.totalLeagues < requiredMinimum) {
+    console.error('\n' + '='.repeat(60));
+    console.error('🛑 GUARD TRIPPED - refusing to write cache');
+    console.error('='.repeat(60));
+    console.error(`   Found: ${output.totalLeagues} leagues`);
+    console.error(`   Expected at least: ${requiredMinimum}`);
+    console.error(`   Existing cache at ${CACHE_PATH} left untouched.`);
+    console.error('');
+    process.exit(1);
   }
 
   // Save to file
-  const outputPath = './standings-premium-cache.json';
-  fs.writeFileSync(outputPath, JSON.stringify(output, null, 2));
+  fs.writeFileSync(CACHE_PATH, JSON.stringify(output, null, 2));
 
   console.log('\n' + '='.repeat(60));
   console.log('🎉 STANDINGS EXPORT COMPLETE!');
   console.log('='.repeat(60));
-  console.log(`📊 Statistics:`);
-  console.log(`   Leagues fetched: ${output.totalLeagues}/${PREMIUM_COMPETITIONS.length}`);
-  console.log(`   Last updated: ${output.lastUpdated}`);
-  console.log(`\n📁 Saved to: ${outputPath}`);
-  console.log('');
-  console.log('Next steps:');
-  console.log('1. Verify the standings data');
-  console.log('2. Set up daily automatic updates (Week 2 Day 2)');
-  console.log('3. Integrate into React app (Week 3)');
+  console.log('📊 Summary:');
+  console.log(`   Fetched fresh:   ${fetchedFresh}`);
+  console.log(`   Kept frozen:     ${keptFrozen}`);
+  console.log(`   Failed (cached): ${failedKept}`);
+  console.log(`   Total in file:   ${output.totalLeagues}`);
+  console.log(`   Last updated:    ${output.lastUpdated}`);
+  console.log(`\n📁 Saved to: ${CACHE_PATH}`);
   console.log('');
 }
 

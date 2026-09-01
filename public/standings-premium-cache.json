@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-08-31T18:04:43.176Z",
+  "lastUpdated": "2026-08-31T19:10:29.219Z",
   "source": "football-data.org",
   "exportMethod": "maprates-proxy",
   "totalLeagues": 9,
@@ -361,7 +361,9 @@
             "form": null
           }
         ]
-      }
+      },
+      "capturedAt": "2026-08-31T19:10:51.300Z",
+      "live": true
     },
     "2003": {
       "competition": {
@@ -720,7 +722,9 @@
             "form": null
           }
         ]
-      }
+      },
+      "capturedAt": "2026-08-31T19:11:12.312Z",
+      "live": true
     },
     "2013": {
       "competition": {
@@ -1117,7 +1121,9 @@
             "form": null
           }
         ]
-      }
+      },
+      "capturedAt": "2026-08-31T19:11:26.905Z",
+      "live": true
     },
     "2014": {
       "competition": {
@@ -1193,6 +1199,25 @@
           {
             "position": 4,
             "team": {
+              "id": 79,
+              "name": "CA Osasuna",
+              "shortName": "Osasuna",
+              "tla": "OSA",
+              "crest": "https://crests.football-data.org/79.png"
+            },
+            "playedGames": 3,
+            "won": 2,
+            "draw": 1,
+            "lost": 0,
+            "points": 7,
+            "goalsFor": 3,
+            "goalsAgainst": 1,
+            "goalDifference": 2,
+            "form": null
+          },
+          {
+            "position": 5,
+            "team": {
               "id": 81,
               "name": "FC Barcelona",
               "shortName": "Barça",
@@ -1210,7 +1235,7 @@
             "form": null
           },
           {
-            "position": 5,
+            "position": 6,
             "team": {
               "id": 559,
               "name": "Sevilla FC",
@@ -1229,7 +1254,7 @@
             "form": null
           },
           {
-            "position": 6,
+            "position": 7,
             "team": {
               "id": 90,
               "name": "Real Betis Balompié",
@@ -1248,7 +1273,7 @@
             "form": null
           },
           {
-            "position": 7,
+            "position": 8,
             "team": {
               "id": 560,
               "name": "RC Deportivo La Coruña",
@@ -1264,25 +1289,6 @@
             "goalsFor": 5,
             "goalsAgainst": 3,
             "goalDifference": 2,
-            "form": null
-          },
-          {
-            "position": 8,
-            "team": {
-              "id": 79,
-              "name": "CA Osasuna",
-              "shortName": "Osasuna",
-              "tla": "OSA",
-              "crest": "https://crests.football-data.org/79.png"
-            },
-            "playedGames": 3,
-            "won": 1,
-            "draw": 2,
-            "lost": 0,
-            "points": 5,
-            "goalsFor": 2,
-            "goalsAgainst": 1,
-            "goalDifference": 1,
             "form": null
           },
           {
@@ -1326,25 +1332,6 @@
           {
             "position": 11,
             "team": {
-              "id": 82,
-              "name": "Getafe CF",
-              "shortName": "Getafe",
-              "tla": "GET",
-              "crest": "https://crests.football-data.org/82.png"
-            },
-            "playedGames": 3,
-            "won": 1,
-            "draw": 1,
-            "lost": 1,
-            "points": 4,
-            "goalsFor": 1,
-            "goalsAgainst": 3,
-            "goalDifference": -2,
-            "form": null
-          },
-          {
-            "position": 12,
-            "team": {
               "id": 80,
               "name": "RCD Espanyol de Barcelona",
               "shortName": "Espanyol",
@@ -1362,7 +1349,7 @@
             "form": null
           },
           {
-            "position": 13,
+            "position": 12,
             "team": {
               "id": 77,
               "name": "Athletic Club",
@@ -1381,7 +1368,7 @@
             "form": null
           },
           {
-            "position": 14,
+            "position": 13,
             "team": {
               "id": 92,
               "name": "Real Sociedad de Fútbol",
@@ -1396,6 +1383,25 @@
             "points": 3,
             "goalsFor": 3,
             "goalsAgainst": 6,
+            "goalDifference": -3,
+            "form": null
+          },
+          {
+            "position": 14,
+            "team": {
+              "id": 82,
+              "name": "Getafe CF",
+              "shortName": "Getafe",
+              "tla": "GET",
+              "crest": "https://crests.football-data.org/82.png"
+            },
+            "playedGames": 3,
+            "won": 1,
+            "draw": 0,
+            "lost": 2,
+            "points": 3,
+            "goalsFor": 1,
+            "goalsAgainst": 4,
             "goalDifference": -3,
             "form": null
           },
@@ -1514,7 +1520,9 @@
             "form": null
           }
         ]
-      }
+      },
+      "capturedAt": "2026-08-31T19:10:44.318Z",
+      "live": true
     },
     "2015": {
       "competition": {
@@ -1873,7 +1881,9 @@
             "form": null
           }
         ]
-      }
+      },
+      "capturedAt": "2026-08-31T19:11:05.301Z",
+      "live": true
     },
     "2016": {
       "competition": {
@@ -2346,7 +2356,9 @@
             "form": null
           }
         ]
-      }
+      },
+      "capturedAt": "2026-08-31T19:10:37.294Z",
+      "live": true
     },
     "2017": {
       "competition": {
@@ -2705,7 +2717,9 @@
             "form": null
           }
         ]
-      }
+      },
+      "capturedAt": "2026-08-31T19:11:19.318Z",
+      "live": true
     },
     "2019": {
       "competition": {
@@ -2735,9 +2749,9 @@
             "draw": 0,
             "lost": 0,
             "points": 6,
-            "goalsFor": 7,
+            "goalsFor": 8,
             "goalsAgainst": 0,
-            "goalDifference": 7,
+            "goalDifference": 8,
             "form": null
           },
           {
@@ -2857,6 +2871,25 @@
           {
             "position": 8,
             "team": {
+              "id": 102,
+              "name": "Atalanta BC",
+              "shortName": "Atalanta",
+              "tla": "ATA",
+              "crest": "https://crests.football-data.org/102.png"
+            },
+            "playedGames": 2,
+            "won": 1,
+            "draw": 1,
+            "lost": 0,
+            "points": 4,
+            "goalsFor": 2,
+            "goalsAgainst": 1,
+            "goalDifference": 1,
+            "form": null
+          },
+          {
+            "position": 9,
+            "team": {
               "id": 470,
               "name": "Frosinone Calcio",
               "shortName": "Frosinone",
@@ -2874,7 +2907,7 @@
             "form": null
           },
           {
-            "position": 9,
+            "position": 10,
             "team": {
               "id": 113,
               "name": "SSC Napoli",
@@ -2889,25 +2922,6 @@
             "points": 3,
             "goalsFor": 3,
             "goalsAgainst": 2,
-            "goalDifference": 1,
-            "form": null
-          },
-          {
-            "position": 10,
-            "team": {
-              "id": 102,
-              "name": "Atalanta BC",
-              "shortName": "Atalanta",
-              "tla": "ATA",
-              "crest": "https://crests.football-data.org/102.png"
-            },
-            "playedGames": 1,
-            "won": 1,
-            "draw": 0,
-            "lost": 0,
-            "points": 3,
-            "goalsFor": 2,
-            "goalsAgainst": 1,
             "goalDifference": 1,
             "form": null
           },
@@ -2964,8 +2978,8 @@
             "lost": 1,
             "points": 3,
             "goalsFor": 2,
-            "goalsAgainst": 3,
-            "goalDifference": -1,
+            "goalsAgainst": 4,
+            "goalDifference": -2,
             "form": null
           },
           {
@@ -2977,11 +2991,11 @@
               "tla": "BOL",
               "crest": "https://crests.football-data.org/103.png"
             },
-            "playedGames": 1,
+            "playedGames": 2,
             "won": 0,
-            "draw": 0,
+            "draw": 1,
             "lost": 1,
-            "points": 0,
+            "points": 1,
             "goalsFor": 0,
             "goalsAgainst": 1,
             "goalDifference": -1,
@@ -3102,7 +3116,9 @@
             "form": null
           }
         ]
-      }
+      },
+      "capturedAt": "2026-08-31T19:10:58.287Z",
+      "live": true
     },
     "2021": {
       "competition": {
@@ -3197,6 +3213,25 @@
           {
             "position": 5,
             "team": {
+              "id": 57,
+              "name": "Arsenal FC",
+              "shortName": "Arsenal",
+              "tla": "ARS",
+              "crest": "https://crests.football-data.org/57.png"
+            },
+            "playedGames": 2,
+            "won": 1,
+            "draw": 1,
+            "lost": 0,
+            "points": 4,
+            "goalsFor": 3,
+            "goalsAgainst": 0,
+            "goalDifference": 3,
+            "form": null
+          },
+          {
+            "position": 6,
+            "team": {
               "id": 67,
               "name": "Newcastle United FC",
               "shortName": "Newcastle",
@@ -3214,7 +3249,7 @@
             "form": null
           },
           {
-            "position": 6,
+            "position": 7,
             "team": {
               "id": 62,
               "name": "Everton FC",
@@ -3233,7 +3268,7 @@
             "form": null
           },
           {
-            "position": 7,
+            "position": 8,
             "team": {
               "id": 341,
               "name": "Leeds United FC",
@@ -3252,7 +3287,7 @@
             "form": null
           },
           {
-            "position": 8,
+            "position": 9,
             "team": {
               "id": 397,
               "name": "Brighton & Hove Albion FC",
@@ -3267,25 +3302,6 @@
             "points": 3,
             "goalsFor": 7,
             "goalsAgainst": 4,
-            "goalDifference": 3,
-            "form": null
-          },
-          {
-            "position": 9,
-            "team": {
-              "id": 57,
-              "name": "Arsenal FC",
-              "shortName": "Arsenal",
-              "tla": "ARS",
-              "crest": "https://crests.football-data.org/57.png"
-            },
-            "playedGames": 1,
-            "won": 1,
-            "draw": 0,
-            "lost": 0,
-            "points": 3,
-            "goalsFor": 3,
-            "goalsAgainst": 0,
             "goalDifference": 3,
             "form": null
           },
@@ -3406,6 +3422,25 @@
           {
             "position": 16,
             "team": {
+              "id": 58,
+              "name": "Aston Villa FC",
+              "shortName": "Aston Villa",
+              "tla": "AVL",
+              "crest": "https://crests.football-data.org/58.png"
+            },
+            "playedGames": 2,
+            "won": 0,
+            "draw": 1,
+            "lost": 1,
+            "points": 1,
+            "goalsFor": 0,
+            "goalsAgainst": 4,
+            "goalDifference": -4,
+            "form": null
+          },
+          {
+            "position": 17,
+            "team": {
               "id": 63,
               "name": "Fulham FC",
               "shortName": "Fulham",
@@ -3423,26 +3458,7 @@
             "form": null
           },
           {
-            "position": 17,
-            "team": {
-              "id": 58,
-              "name": "Aston Villa FC",
-              "shortName": "Aston Villa",
-              "tla": "AVL",
-              "crest": "https://crests.football-data.org/58.png"
-            },
-            "playedGames": 1,
-            "won": 0,
-            "draw": 0,
-            "lost": 1,
-            "points": 0,
-            "goalsFor": 0,
-            "goalsAgainst": 4,
-            "goalDifference": -4,
-            "form": null
-          },
-          {
-            "position": 17,
+            "position": 18,
             "team": {
               "id": 1076,
               "name": "Coventry City FC",
@@ -3499,7 +3515,9 @@
             "form": null
           }
         ]
-      }
+      },
+      "capturedAt": "2026-08-31T19:10:30.280Z",
+      "live": true
     }
   }
 }
