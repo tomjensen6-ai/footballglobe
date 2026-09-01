@@ -26,8 +26,23 @@ const CALL_DELAY_MS = 6500; // free tier: 10 calls/min. Paid tier: 1100.
 const ROOT = path.join(__dirname, '..');
 const CACHE_PATH = path.join(ROOT, 'standings-premium-cache.json');
 
-// Premium competitions (same as stadium export)
-const PREMIUM_COMPETITIONS = [
+// Display-name overrides, keyed by competition id. football-data returns the
+// formal name; these keep the names this project has always shown. Anything
+// not listed here uses the API's own name.
+const COMPETITION_NAMES = {
+  2014: 'La Liga',                  // API: "Primera Division"
+  2013: 'Brasileiro Série A',       // API: "Campeonato Brasileiro Série A"
+};
+
+// Competitions kept regardless of type. Discovery filters to type LEAGUE;
+// the Champions League is a CUP but has always been part of this export.
+const ALWAYS_INCLUDE = new Set([
+  2001, // UEFA Champions League
+]);
+
+// Used only if discovery fails. Preserves the ten competitions this script
+// fetched before discovery existed.
+const FALLBACK_COMPETITIONS = [
   { id: 2021, name: 'Premier League', country: 'England' },
   { id: 2016, name: 'Championship', country: 'England' },
   { id: 2014, name: 'La Liga', country: 'Spain' },
@@ -39,13 +54,6 @@ const PREMIUM_COMPETITIONS = [
   { id: 2013, name: 'Brasileiro Série A', country: 'Brazil' },
   { id: 2001, name: 'UEFA Champions League', country: 'Europe' },
 ];
-
-// Competition ids currently accessible on this subscription. Anything in
-// PREMIUM_COMPETITIONS but not here is "frozen" - we leave its cached entry
-// untouched instead of attempting (and failing) to fetch it.
-const LIVE_COMPETITIONS = new Set([
-  2021, 2016, 2014, 2002, 2019, 2015, 2003, 2017, 2013, 2001
-]);
 
 /**
  * Fetch data from proxy
@@ -84,6 +92,50 @@ function fetchFromProxy(endpoint) {
  */
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * Ask the proxy which competitions the current plan actually serves. Whatever
+ * comes back IS the live set - there is no separate frozen/live list to keep
+ * in sync by hand any more.
+ *
+ * Returns { competitions, usedFallback }. Discovery failure is not fatal: the
+ * run continues against FALLBACK_COMPETITIONS.
+ */
+async function discoverCompetitions() {
+  try {
+    const data = await fetchFromProxy('football-competitions');
+    const all = Array.isArray(data && data.competitions) ? data.competitions : [];
+
+    if (all.length === 0) {
+      throw new Error('no competitions returned');
+    }
+
+    const competitions = all
+      .filter(c => c.type === 'LEAGUE' || ALWAYS_INCLUDE.has(c.id))
+      .map(c => ({
+        id: c.id,
+        name: COMPETITION_NAMES[c.id] ?? c.name,
+        country: (c.area && c.area.name) || 'Unknown',
+      }));
+
+    if (competitions.length === 0) {
+      throw new Error('discovery matched no competitions');
+    }
+
+    return { competitions, usedFallback: false };
+  } catch (err) {
+    console.error('');
+    console.error('!'.repeat(60));
+    console.error('!!  COMPETITION DISCOVERY FAILED - USING HARDCODED FALLBACK');
+    console.error('!'.repeat(60));
+    console.error(`!!  ${err.message}`);
+    console.error(`!!  Falling back to ${FALLBACK_COMPETITIONS.length} hardcoded competitions.`);
+    console.error('!!  The export will proceed, but the list may be stale.');
+    console.error('!'.repeat(60));
+    console.error('');
+    return { competitions: FALLBACK_COMPETITIONS, usedFallback: true };
+  }
 }
 
 /**
@@ -189,8 +241,23 @@ function loadExistingLeagues() {
 async function exportStandings() {
   console.log('📊 STANDINGS EXPORT\n');
   console.log('Backend:', PROXY_BASE);
-  console.log('Competitions:', PREMIUM_COMPETITIONS.length);
   console.log('');
+
+  const { competitions: PREMIUM_COMPETITIONS, usedFallback } = await discoverCompetitions();
+
+  console.log('Discovered competitions:', PREMIUM_COMPETITIONS.length,
+    usedFallback ? '(FALLBACK)' : '(from proxy)');
+  console.log('-'.repeat(60));
+  for (const comp of PREMIUM_COMPETITIONS) {
+    console.log(`  ${String(comp.id).padEnd(6)} ${comp.country} - ${comp.name}`);
+  }
+  console.log('-'.repeat(60));
+  console.log('');
+
+  // Discovery consumed one of the 10 calls/minute.
+  if (!usedFallback) {
+    await sleep(CALL_DELAY_MS);
+  }
 
   const existingLeagues = loadExistingLeagues();
   const existingCount = Object.keys(existingLeagues).length;
@@ -207,24 +274,14 @@ async function exportStandings() {
   };
 
   let fetchedFresh = 0;
-  let keptFrozen = 0;
   let failedKept = 0;
 
   for (const comp of PREMIUM_COMPETITIONS) {
     const key = String(comp.id);
-    const isLive = LIVE_COMPETITIONS.has(comp.id);
 
     console.log(`\n📋 ${comp.name} (${comp.country})`);
     console.log('─'.repeat(50));
 
-    if (!isLive) {
-      console.log('  ⏸️  Skipped (frozen - not on current subscription)');
-      if (output.leagues[key]) {
-        output.leagues[key].live = false;
-      }
-      keptFrozen++;
-      continue;
-    }
 
     try {
       // Fetch standings through proxy
@@ -301,7 +358,6 @@ async function exportStandings() {
   console.log('='.repeat(60));
   console.log('📊 Summary:');
   console.log(`   Fetched fresh:   ${fetchedFresh}`);
-  console.log(`   Kept frozen:     ${keptFrozen}`);
   console.log(`   Failed (cached): ${failedKept}`);
   console.log(`   Total in file:   ${output.totalLeagues} leagues (was ${existingCount})`);
   console.log(`   Table rows:      ${totalRows} (was ${existingRows})`);

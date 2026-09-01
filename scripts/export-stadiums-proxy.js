@@ -53,8 +53,32 @@ function applyVenueOverride(stadium) {
   };
 }
 
-// Premium competitions to export (tier: 1 = top flight, 2 = second division, etc.)
-const PREMIUM_COMPETITIONS = [
+// Divisional tier is NOT derivable from the API: /competitions reports
+// plan (the subscription level - Premier League and Championship are both
+// TIER_ONE), never the level in the national pyramid. So tiers stay a local
+// map, holding only the exceptions to "top flight".
+const DEFAULT_TIER = 1;
+const COMPETITION_TIERS = {
+  2016: 2, // England - Championship
+};
+
+// Display-name overrides, keyed by competition id. football-data returns the
+// formal name; these keep the names this project has always shown. Anything
+// not listed here uses the API's own name.
+const COMPETITION_NAMES = {
+  2014: 'La Liga',                  // API: "Primera Division"
+  2013: 'Brasileiro Série A',       // API: "Campeonato Brasileiro Série A"
+};
+
+// Competitions kept regardless of type. Discovery filters to type LEAGUE;
+// the Champions League is a CUP but has always been part of this export.
+const ALWAYS_INCLUDE = new Set([
+  2001, // UEFA Champions League
+]);
+
+// Used only if discovery fails. Preserves the ten competitions this script
+// exported before discovery existed.
+const FALLBACK_COMPETITIONS = [
   { id: 2021, name: 'Premier League', country: 'England', tier: 1 },
   { id: 2016, name: 'Championship', country: 'England', tier: 2 },
   { id: 2014, name: 'La Liga', country: 'Spain', tier: 1 },
@@ -160,6 +184,52 @@ function countStadiums(countries) {
 }
 
 /**
+ * Ask the proxy which competitions the current plan actually serves, instead
+ * of trusting a hardcoded list. Keeps type LEAGUE plus anything in
+ * ALWAYS_INCLUDE, and derives country from area.name.
+ *
+ * Returns { competitions, usedFallback }. A failure here is not fatal: the
+ * run continues against FALLBACK_COMPETITIONS so a discovery outage cannot
+ * wipe the export.
+ */
+async function discoverCompetitions() {
+  try {
+    const data = await fetchFromProxy('football-competitions');
+    const all = Array.isArray(data && data.competitions) ? data.competitions : [];
+
+    if (all.length === 0) {
+      throw new Error('no competitions returned');
+    }
+
+    const competitions = all
+      .filter(c => c.type === 'LEAGUE' || ALWAYS_INCLUDE.has(c.id))
+      .map(c => ({
+        id: c.id,
+        name: COMPETITION_NAMES[c.id] ?? c.name,
+        country: (c.area && c.area.name) || 'Unknown',
+        tier: COMPETITION_TIERS[c.id] ?? DEFAULT_TIER,
+      }));
+
+    if (competitions.length === 0) {
+      throw new Error('discovery matched no competitions');
+    }
+
+    return { competitions, usedFallback: false };
+  } catch (err) {
+    console.error('');
+    console.error('!'.repeat(60));
+    console.error('!!  COMPETITION DISCOVERY FAILED - USING HARDCODED FALLBACK');
+    console.error('!'.repeat(60));
+    console.error(`!!  ${err.message}`);
+    console.error(`!!  Falling back to ${FALLBACK_COMPETITIONS.length} hardcoded competitions.`);
+    console.error('!!  The export will proceed, but the list may be stale.');
+    console.error('!'.repeat(60));
+    console.error('');
+    return { competitions: FALLBACK_COMPETITIONS, usedFallback: true };
+  }
+}
+
+/**
  * Insert or replace a single league's entry within output.countries,
  * merging at league level so a partial failure elsewhere doesn't wipe
  * a country's other leagues.
@@ -190,8 +260,23 @@ function upsertLeague(output, comp, stadiums) {
 async function exportStadiums() {
   console.log('🏟️  STADIUM EXPORT (Using Proxy)\n');
   console.log('Backend:', PROXY_BASE);
-  console.log('Competitions:', PREMIUM_COMPETITIONS.length);
   console.log('');
+
+  const { competitions: PREMIUM_COMPETITIONS, usedFallback } = await discoverCompetitions();
+
+  console.log('Discovered competitions:', PREMIUM_COMPETITIONS.length,
+    usedFallback ? '(FALLBACK)' : '(from proxy)');
+  console.log('-'.repeat(60));
+  for (const comp of PREMIUM_COMPETITIONS) {
+    console.log(`  ${String(comp.id).padEnd(6)} tier ${comp.tier}  ${comp.country} - ${comp.name}`);
+  }
+  console.log('-'.repeat(60));
+  console.log('');
+
+  // Discovery consumed one of the 10 calls/minute.
+  if (!usedFallback) {
+    await sleep(CALL_DELAY_MS);
+  }
 
   const existing = loadExistingCache();
   const hadExistingCache = existing !== null;
