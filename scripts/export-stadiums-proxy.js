@@ -199,14 +199,20 @@ async function exportStadiums() {
   const existingTotalStadiums = Math.max(existingStatedTotal, existingRecountedTotal);
   const tierById = new Map(PREMIUM_COMPETITIONS.map(c => [c.id, c.tier]));
 
-  // Build a teamId -> coordinates lookup from the existing cache so stadiums
-  // that were already geocoded don't get reset to null on every run.
+  // Build a teamId -> geocoded-fields lookup from the existing cache so
+  // stadiums that were already geocoded don't get reset on every run.
+  // Mirrors exactly what geocode-stadiums.js writes onto a stadium record:
+  // latitude, longitude, and (when resolved) city.
   const coordsByTeamId = new Map();
   for (const countryData of Object.values(existing?.countries || {})) {
     for (const league of countryData.leagues || []) {
       for (const stadium of league.stadiums || []) {
         if (stadium.teamId != null && stadium.latitude != null && stadium.longitude != null) {
-          coordsByTeamId.set(stadium.teamId, { latitude: stadium.latitude, longitude: stadium.longitude });
+          coordsByTeamId.set(stadium.teamId, {
+            latitude: stadium.latitude,
+            longitude: stadium.longitude,
+            city: stadium.city
+          });
         }
       }
     }
@@ -286,9 +292,13 @@ async function exportStadiums() {
             address: team.address || '',
             fullAddress: fullAddress || `${team.name}, ${comp.country}`,
             // Carried forward from the previous cache when already geocoded;
-            // genuinely new stadiums stay null until geocode-stadiums.js runs.
+            // genuinely new stadiums stay null/unset until geocode-stadiums.js
+            // runs. city is only set when the cache had one (JSON.stringify
+            // drops the undefined key, matching geocode-stadiums.js's own
+            // conditional write).
             latitude: cachedCoords ? cachedCoords.latitude : null,
             longitude: cachedCoords ? cachedCoords.longitude : null,
+            city: cachedCoords?.city,
             clubColors: team.clubColors || '',
             website: team.website || '',
             founded: team.founded || null,
