@@ -6,10 +6,106 @@
     "reason": "Everton moved from Goodison Park for the 2025/26 season",
     "added": "2026-08-25"
   },
+  "87": {
+    "venue": "Estadio de Vallecas",
+    "latitude": 40.3918305,
+    "longitude": -3.6585975,
+    "city": "Madrid",
+    "reason": "\"Estadio del Rayo Vallecano\" geocoded to a street address on Av. de la Albufera; the ground is Estadio de Vallecas. Verified: query \"Estadio de Vallecas, Spain\" [country:ES] returned \"C. del Payaso Fofó, 0, Puente de Vallecas, 28018 Madrid, Spain\" with types establishment, point_of_interest, stadium",
+    "added": "2026-09-01"
+  },
+  "113": {
+    "venue": "Stadio Diego Armando Maradona",
+    "latitude": 40.8279365,
+    "longitude": 14.1930611,
+    "city": "Napoli",
+    "reason": "football-data still lists Stadio San Paolo, renamed Stadio Diego Armando Maradona in 2020; its stored city was \"Province of Caserta\", ~23km from the ground. Verified: query \"Stadio Diego Armando Maradona, Italy\" [country:IT] returned \"Via Giambattista Marino, 80125 Napoli NA, Italy\" with types establishment, point_of_interest, stadium",
+    "added": "2026-09-01"
+  },
+  "471": {
+    "venue": "Mapei Stadium Reggio Emilia",
+    "latitude": 44.7144306,
+    "longitude": 10.6489462,
+    "city": "Reggio Emilia",
+    "reason": "football-data lists city Sassuolo, but the Mapei Stadium is in Reggio Emilia ~24km away; the stored coordinates were the Sassuolo town centroid. Verified: query \"Mapei Stadium Reggio Emilia, Italy\" [country:IT] returned \"Piazzale Atleti Azzuri D'Italia, 1, 42122 Reggio Emilia RE, Italy\" with types establishment, point_of_interest, stadium",
+    "added": "2026-09-01"
+  },
+  "583": {
+    "venue": "Parque de Jogos Comendador Joaquim de Almeida Freitas",
+    "latitude": 41.378076,
+    "longitude": -8.3545795,
+    "city": "Moreira de Cónegos",
+    "reason": "\"P.D. Comendador Joaquim de Almeida Freitas\" geocoded to the avenue of the same name rather than the ground. Verified: query \"Parque de Jogos Comendador Joaquim de Almeida Freitas, Portugal\" [country:PT] returned \"Av. Comendador Joaquim de Almeida Freitas, 4870-270 Moreira de Cónegos, Portugal\" with types establishment, point_of_interest, stadium",
+    "added": "2026-09-01"
+  },
+  "610": {
+    "venue": "RAMS Park",
+    "latitude": 41.10336909999999,
+    "longitude": 28.9910434,
+    "city": "Sarıyer",
+    "reason": "Türk Telekom Arena was renamed RAMS Park; the stale name geocoded to a street rather than the ground. Verified: query \"RAMS Park, TUR\" [country:TR] returned \"Huzur, Metin Oktay Caddesi, 34386 Sarıyer/İstanbul, Türkiye\" with types establishment, point_of_interest, stadium",
+    "added": "2026-09-01"
+  },
   "1076": {
     "venue": "Coventry Building Society Arena",
     "address": "Judds Lane, Coventry CV6 6GE",
     "reason": "football-data still lists St Andrew's from the Birmingham groundshare; their coordinates are already correct for Coventry, but their address was also corrected - it resolved to Gallagher Retail Park, a neighbouring site, rather than the stadium",
     "added": "2026-08-26"
+  },
+  "1780": {
+    "venue": "Estádio São Januário",
+    "latitude": -22.8909154,
+    "longitude": -43.2280905,
+    "city": "Rio de Janeiro",
+    "reason": "\"Estádio Club de Regatas Vasco da Gama\" geocoded to a city-centre address; the ground is Estádio São Januário. Verified: query \"Estádio São Januário, Brazil\" [country:BR] returned \"Av. Roberto Dinamite, 10 - Vasco da Gama, Rio de Janeiro - RJ, 20921-060, Brazil\" with types establishment, point_of_interest, stadium",
+    "added": "2026-09-01"
+  },
+  "1887": {
+    "venue": "Arena Lviv",
+    "latitude": 49.7748612,
+    "longitude": 24.02768,
+    "city": "L'viv",
+    "reason": "football-data lists the Metalist complex (Kharkiv) and the cached coordinate was in Malaysia (1.87, 102.93); Shakhtar play home games at Arena Lviv in exile. Verified: query \"Arena Lviv, UKR\" [country:UA] returned \"Stryiska St, 199, L'viv, L'vivs'ka oblast, Ukraine, 79031\" with types establishment, point_of_interest, stadium",
+    "added": "2026-09-01"
+  },
+  "5530": {
+    "venue": "Estádio de São Miguel",
+    "latitude": 37.763779,
+    "longitude": -25.6226351,
+    "city": "Ponta Delgada",
+    "reason": "\"Cidade do Futebol\" geocoded to the Ponta Delgada town centroid; the ground is Estádio de São Miguel. Verified: query \"Estádio de São Miguel, Portugal\" [country:PT] returned \"Estr. Regional da Ribeira Grande 1097, 9500-702, Portugal\" with types establishment, point_of_interest, stadium",
+    "added": "2026-09-01"
+  },
+  "5890": {
+    "venue": "Stadio Via del Mare",
+    "latitude": 40.365118,
+    "longitude": 18.2089769,
+    "city": "Lecce",
+    "reason": "football-data lists \"Stadio Comunale Via Del Mare\"; geocoding that matched a road in Matino ~36km away. Verified: query \"Stadio Via del Mare, Italy\" [country:IT] returned \"Via del Mare, 73100 Lecce LE, Italy\" with types establishment, point_of_interest, stadium",
+    "added": "2026-09-01"
+  },
+  "7822": {
+    "venue": "Estádio do Alverca",
+    "latitude": 38.89788,
+    "longitude": -9.0350158,
+    "city": "Alverca do Ribatejo",
+    "reason": "\"Campo Futebol Clube Alverca\" geocoded to a street address on Av. Infante Dom Pedro. Verified: query \"Estádio do Alverca, Portugal\" [country:PT] returned \"R. César Augusto Gonçalves Ferreira 2615, 2615-391 Alverca do Ribatejo, Portugal\" with types establishment, point_of_interest, stadium",
+    "added": "2026-09-01"
+  },
+  "9136": {
+    "venue": "Estádio José Gomes Amadora",
+    "latitude": 38.7520239,
+    "longitude": -9.227896699999999,
+    "city": "Amadora",
+    "reason": "football-data lists \"Estádio Nacional\" with no city and null coordinates; the club plays at Estádio José Gomes in Amadora. Verified: query \"Estádio José Gomes Amadora, Portugal\" [country:PT] returned \"Av. Dr. José Pontes, 2720-206 Amadora, Portugal\" with types establishment, point_of_interest, stadium",
+    "added": "2026-09-01"
+  },
+  "10233": {
+    "venue": "Bank Respublika Arena Baku",
+    "latitude": 40.486353,
+    "longitude": 49.766203,
+    "city": "Baku",
+    "reason": "football-data has venue \"Unknown\" with null coordinates; the club plays at Bank Respublika Arena in Baku. Verified: query \"Bank Respublika Arena Baku, AZE\" [country:AZ] returned \"Masazır qəsəbəsi, Qurtuluş 93, Baku 0116, Azerbaijan\" with types establishment, point_of_interest, stadium",
+    "added": "2026-09-01"
   }
 }

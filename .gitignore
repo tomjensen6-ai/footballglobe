@@ -36,3 +36,5 @@ yarn-error.log*
 /stadiums-premium.json
 /stadiums-premium-geocoded.json
 /standings-premium-cache.json
+/stadiums-premium-candidate.json
+/stadiums-premium-candidate.geocode-raw.json
