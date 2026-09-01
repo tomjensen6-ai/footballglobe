@@ -150,6 +150,23 @@ function processStandings(standingsData, competitionId, competitionName, country
 }
 
 /**
+ * Count standings table rows across every league entry.
+ *
+ * The league-entry count alone cannot detect a bad run: output.leagues is
+ * seeded from the existing cache and entries are only ever added or
+ * overwritten, never deleted, so that count can essentially never drop. A
+ * league whose table came back truncated (3 rows instead of 20) replaces a
+ * full entry while leaving the league count unchanged. Rows catch that.
+ */
+function countTableRows(leagues) {
+  let total = 0;
+  for (const league of Object.values(leagues || {})) {
+    total += league?.standings?.table?.length || 0;
+  }
+  return total;
+}
+
+/**
  * Load the existing cache's leagues, if any. Returns {} on a missing or
  * unparseable file so a first-ever run still works.
  */
@@ -177,6 +194,7 @@ async function exportStandings() {
 
   const existingLeagues = loadExistingLeagues();
   const existingCount = Object.keys(existingLeagues).length;
+  const existingRows = countTableRows(existingLeagues);
 
   // Seed from the existing cache so a failed/frozen league keeps its last
   // known good data instead of vanishing from the output.
@@ -242,15 +260,34 @@ async function exportStandings() {
   }
 
   output.totalLeagues = Object.keys(output.leagues).length;
+  const totalRows = countTableRows(output.leagues);
 
-  // Pre-write guard: never let a bad run shrink the cache.
+  // Pre-write guard: never let a bad run shrink the cache, by league count
+  // OR by total table rows. On a first run existingRows is 0, so the row
+  // check is inert and the league floor of 5 does the sanity work.
   const requiredMinimum = existingCount > 0 ? existingCount : 5;
+  const guardFailures = [];
+
   if (output.totalLeagues < requiredMinimum) {
+    guardFailures.push(
+      `leagues: found ${output.totalLeagues}, expected at least ${requiredMinimum}`
+    );
+  }
+
+  if (totalRows < existingRows) {
+    guardFailures.push(
+      `table rows: found ${totalRows}, existing cache has ${existingRows}` +
+        ` (${existingRows - totalRows} would be lost)`
+    );
+  }
+
+  if (guardFailures.length > 0) {
     console.error('\n' + '='.repeat(60));
     console.error('🛑 GUARD TRIPPED - refusing to write cache');
     console.error('='.repeat(60));
-    console.error(`   Found: ${output.totalLeagues} leagues`);
-    console.error(`   Expected at least: ${requiredMinimum}`);
+    for (const failure of guardFailures) {
+      console.error(`   ${failure}`);
+    }
     console.error(`   Existing cache at ${CACHE_PATH} left untouched.`);
     console.error('');
     process.exit(1);
@@ -266,7 +303,8 @@ async function exportStandings() {
   console.log(`   Fetched fresh:   ${fetchedFresh}`);
   console.log(`   Kept frozen:     ${keptFrozen}`);
   console.log(`   Failed (cached): ${failedKept}`);
-  console.log(`   Total in file:   ${output.totalLeagues}`);
+  console.log(`   Total in file:   ${output.totalLeagues} leagues (was ${existingCount})`);
+  console.log(`   Table rows:      ${totalRows} (was ${existingRows})`);
   console.log(`   Last updated:    ${output.lastUpdated}`);
   console.log(`\n📁 Saved to: ${CACHE_PATH}`);
   console.log('');

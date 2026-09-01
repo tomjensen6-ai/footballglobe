@@ -54,12 +54,26 @@ function countStadiumFields(data) {
 }
 
 /**
- * Count league entries in the standings cache. `leagues` is keyed by
- * competition id, but an array is handled too in case the shape changes.
+ * Count league entries and total standings table rows in the standings cache.
+ * `leagues` is keyed by competition id, but an array is handled too in case
+ * the shape changes.
+ *
+ * tableRows matters because the league count alone cannot detect a league
+ * whose table came back truncated - the entry is still there, just short.
  */
 function countStandingsFields(data) {
   const leagues = data.leagues || {};
-  return { leagues: Array.isArray(leagues) ? leagues.length : Object.keys(leagues).length };
+  const entries = Array.isArray(leagues) ? leagues : Object.values(leagues);
+
+  let tableRows = 0;
+  for (const league of entries) {
+    tableRows += league?.standings?.table?.length || 0;
+  }
+
+  return {
+    leagues: Array.isArray(leagues) ? leagues.length : Object.keys(leagues).length,
+    tableRows,
+  };
 }
 
 const FILES = [
