@@ -28,7 +28,13 @@
  *   stadiums-premium.json for real. Every complete API response is persisted
  *   to a sidecar JSON next to the output.
  *
- * Usage: node scripts/geocode-stadiums.js [--apply]
+ * Selection: every stadium is re-queried by default. --only-missing narrows
+ *   the run to records without usable coordinates; --team=<ids> narrows it to
+ *   an explicit list and ignores --only-missing, so a single ground can be
+ *   re-resolved even though it already has coordinates. Skipped records are
+ *   not touched at all - they keep every field exactly as loaded.
+ *
+ * Usage: node scripts/geocode-stadiums.js [--apply] [--only-missing] [--team=<id,id>]
  */
 
 const fs = require('fs');
@@ -61,6 +67,44 @@ const RATE_LIMIT_MAX_ATTEMPTS = 3;
 const RATE_LIMIT_BASE_BACKOFF_MS = 2000;
 
 const APPLY = process.argv.includes('--apply');
+
+// Opt-in: skip any stadium that already has usable coordinates. Off by default,
+// so an unflagged run still re-queries everything and can still improve a
+// record that has coordinates but poor ones.
+const ONLY_MISSING = process.argv.includes('--only-missing');
+
+/**
+ * --team=<id>[,<id>...], repeatable. Restricts the run to those team IDs and
+ * geocodes them whether or not they already have coordinates, which is the
+ * point of the flag: re-resolving one known-bad ground without a full run.
+ * Returns null when the flag is absent - null means "no restriction", which is
+ * deliberately distinct from an empty set.
+ */
+function parseTeamFilter(argv) {
+  const raw = argv
+    .filter(arg => arg.startsWith('--team='))
+    .flatMap(arg => arg.slice('--team='.length).split(','))
+    .map(part => part.trim())
+    .filter(part => part.length > 0);
+
+  if (raw.length === 0) return null;
+
+  const ids = new Set();
+  const bad = [];
+  for (const part of raw) {
+    const id = Number(part);
+    if (Number.isInteger(id) && id > 0) ids.add(id);
+    else bad.push(part);
+  }
+
+  if (bad.length > 0) {
+    console.error(`ERROR: --team got non-numeric team id(s): ${bad.join(', ')}`);
+    process.exit(1);
+  }
+  return ids;
+}
+
+const TEAM_FILTER = parseTeamFilter(process.argv);
 
 const INPUT_PATH = path.join(ROOT, 'stadiums-premium.json');
 const OUTPUT_PATH = APPLY
@@ -160,6 +204,23 @@ function extractCity(addressComponents) {
   }
 
   return undefined;
+}
+
+/**
+ * Whether a stadium already holds coordinates worth keeping. Both values must
+ * be finite numbers, and 0,0 is rejected: Null Island is what an unresolved
+ * record degrades into, not a real ground.
+ *
+ * A stringified coordinate ("51.5") counts as NOT valid on purpose. The two
+ * failure directions are not symmetric - re-geocoding a good record costs one
+ * request, while wrongly skipping one leaves bad data in place forever - so
+ * anything not plainly a number falls through to being geocoded.
+ */
+function hasValidCoordinates(stadium) {
+  const { latitude, longitude } = stadium;
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return false;
+  if (latitude === 0 && longitude === 0) return false;
+  return true;
 }
 
 /**
@@ -316,11 +377,46 @@ async function geocodeWithRetry(address, iso2) {
 }
 
 /**
+ * Sidecar entry for a stadium the run never queried. Same shape as every other
+ * record so the raw file stays uniform, with response/query null because no
+ * request was made and the cached coordinates echoed back as what it kept.
+ */
+function skipRecord(stadium, countryName, league, reason) {
+  return {
+    teamId: stadium.teamId,
+    teamName: stadium.teamName,
+    venue: stadium.venue,
+    city: stadium.city ?? null,
+    country: countryName,
+    league: league.name,
+    areaCode: (stadium.area && stadium.area.code) || null,
+    iso2: null,
+    query: null,
+    missingSegments: [],
+    cachedLat: stadium.latitude ?? null,
+    cachedLng: stadium.longitude ?? null,
+    response: null,
+    fetchError: null,
+    outcome: 'skipped',
+    skipReason: reason,
+  };
+}
+
+/**
  * Add coordinates to all stadiums
  */
 async function geocodeStadiums() {
   console.log('GEOCODING STADIUMS\n');
   console.log(`Mode:   ${APPLY ? 'APPLY (writes the real cache)' : 'DRY (candidate file only)'}`);
+  if (TEAM_FILTER) {
+    console.log(`Scope:  --team=${[...TEAM_FILTER].join(',')} (${TEAM_FILTER.size} team(s);`
+      + ' geocoded even if they already have coordinates)');
+    if (ONLY_MISSING) console.log('        --only-missing ignored: --team selects explicitly');
+  } else if (ONLY_MISSING) {
+    console.log('Scope:  --only-missing (stadiums with usable coordinates are skipped)');
+  } else {
+    console.log('Scope:  all stadiums (re-queries records that already have coordinates)');
+  }
   console.log(`Input:  ${INPUT_PATH}`);
   console.log(`Output: ${OUTPUT_PATH}`);
   console.log(`Raw:    ${RAW_PATH}`);
@@ -337,6 +433,8 @@ async function geocodeStadiums() {
 
   let accepted = 0;
   let overridden = 0;
+  let skipped = 0;
+  let geocoded = 0;
   let acceptedByType = 0;
   let acceptedByName = 0;
   const nameMatches = [];
@@ -363,6 +461,16 @@ async function geocodeStadiums() {
       for (let i = 0; i < league.stadiums.length; i++) {
         const stadium = league.stadiums[i];
         const label = `[${i + 1}/${league.stadiums.length}] ${stadium.teamName || stadium.name}`;
+
+        // Selection runs before everything else, overrides included: a scoped
+        // run must leave every record outside its scope byte-identical, and an
+        // override rewrites fields. Records skipped here keep their coordinates,
+        // their city, and everything else exactly as loaded.
+        if (TEAM_FILTER && !TEAM_FILTER.has(stadium.teamId)) {
+          skipped++;
+          rawRecords.push(skipRecord(stadium, countryName, league, 'not-in-team-filter'));
+          continue;
+        }
 
         // Overrides win outright and cost no API call. Applied here, after the
         // geocoding step in pipeline order, so an override always beats a
@@ -398,6 +506,18 @@ async function geocodeStadiums() {
           continue;
         }
 
+        // Checked after the override block on purpose: an override costs no
+        // API request, so --only-missing has no reason to suppress one. Only
+        // --team, which means "touch nothing else", skips overrides too.
+        if (ONLY_MISSING && !TEAM_FILTER && hasValidCoordinates(stadium)) {
+          skipped++;
+          console.log(`  ${label}`);
+          console.log(`    SKIP - already has coordinates: `
+            + `${stadium.latitude}, ${stadium.longitude}`);
+          rawRecords.push(skipRecord(stadium, countryName, league, 'has-coordinates'));
+          continue;
+        }
+
         const { address, missing } = buildAddress(stadium, countryName);
         const areaCode = stadium.area && stadium.area.code;
         const iso2 = AREA_CODE_TO_ISO2[areaCode] || null;
@@ -425,6 +545,7 @@ async function geocodeStadiums() {
           outcome: null,
         };
 
+        geocoded++;
         console.log(`  ${label}`);
         console.log(`    Query: ${address}${iso2 ? `  [country:${iso2}]` : '  [no country filter]'}`);
 
@@ -551,7 +672,13 @@ async function geocodeStadiums() {
     overridden,
     rejected,
     errored,
+    skipped,
+    geocoded,
     total: accepted + overridden + rejected + errored,
+    totalStadiums: accepted + overridden + rejected + errored + skipped,
+    scope: TEAM_FILTER
+      ? { mode: 'team', teamIds: [...TEAM_FILTER] }
+      : { mode: ONLY_MISSING ? 'only-missing' : 'all' },
     requestsUsed: requestCount,
     requestCeiling: MAX_REQUESTS,
     aborted: aborted ? { reason: aborted.reason, message: aborted.message } : null,
@@ -576,10 +703,12 @@ async function geocodeStadiums() {
   console.log(`   Accepted total:                     ${accepted}`);
   console.log(`     via "stadium" type:               ${acceptedByType}`);
   console.log(`     via venue-name match:             ${acceptedByName}`);
-  console.log(`   Overridden (geocode skipped):       ${overridden}`);
   console.log(`   Rejected:                           ${rejected}`);
   console.log(`   Errored:                            ${errored}`);
-  console.log(`   Total:                              ${accepted + overridden + rejected + errored}`);
+  console.log(`   Geocoded (API request made):        ${geocoded}`);
+  console.log(`   Overridden (geocode skipped):       ${overridden}`);
+  console.log(`   Skipped (not selected):             ${skipped}`);
+  console.log(`   Total stadiums seen:                ${accepted + overridden + rejected + errored + skipped}`);
   console.log(`   API requests used:                  ${requestCount} / ${MAX_REQUESTS}`);
 
   if (nameMatches.length > 0) {
