@@ -18,6 +18,12 @@
  *   build the query but is never carried into the output: a city extracted
  *   from a previously bad match would otherwise persist forever.
  *
+ * Quota: OVER_QUERY_LIMIT comes back as HTTP 200, so every retry is a real
+ *   billable request against the quota that just refused it. Daily exhaustion
+ *   therefore aborts the run outright, and only per-second throttling is
+ *   retried. MAX_REQUESTS caps the run regardless. Either stop writes the
+ *   files first, so a partial run is never a lost run.
+ *
  * Output: stadiums-premium-candidate.json by default. Pass --apply to write
  *   stadiums-premium.json for real. Every complete API response is persisted
  *   to a sidecar JSON next to the output.
@@ -42,6 +48,17 @@ const GOOGLE_API_KEY = process.env.REACT_APP_GOOGLE_GEOCODING_KEY
 
 // Rate limiting between Geocoding API calls, in ms.
 const CALL_DELAY_MS = 500;
+
+// Hard ceiling on Geocoding API requests for a single run, retries included.
+// Reaching it stops the run and saves, so a runaway input file or a retry loop
+// can never quietly eat the day's quota. Override for a big backfill with
+// GEOCODE_MAX_REQUESTS=2000 node scripts/geocode-stadiums.js
+const MAX_REQUESTS = Number(process.env.GEOCODE_MAX_REQUESTS) || 800;
+
+// Per-second rate limiting only: total attempts per stadium (so
+// RATE_LIMIT_MAX_ATTEMPTS - 1 retries), and the first backoff, doubling after.
+const RATE_LIMIT_MAX_ATTEMPTS = 3;
+const RATE_LIMIT_BASE_BACKOFF_MS = 2000;
 
 const APPLY = process.argv.includes('--apply');
 
@@ -166,10 +183,36 @@ function buildAddress(stadium, countryName) {
 }
 
 /**
+ * Signals that the run must stop now and save what it has. Distinct from an
+ * ordinary fetch error, which only costs the one stadium: this one propagates
+ * out of the stadium loop and ends the run.
+ */
+class RunAborted extends Error {
+  constructor(reason, message) {
+    super(message);
+    this.name = 'RunAborted';
+    this.reason = reason;
+  }
+}
+
+// Every request this run has actually put on the wire, retries included.
+let requestCount = 0;
+
+/**
  * Geocode an address. Resolves the COMPLETE parsed response so the caller can
  * inspect types/address_components and persist the payload verbatim.
+ *
+ * Counts against MAX_REQUESTS, and throws RunAborted rather than issuing the
+ * request that would exceed it - the ceiling is checked here, at the single
+ * place a request is made, so retries cannot slip past it.
  */
 function geocodeAddress(address, iso2) {
+  if (requestCount >= MAX_REQUESTS) {
+    throw new RunAborted('request-ceiling',
+      `request ceiling of ${MAX_REQUESTS} reached`);
+  }
+  requestCount++;
+
   return new Promise((resolve, reject) => {
     let url = 'https://maps.googleapis.com/maps/api/geocode/json'
       + `?address=${encodeURIComponent(address)}`;
@@ -207,28 +250,66 @@ function sleep(ms) {
 }
 
 /**
- * Backoff schedule for OVER_QUERY_LIMIT, in ms. Three retries; a query that is
- * still rate-limited after the last one falls through to the caller and is
- * treated as an ordinary rejection, so the stadium keeps its cached values.
+ * OVER_QUERY_LIMIT arrives with HTTP 200, so a retry is a fresh billable
+ * request against the very quota that just refused it. Two opposite situations
+ * hide behind that one status, and error_message is what separates them:
+ *
+ *   daily cap  - "You have exceeded your daily request quota for this API."
+ *                No retry can succeed before midnight Pacific, and each one
+ *                still counts, so this ends the run.
+ *   per-second - "You have exceeded your rate-limit for this API." Transient,
+ *                and the only case worth a backoff.
+ *
+ * OVER_DAILY_LIMIT is always fatal - exhausted quota, or a key/billing problem
+ * that waiting does not fix.
  */
-const OVER_QUERY_LIMIT_BACKOFF_MS = [2000, 8000, 32000];
+function isDailyQuotaExhausted(response) {
+  if (response.status === 'OVER_DAILY_LIMIT') return true;
+  if (response.status !== 'OVER_QUERY_LIMIT') return false;
+  return /daily|per day|billing|budget/i.test(response.error_message || '');
+}
 
 /**
- * Geocode with retries for OVER_QUERY_LIMIT only. Every other status - including
- * ZERO_RESULTS and REQUEST_DENIED - is returned immediately, since retrying
- * those just burns quota. Returns { response, retries }.
+ * True only for the short-term throttle. An OVER_QUERY_LIMIT with no
+ * error_message counts as one: that is how the QPS limiter has historically
+ * presented, and it is the only ambiguous case left once the daily wording is
+ * ruled out. An OVER_QUERY_LIMIT whose message matches neither is left alone -
+ * not retried, not fatal, just handed back as an ordinary rejection.
+ */
+function isPerSecondRateLimited(response) {
+  if (response.status !== 'OVER_QUERY_LIMIT') return false;
+  if (isDailyQuotaExhausted(response)) return false;
+  const message = response.error_message;
+  if (!message) return true;
+  return /rate.?limit|per.?second|too many requests|short.?term|qps/i.test(message);
+}
+
+/**
+ * Geocode, retrying per-second rate limiting ONLY: at most
+ * RATE_LIMIT_MAX_ATTEMPTS attempts for this stadium, doubling the backoff each
+ * time. A daily-quota response throws RunAborted instead. Every other status -
+ * ZERO_RESULTS, REQUEST_DENIED, an unrecognised OVER_QUERY_LIMIT - is returned
+ * immediately, since retrying those just burns quota. Returns
+ * { response, retries }.
  */
 async function geocodeWithRetry(address, iso2) {
   let response = await geocodeAddress(address, iso2);
   let retries = 0;
 
-  for (const waitMs of OVER_QUERY_LIMIT_BACKOFF_MS) {
-    if (response.status !== 'OVER_QUERY_LIMIT') break;
+  for (let attempt = 2; attempt <= RATE_LIMIT_MAX_ATTEMPTS; attempt++) {
+    if (!isPerSecondRateLimited(response)) break;
+    const waitMs = RATE_LIMIT_BASE_BACKOFF_MS * 2 ** (attempt - 2);
     retries++;
-    console.log(`    OVER_QUERY_LIMIT - retry ${retries}/${OVER_QUERY_LIMIT_BACKOFF_MS.length}`
+    console.log(`    Rate limited - retry ${retries}/${RATE_LIMIT_MAX_ATTEMPTS - 1}`
       + ` after ${waitMs / 1000}s`);
     await sleep(waitMs);
     response = await geocodeAddress(address, iso2);
+  }
+
+  // Covers both the first response and anything a retry turned up.
+  if (isDailyQuotaExhausted(response)) {
+    throw new RunAborted('daily-quota',
+      response.error_message || 'Google reports the daily geocoding quota is exhausted');
   }
 
   return { response, retries };
@@ -263,6 +344,11 @@ async function geocodeStadiums() {
   let errored = 0;
   const rejections = [];
   const rawRecords = [];
+
+  // Set by the stadium loop when the run has to stop early (daily quota gone,
+  // or MAX_REQUESTS hit). The loops unwind on it rather than throwing, so
+  // control still reaches the write step below and the partial run is saved.
+  let aborted = null;
 
   // Every stadium is re-queried, including ones that already have
   // coordinates: a rejection keeps the existing values, so a re-run can only
@@ -409,6 +495,20 @@ async function geocodeStadiums() {
             console.log(`      keeping cached: ${rejection.keptLat}, ${rejection.keptLng}`);
           }
         } catch (err) {
+          if (err instanceof RunAborted) {
+            // Not this stadium's fault: it keeps its cached values like any
+            // rejection, and the run stops here.
+            if (storedCity !== undefined) {
+              stadium.city = storedCity;
+            }
+            record.fetchError = err.message;
+            record.outcome = 'aborted';
+            rawRecords.push(record);
+            aborted = err;
+            console.error(`    ABORTING RUN - ${err.message}`);
+            console.log(`      keeping cached: ${stadium.latitude}, ${stadium.longitude}`);
+            break;
+          }
           record.fetchError = String(err.message);
           // Same as a rejection: keep whatever the cache already had.
           if (storedCity !== undefined) {
@@ -435,7 +535,11 @@ async function geocodeStadiums() {
         rawRecords.push(record);
         await sleep(CALL_DELAY_MS);
       }
+
+      if (aborted) break;
     }
+
+    if (aborted) break;
   }
 
   // Update metadata
@@ -448,6 +552,9 @@ async function geocodeStadiums() {
     rejected,
     errored,
     total: accepted + overridden + rejected + errored,
+    requestsUsed: requestCount,
+    requestCeiling: MAX_REQUESTS,
+    aborted: aborted ? { reason: aborted.reason, message: aborted.message } : null,
   };
 
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(data, null, 2));
@@ -456,12 +563,14 @@ async function geocodeStadiums() {
     queryShape: "venue + ', ' + city + ', ' + countryName; components=country:<ISO2>",
     acceptanceRule: "results[0].types includes 'stadium'",
     mode: APPLY ? 'apply' : 'candidate',
+    requestsUsed: requestCount,
+    aborted: aborted ? { reason: aborted.reason, message: aborted.message } : null,
     count: rawRecords.length,
     records: rawRecords,
   }, null, 2));
 
   console.log('\n' + '='.repeat(60));
-  console.log('GEOCODING COMPLETE');
+  console.log(aborted ? 'GEOCODING ABORTED - PARTIAL RESULTS SAVED' : 'GEOCODING COMPLETE');
   console.log('='.repeat(60));
   console.log('Statistics:');
   console.log(`   Accepted total:                     ${accepted}`);
@@ -471,6 +580,7 @@ async function geocodeStadiums() {
   console.log(`   Rejected:                           ${rejected}`);
   console.log(`   Errored:                            ${errored}`);
   console.log(`   Total:                              ${accepted + overridden + rejected + errored}`);
+  console.log(`   API requests used:                  ${requestCount} / ${MAX_REQUESTS}`);
 
   if (nameMatches.length > 0) {
     console.log('\nAccepted via venue-name match (no "stadium" type) - worth eyeballing:');
@@ -501,6 +611,26 @@ async function geocodeStadiums() {
     console.log('   Re-run with --apply to write it for real.');
   }
   console.log('');
+
+  if (aborted) {
+    console.error('='.repeat(60));
+    if (aborted.reason === 'daily-quota') {
+      console.error('RUN ABORTED: Google reports the daily geocoding quota is exhausted.');
+      console.error(`   Google said: ${aborted.message}`);
+      console.error('   Every retry would be another billable request against a quota');
+      console.error('   that cannot succeed again until it resets (midnight US/Pacific).');
+    } else {
+      console.error(`RUN ABORTED: ${aborted.message}.`);
+      console.error('   Raise it with GEOCODE_MAX_REQUESTS=<n> if this run needs more.');
+    }
+    console.error(`   ${requestCount} requests were used before stopping.`);
+    console.error('   Everything geocoded up to that point has been written to:');
+    console.error(`      ${OUTPUT_PATH}`);
+    console.error('   Stadiums not reached keep their existing coordinates untouched.');
+    console.error('   Re-run to resume - accepted records are simply re-confirmed.');
+    console.error('='.repeat(60));
+    process.exit(1);
+  }
 }
 
 // Check for API key
