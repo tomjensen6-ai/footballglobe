@@ -1588,6 +1588,11 @@ const FootballGlobe = () => {
         }
         
         return {
+          // Spread first so fields the cache carries but this list never named
+          // (area, website, tla, shortName, fullAddress...) reach the popup
+          // instead of being silently dropped. Every named field below still
+          // overrides the spread, so their fallbacks and coercions are unchanged.
+          ...stadium,
           name: stadium.venue || stadium.name,
           team: stadium.teamName || stadium.team,
           lat: parseFloat(lat),
@@ -3686,6 +3691,9 @@ const map = new MapCtor(mapRef.current, {
                           
                           if (topLeagueStadiums.length > 0) {
                             const stadiumsWithCoords = topLeagueStadiums.map(stadium => ({
+                              // Spread first: this list omitted city, so popups
+                              // opened from this path had no travel links.
+                              ...stadium,
                               name: stadium.venue,
                               team: stadium.teamName,
                               lat: stadium.latitude,
@@ -3787,6 +3795,9 @@ const map = new MapCtor(mapRef.current, {
                       
                       // Transform cache data to display format
                       const stadiumsWithCoords = leagueStadiums.map(stadium => ({
+                        // Spread first: this list omitted city, crestUrl,
+                        // clubColors and founded.
+                        ...stadium,
                         name: stadium.venue,
                         team: stadium.teamName,
                         lat: stadium.latitude,
