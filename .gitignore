@@ -38,3 +38,8 @@ yarn-error.log*
 /standings-premium-cache.json
 /stadiums-premium-candidate.json
 /stadiums-premium-candidate.geocode-raw.json
+/stadiums-apifootball-dryrun.json
+/stadiums-apifootball-candidate.json
+/carry-forward-pass2.json
+/carry-forward-pass2-dryrun.json
+*.bak-*
