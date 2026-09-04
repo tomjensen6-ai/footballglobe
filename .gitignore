@@ -46,3 +46,5 @@ yarn-error.log*
 
 # Geocoding sidecars - large, regenerated every run
 *.geocode-raw.json
+stadiums-apifootball-geocoding*.json
+*.geocode-candidate.json
