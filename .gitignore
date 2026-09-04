@@ -43,3 +43,6 @@ yarn-error.log*
 /carry-forward-pass2.json
 /carry-forward-pass2-dryrun.json
 *.bak-*
+
+# Geocoding sidecars - large, regenerated every run
+*.geocode-raw.json

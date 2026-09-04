@@ -9,10 +9,51 @@
  *   itself (Bayern -> Sabener Strasse, Roma -> Trigoria, Lazio -> Formello),
  *   and including it drags the result onto the offices.
  *
- * Acceptance: results[0] is accepted only if its types array contains
- *   "stadium". Anything else is rejected and the stadium keeps whatever
- *   coordinates it already had - a bad match never overwrites good data,
- *   and a rejection never nulls a record.
+ * Acceptance: three tiers, cheapest first.
+ *   tier 1  results[0].types contains "stadium". Free and decisive.
+ *   tier 2  for anything not settled by tier 1 or 3: OpenStreetMap is asked
+ *           whether it holds a leisure=stadium|pitch|sports_centre within
+ *           500m of Google's point. Failing that, the older venue-name test
+ *           (the venue name appears verbatim in formatted_address) still
+ *           applies - it is what recovers correctly-located grounds that
+ *           nobody has tagged as a stadium.
+ *   tier 3  types describing only an AREA - locality, political, sublocality,
+ *           administrative_area_*, neighborhood, colloquial_area, route - are
+ *           the geocoder falling back to the region, and are rejected without
+ *           spending an OSM request.
+ *   A rejection still keeps whatever coordinates the record already had: a bad
+ *   match never overwrites good data, and a rejection never nulls a record.
+ *   Which tier accepted a record is written to it as acceptedTier/acceptedBy.
+ *
+ * OpenStreetMap: Nominatim, rate-limited to 1 request/second with an
+ *   application-identifying User-Agent per its usage policy, and given an
+ *   explicit per-request timeout (OSM_TIMEOUT_MS) because Node has none by
+ *   default and a stalled socket at 1 request/second stalls the whole run.
+ *   Responses are cached outside the repository (OSM_CACHE_DIR, default the
+ *   system temp dir) so a re-run costs no OSM requests. An OSM failure is never
+ *   an acceptance: it falls through to the name test, so an outage - or a
+ *   timeout - cannot produce a wrong coordinate. The sidecar records osmStatus
+ *   'ok' | 'empty' | 'failed', because "OSM has nothing here" and "we could not
+ *   ask OSM" are different facts and only the first is about the venue.
+ *
+ * Sidecar evidence: every tier-2 record, ACCEPTED OR REJECTED, also carries the
+ *   nearest qualifying OSM feature at any distance (osmNearest), how many were
+ *   seen (osmCandidateCount), the Nominatim URL that produced the results, and
+ *   Google's location_type. These are recorded, never consulted. Acceptance is
+ *   still the within-radius match and nothing else, so this changes what a run
+ *   REMEMBERS, not what it CHOOSES - it exists so the radius can be judged from
+ *   a sidecar instead of from another billable run.
+ *
+ *   osmFromCache says which of those rows this run actually fetched. The OSM
+ *   cache is keyed on the NORMALISED venue+country, so one entry serves every
+ *   spelling of a ground, and a cache hit's recorded URL is rebuilt from the
+ *   query the entry was fetched under rather than from the row's own venue -
+ *   otherwise the sidecar would show a request that was never made.
+ *
+ * City: the query uses relaxCity(city), dropping a trailing ", <region>".
+ *   Google reads an appended county/province as a request for the region -
+ *   "BC Place, Vancouver, British Columbia, Canada" returns the Vancouver city
+ *   centre, "BC Place, Vancouver, Canada" returns the stadium 919m away.
  *
  * city is re-derived from the accepted response. The stored city is used to
  *   build the query but is never carried into the output: a city extracted
@@ -40,17 +81,19 @@
 const fs = require('fs');
 const https = require('https');
 const path = require('path');
+const os = require('os');
 
 // Resolved from __dirname so the script reads and writes the repo-root files
 // no matter which directory it is run from.
 const ROOT = path.join(__dirname, '..');
 
-// Read Google API key from environment. The dedicated geocoding key is
-// preferred: a browser Maps key is usually HTTP-referrer restricted and
-// fails server-side with REQUEST_DENIED.
-const GOOGLE_API_KEY = process.env.REACT_APP_GOOGLE_GEOCODING_KEY
-  || process.env.REACT_APP_GOOGLE_MAPS_API_KEY
-  || 'YOUR_KEY_HERE';
+// The dedicated geocoding key, and only that key. There is deliberately no
+// fallback to the browser Maps key: it is normally HTTP-referrer restricted and
+// fails server-side with REQUEST_DENIED, so falling back to it converts a
+// missing-variable mistake into a run that burns nothing but time and ends in
+// REQUEST_DENIED on every row. The key is never printed, in whole or in part,
+// and never appears in a log line, an error message or the sidecar.
+const GOOGLE_API_KEY = process.env.REACT_APP_GOOGLE_GEOCODING_KEY;
 
 // Rate limiting between Geocoding API calls, in ms.
 const CALL_DELAY_MS = 500;
@@ -65,6 +108,52 @@ const MAX_REQUESTS = Number(process.env.GEOCODE_MAX_REQUESTS) || 800;
 // RATE_LIMIT_MAX_ATTEMPTS - 1 retries), and the first backoff, doubling after.
 const RATE_LIMIT_MAX_ATTEMPTS = 3;
 const RATE_LIMIT_BASE_BACKOFF_MS = 2000;
+
+// Tier 2 asks OpenStreetMap for a second opinion. Nominatim's usage policy caps
+// this at 1 request/second and requires an application-identifying User-Agent;
+// both are hard requirements, not tuning knobs. No personal contact details go
+// in the header.
+const NOMINATIM_HOST = 'nominatim.openstreetmap.org';
+const NOMINATIM_DELAY_MS = 1100;
+const NOMINATIM_USER_AGENT = 'footballglobe-geocoder/1.0 (stadium coordinate verification)';
+
+// Hard ceiling on a single Nominatim request. Node's default is no timeout at
+// all, so a half-open socket would stall the whole run indefinitely - at 1
+// request/second a stall is the one failure mode that costs more than the
+// lookup is worth. Hitting it destroys the socket and counts as an OSM failure,
+// which falls through to the name test exactly like any other failure.
+const NOMINATIM_TIMEOUT_MS = Number(process.env.OSM_TIMEOUT_MS) || 10000;
+
+// How close an OSM sport feature must sit to Google's point to corroborate it.
+// 500m comfortably spans a stadium site while excluding the town-centre
+// fallbacks that tier 3 is meant to catch anyway.
+const OSM_MATCH_RADIUS_KM = 0.5;
+
+// OSM responses are cached OUTSIDE the repository, keyed by venue+country, so a
+// re-run costs no Nominatim requests and the cache can never be mistaken for
+// project data. Override with OSM_CACHE_DIR.
+const OSM_CACHE_DIR = process.env.OSM_CACHE_DIR
+  || path.join(os.tmpdir(), 'footballglobe-osm-cache');
+
+// OSM tags that corroborate a stadium. Anything else OSM returns is ignored.
+const OSM_SPORT_TYPES = new Set(['stadium', 'pitch', 'sports_centre']);
+
+/**
+ * Tier 3: result types that describe an AREA rather than a place - a town, a
+ * district, a street. A result carrying only these is the geocoder falling back
+ * to the region because it could not find the venue, which is the single most
+ * common failure mode. There is nothing for OSM to corroborate, so these are
+ * rejected without spending a Nominatim request.
+ */
+const AREA_ONLY_TYPES = new Set([
+  'locality', 'political', 'sublocality', 'sublocality_level_1',
+  'sublocality_level_2', 'neighborhood', 'colloquial_area', 'route',
+]);
+
+function isAreaOnlyResult(types) {
+  if (!types || types.length === 0) return false;
+  return types.every(t => AREA_ONLY_TYPES.has(t) || /^administrative_area_level_\d+$/.test(t));
+}
 
 const APPLY = process.argv.includes('--apply');
 
@@ -174,6 +263,30 @@ function normalizeForMatch(value) {
 }
 
 /**
+ * Strip a trailing ", <region>" from a city before it goes into the query.
+ * Sources carry the county or province appended ("Vancouver, British Columbia",
+ * "Bournemouth, Dorset"), and Google reads that as a request for the region:
+ * "BC Place, Vancouver, British Columbia, Canada" returns the Vancouver city
+ * centre, while "BC Place, Vancouver, Canada" returns the stadium 919m away.
+ * Same normalisation as relaxCity in export-stadiums-apifootball.js.
+ */
+function relaxCity(value) {
+  return String(value || '').split(',')[0].trim();
+}
+
+/**
+ * Great-circle distance in km, for comparing Google's point to OSM's.
+ */
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const toRad = d => (d * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * 6371 * Math.asin(Math.sqrt(a));
+}
+
+/**
  * Second acceptance path: the venue name appears verbatim inside the returned
  * formatted_address. Google types plenty of older grounds as route/premise/
  * sublocality rather than "stadium" (Anfield, Elland Road, Bramall Lane), but
@@ -234,7 +347,9 @@ function buildAddress(stadium, countryName) {
   if (stadium.venue && stadium.venue !== 'Unknown') parts.push(stadium.venue);
   else missing.push('venue');
 
-  if (stadium.city) parts.push(stadium.city);
+  // relaxCity, not the raw value: a trailing region drags the result onto the
+  // region. See relaxCity above.
+  if (stadium.city) parts.push(relaxCity(stadium.city));
   else missing.push('city');
 
   if (countryName) parts.push(countryName);
@@ -345,6 +460,211 @@ function isPerSecondRateLimited(response) {
   return /rate.?limit|per.?second|too many requests|short.?term|qps/i.test(message);
 }
 
+// Nominatim requests actually put on the wire this run (cache hits excluded),
+// and the timestamp of the last one, so the 1/second floor holds across the
+// whole run rather than per call site.
+let nominatimRequests = 0;
+let nominatimCacheHits = 0;
+let lastNominatimAt = 0;
+
+/**
+ * Cache path for one venue+country lookup. Keyed on the normalised pair, so
+ * two spellings of the same ground share an entry and a venue name that
+ * collides across countries does not.
+ */
+function osmCachePath(venue, countryName) {
+  const key = `${normalizeForMatch(venue)}__${normalizeForMatch(countryName)}`
+    .replace(/[^a-z0-9_]+/g, '-').slice(0, 180);
+  return path.join(OSM_CACHE_DIR, `${key}.json`);
+}
+
+/**
+ * The Nominatim URL for one query string. Factored out because the query a
+ * cached answer was fetched with is not necessarily the query this call would
+ * build: osmCachePath keys on normalizeForMatch(venue)__normalizeForMatch(
+ * country), so two spellings of one ground share an entry, and the recorded URL
+ * has to be the one that actually produced the results.
+ */
+function nominatimUrl(query) {
+  return `https://${NOMINATIM_HOST}/search?q=${encodeURIComponent(query)}`
+    + '&format=jsonv2&limit=8&addressdetails=1';
+}
+
+/**
+ * Ask Nominatim for a venue, honouring the 1 request/second policy and reading
+ * through a disk cache first. A cached answer costs nothing and is what makes
+ * re-running the geocoder cheap; only a genuine miss goes to the network.
+ *
+ * Returns { status, results, url, fromCache, error }, where status separates
+ * the two outcomes that used to be indistinguishable:
+ *   'ok'     the request succeeded and OSM returned at least one feature
+ *   'empty'  the request succeeded and OSM knows nothing about this venue
+ *   'failed' network error, timeout, non-200 or unparseable body
+ * 'empty' is a fact about the world; 'failed' is a fact about the run, and only
+ * one of them says anything about the venue. Collapsing both to null made an
+ * outage read like universal absence in the sidecar.
+ *
+ * fromCache says whether this answer came off disk or off the wire. A re-run is
+ * almost entirely cache hits, and after the fact there is nothing in the file to
+ * tell a verified row from a reused one, so it is recorded rather than inferred.
+ *
+ * A failure here is still never fatal and never an acceptance: results is null,
+ * and the caller falls through to the name-match path exactly as if OSM had
+ * returned nothing. OSM being down must not turn into a wrong coordinate.
+ */
+async function queryOpenStreetMap(venue, countryName) {
+  // What THIS call would ask, used only if the request actually goes out. On a
+  // cache hit the recorded URL is rebuilt from the cached query instead: the
+  // cache is keyed on the normalised venue+country, so a second spelling of the
+  // same ground hits an entry fetched under the first spelling, and building the
+  // URL from these raw values would record a request nobody ever made.
+  const query = `${venue}, ${String(countryName || '').replace(/-/g, ' ')}`;
+
+  const cacheFile = osmCachePath(venue, countryName);
+
+  try {
+    const cached = JSON.parse(fs.readFileSync(cacheFile, 'utf8'));
+    // Both fields are required: an entry that cannot say which query produced
+    // it cannot be attributed, and is treated as a miss rather than recorded
+    // under a URL guessed from the caller's spelling.
+    if (Array.isArray(cached.results) && typeof cached.query === 'string') {
+      nominatimCacheHits++;
+      return {
+        status: cached.results.length > 0 ? 'ok' : 'empty',
+        results: cached.results,
+        url: nominatimUrl(cached.query),
+        fromCache: true,
+        error: null,
+      };
+    }
+  } catch (err) {
+    // Cache miss or unreadable entry: fall through and ask.
+  }
+
+  const url = nominatimUrl(query);
+
+  const since = Date.now() - lastNominatimAt;
+  if (since < NOMINATIM_DELAY_MS) await sleep(NOMINATIM_DELAY_MS - since);
+
+  let results;
+  try {
+    results = await new Promise((resolve, reject) => {
+      const req = https.get(url,
+        { headers: { 'User-Agent': NOMINATIM_USER_AGENT, 'Accept-Language': 'en' } },
+        (res) => {
+          let data = '';
+          res.on('data', c => { data += c; });
+          res.on('end', () => {
+            if (res.statusCode !== 200) return reject(new Error(`HTTP ${res.statusCode}`));
+            try {
+              resolve(JSON.parse(data));
+            } catch (parseErr) {
+              reject(new Error(`JSON parse error: ${parseErr.message}`));
+            }
+          });
+        });
+      // destroy(err) tears the socket down and surfaces as 'error' below, so a
+      // timeout lands on the same failure path as a refused connection.
+      req.setTimeout(NOMINATIM_TIMEOUT_MS, () => {
+        req.destroy(new Error(`timeout after ${NOMINATIM_TIMEOUT_MS}ms`));
+      });
+      req.on('error', reject);
+    });
+  } catch (err) {
+    console.log(`      OSM lookup failed (${err.message}) - falling through`);
+    return {
+      status: 'failed', results: null, url, fromCache: false,
+      error: String(err.message),
+    };
+  } finally {
+    lastNominatimAt = Date.now();
+    nominatimRequests++;
+  }
+
+  if (!Array.isArray(results)) {
+    // A 200 that is valid JSON but not a result array: the request worked, the
+    // payload did not, so it is a failure of the lookup, not an empty answer.
+    return {
+      status: 'failed', results: null, url, fromCache: false,
+      error: `unexpected payload shape (${typeof results})`,
+    };
+  }
+
+  try {
+    fs.mkdirSync(OSM_CACHE_DIR, { recursive: true });
+    fs.writeFileSync(cacheFile, JSON.stringify({
+      query, fetchedAt: new Date().toISOString(), results,
+    }, null, 2));
+  } catch (err) {
+    console.log(`      OSM cache write failed (${err.message}) - continuing`);
+  }
+
+  return {
+    status: results.length > 0 ? 'ok' : 'empty',
+    results,
+    url,
+    fromCache: false,
+    error: null,
+  };
+}
+
+/**
+ * Tier 2's OSM test. Returns both halves of what OSM had to say, kept apart on
+ * purpose:
+ *
+ *   match    the nearest qualifying feature WITHIN OSM_MATCH_RADIUS_KM, or
+ *            null. This alone is the corroboration decision - acceptance reads
+ *            this field and nothing else.
+ *   nearest  the nearest qualifying feature at ANY distance, or null. Recorded,
+ *            never consulted. A rejected venue whose nearest stadium sits 0.6km
+ *            away is a different problem from one whose nearest sits 40km away,
+ *            and the old code threw that distinction away at the radius test.
+ *
+ * match, when non-null, is the same object as nearest. Widening the radius is
+ * therefore NOT what this function does: it records what was discarded so the
+ * radius can be judged later from the sidecar rather than from another run.
+ */
+async function findOsmCorroboration(venue, countryName, lat, lng) {
+  const { status, results, url, fromCache, error } =
+    await queryOpenStreetMap(venue, countryName);
+
+  const outcome = {
+    match: null,
+    nearest: null,
+    candidateCount: 0,
+    status,
+    error,
+    queryUrl: url,
+    fromCache,
+  };
+
+  if (!Array.isArray(results)) return outcome;
+
+  for (const r of results) {
+    if (!OSM_SPORT_TYPES.has(r.type)) continue;
+    const osmLat = parseFloat(r.lat);
+    const osmLon = parseFloat(r.lon);
+    if (!Number.isFinite(osmLat) || !Number.isFinite(osmLon)) continue;
+
+    outcome.candidateCount++;
+    const km = haversineKm(lat, lng, osmLat, osmLon);
+    if (!outcome.nearest || km < outcome.nearest.km) {
+      outcome.nearest = {
+        km, lat: osmLat, lon: osmLon,
+        category: r.category, type: r.type, name: r.display_name,
+      };
+    }
+  }
+
+  // The radius test, applied once, to the nearest candidate. Anything further
+  // out could not have won it anyway.
+  if (outcome.nearest && outcome.nearest.km <= OSM_MATCH_RADIUS_KM) {
+    outcome.match = outcome.nearest;
+  }
+
+  return outcome;
+}
+
 /**
  * Geocode, retrying per-second rate limiting ONLY: at most
  * RATE_LIMIT_MAX_ATTEMPTS attempts for this stadium, doubling the backoff each
@@ -399,6 +719,15 @@ function skipRecord(stadium, countryName, league, reason) {
     fetchError: null,
     outcome: 'skipped',
     skipReason: reason,
+    // Never evaluated, so every decision field is null rather than absent.
+    tier: null,
+    googleLocationType: null,
+    osmStatus: null,
+    osmError: null,
+    osmQueryUrl: null,
+    osmFromCache: null,
+    osmCandidateCount: null,
+    osmNearest: null,
   };
 }
 
@@ -437,7 +766,10 @@ async function geocodeStadiums() {
   let geocoded = 0;
   let acceptedByType = 0;
   let acceptedByName = 0;
+  let acceptedByOsm = 0;
+  let tier3Rejected = 0;
   const nameMatches = [];
+  const osmMatches = [];
   let rejected = 0;
   let errored = 0;
   const rejections = [];
@@ -502,6 +834,16 @@ async function geocodeStadiums() {
             fetchError: null,
             outcome: 'override',
             override,
+            // An override is authoritative and never geocoded: no tier was
+            // reached and no OSM request was spent.
+            tier: null,
+            googleLocationType: null,
+            osmStatus: null,
+            osmError: null,
+            osmQueryUrl: null,
+            osmFromCache: null,
+            osmCandidateCount: null,
+            osmNearest: null,
           });
           continue;
         }
@@ -543,6 +885,20 @@ async function geocodeStadiums() {
           response: null,
           fetchError: null,
           outcome: null,
+          // Present on every record so the sidecar is one uniform shape and an
+          // absent field never has to be read as "no OSM call" or "no tier".
+          // null means the question was never reached: tier is null only for
+          // records that were never evaluated (skipped, overridden, errored),
+          // and the osm* fields are null on tier 1 and tier 3, which spend no
+          // Nominatim request by design.
+          tier: null,
+          googleLocationType: null,
+          osmStatus: null,
+          osmError: null,
+          osmQueryUrl: null,
+          osmFromCache: null,
+          osmCandidateCount: null,
+          osmNearest: null,
         };
 
         geocoded++;
@@ -560,11 +916,61 @@ async function geocodeStadiums() {
             : null;
           const types = (top && top.types) || [];
 
+          // ---- THREE-TIER ACCEPTANCE ----
+          //
+          // 1  types includes 'stadium'                      - free, decisive
+          // 2  OSM corroborates the point, OR the venue name
+          //    appears in the formatted address               - costs an OSM call
+          // 3  types describe only an area                    - reject, no OSM call
+          //
+          // Tier 3 is evaluated BEFORE tier 2 so a town-centre fallback never
+          // spends a Nominatim request. Tier 1 is evaluated before both so the
+          // common case stays free.
           const byType = !!(top && types.includes('stadium'));
-          const byName = !!(top && !byType
-            && venueNameMatches(stadium.venue, top.formatted_address));
+          const areaOnly = !byType && !!top && isAreaOnlyResult(types);
 
-          if (byType || byName) {
+          // The tier a record was decided at, recorded whatever the outcome.
+          // A response with no usable result reaches tier 2 - there is nothing
+          // area-only about it - but has no point for OSM to corroborate, so it
+          // is rejected there without a Nominatim request.
+          const tier = byType ? 1 : (areaOnly ? 3 : 2);
+          record.tier = tier;
+          record.googleLocationType = (top && top.geometry && top.geometry.location_type) || null;
+
+          let osmMatch = null;
+          let byName = false;
+
+          if (top && !byType && !areaOnly) {
+            const osm = await findOsmCorroboration(
+              stadium.venue, countryName,
+              top.geometry.location.lat, top.geometry.location.lng
+            );
+
+            // Recorded on every tier-2 record, accepted or rejected, and
+            // recorded BEFORE the acceptance test so a rejection carries the
+            // same evidence an acceptance does. osmNearest may sit far outside
+            // OSM_MATCH_RADIUS_KM; it is evidence, not a decision.
+            record.osmStatus = osm.status;
+            record.osmError = osm.error;
+            record.osmQueryUrl = osm.queryUrl;
+            record.osmFromCache = osm.fromCache;
+            record.osmCandidateCount = osm.candidateCount;
+            record.osmNearest = osm.nearest;
+
+            // Only the within-radius match decides anything.
+            osmMatch = osm.match;
+
+            // The name-match path is kept as a second tier-2 route: it is what
+            // recovered Nagyerdei Stadion, whose correct street address simply
+            // was not tagged as a stadium and which OSM may not hold either.
+            if (!osmMatch) {
+              byName = venueNameMatches(stadium.venue, top.formatted_address);
+            }
+          }
+
+          if (areaOnly) tier3Rejected++;
+
+          if (byType || osmMatch || byName) {
             stadium.latitude = top.geometry.location.lat;
             stadium.longitude = top.geometry.location.lng;
 
@@ -573,11 +979,31 @@ async function geocodeStadiums() {
               stadium.city = city;
             }
 
+            const acceptedBy = byType ? 'stadium-type' : (osmMatch ? 'osm-corroborated' : 'name-match');
+
             record.outcome = 'accepted';
-            record.acceptedBy = byType ? 'stadium-type' : 'name-match';
+            record.acceptedBy = acceptedBy;
+            record.acceptedTier = tier;
+            // Persisted so a later reviewer can see WHY a tier-2 record was
+            // trusted without re-querying anything.
+            record.osmMatch = osmMatch;
+            stadium.acceptedTier = tier;
+            stadium.acceptedBy = acceptedBy;
+
             accepted++;
-            if (byType) acceptedByType++;
-            else {
+            if (byType) {
+              acceptedByType++;
+            } else if (osmMatch) {
+              acceptedByOsm++;
+              osmMatches.push({
+                teamName: stadium.teamName,
+                venue: stadium.venue,
+                country: countryName,
+                formatted: top.formatted_address,
+                types,
+                osm: osmMatch,
+              });
+            } else {
               acceptedByName++;
               nameMatches.push({
                 teamName: stadium.teamName,
@@ -587,8 +1013,13 @@ async function geocodeStadiums() {
                 types,
               });
             }
-            console.log(`    ACCEPTED [${byType ? 'stadium type' : 'name match'}] `
+
+            console.log(`    ACCEPTED [tier ${tier}: ${acceptedBy}] `
               + `${stadium.latitude}, ${stadium.longitude}${city ? ` (${city})` : ''}`);
+            if (osmMatch) {
+              console.log(`      OSM ${osmMatch.category}/${osmMatch.type} `
+                + `${osmMatch.km.toFixed(3)}km away: ${osmMatch.name}`);
+            }
             if (byName) console.log(`      matched: ${top.formatted_address}`);
           } else {
             // A rejection must never strip a field: put the cached city back.
@@ -596,6 +1027,8 @@ async function geocodeStadiums() {
               stadium.city = storedCity;
             }
             record.outcome = 'rejected';
+            record.rejectedTier = tier;
+            record.osmMatch = null;
             rejected++;
             const rejection = {
               teamName: stadium.teamName,
@@ -610,9 +1043,20 @@ async function geocodeStadiums() {
               keptLng: stadium.longitude ?? null,
             };
             rejections.push(rejection);
-            console.log(`    REJECTED (${response.status})`);
+            console.log(`    REJECTED [tier ${areaOnly ? '3: area-only, no OSM call' : '2: no corroboration'}]`
+              + ` (${response.status})`);
             console.log(`      got:   ${top ? top.formatted_address : '(no result)'}`);
             console.log(`      types: ${types.length ? types.join(', ') : '(none)'}`);
+            // The near miss, when there was one: a nearest OSM feature just
+            // outside the radius reads very differently from one 40km away.
+            if (record.osmNearest) {
+              console.log(`      osm nearest (not corroborating): `
+                + `${record.osmNearest.category}/${record.osmNearest.type} `
+                + `${record.osmNearest.km.toFixed(3)}km - ${record.osmNearest.name}`);
+            } else if (record.osmStatus) {
+              console.log(`      osm: ${record.osmStatus}`
+                + `${record.osmError ? ` (${record.osmError})` : ''}`);
+            }
             console.log(`      keeping cached: ${rejection.keptLat}, ${rejection.keptLng}`);
           }
         } catch (err) {
@@ -668,7 +1112,11 @@ async function geocodeStadiums() {
   data.geocodingStats = {
     accepted,
     acceptedByType,
+    acceptedByOsm,
     acceptedByName,
+    tier3Rejected,
+    osmRequests: nominatimRequests,
+    osmCacheHits: nominatimCacheHits,
     overridden,
     rejected,
     errored,
@@ -687,8 +1135,36 @@ async function geocodeStadiums() {
   fs.writeFileSync(OUTPUT_PATH, JSON.stringify(data, null, 2));
   fs.writeFileSync(RAW_PATH, JSON.stringify({
     generatedAt: new Date().toISOString(),
-    queryShape: "venue + ', ' + city + ', ' + countryName; components=country:<ISO2>",
-    acceptanceRule: "results[0].types includes 'stadium'",
+    queryShape: "venue + ', ' + relaxCity(city) + ', ' + countryName; components=country:<ISO2>",
+    acceptanceRule: {
+      tier1: "results[0].types includes 'stadium'",
+      tier2: `OSM leisure=stadium|pitch|sports_centre within ${OSM_MATCH_RADIUS_KM}km of results[0], `
+        + 'or venue name contained in formatted_address',
+      tier3: 'reject without an OSM call when types are area-only '
+        + '(locality/political/sublocality/administrative_area_*/neighborhood/colloquial_area/route)',
+    },
+    // What every record carries, and - as important - what it does not mean.
+    recordFields: {
+      tier: '1, 2 or 3; null only for records never evaluated (skipped, overridden, errored)',
+      googleLocationType: 'results[0].geometry.location_type, null when there was no result',
+      osmStatus: "'ok' | 'empty' | 'failed'; null on tiers 1 and 3, which spend no OSM request",
+      osmError: 'failure reason when osmStatus is failed, else null',
+      osmQueryUrl: 'the Nominatim URL that produced these results. On a cache hit it is '
+        + 'rebuilt from the cached entry\'s own query, NOT from this row\'s venue/country: '
+        + 'the cache is keyed on the normalised pair, so the fetch may have been made '
+        + 'under a different spelling of the same ground',
+      osmFromCache: 'true if these results came off disk, false if this run fetched them; '
+        + 'null on tiers 1 and 3. A re-run is almost all true - it is the only record '
+        + 'of which rows this run actually put on the wire',
+      osmCandidateCount: 'qualifying OSM features seen at ANY distance',
+      osmNearest: `nearest qualifying feature at ANY distance - EVIDENCE ONLY. `
+        + `Corroboration still required km <= ${OSM_MATCH_RADIUS_KM}; a record with an `
+        + 'osmNearest beyond that was rejected, not accepted',
+    },
+    osmMatchRadiusKm: OSM_MATCH_RADIUS_KM,
+    osmTimeoutMs: NOMINATIM_TIMEOUT_MS,
+    osmRequests: nominatimRequests,
+    osmCacheHits: nominatimCacheHits,
     mode: APPLY ? 'apply' : 'candidate',
     requestsUsed: requestCount,
     aborted: aborted ? { reason: aborted.reason, message: aborted.message } : null,
@@ -701,15 +1177,30 @@ async function geocodeStadiums() {
   console.log('='.repeat(60));
   console.log('Statistics:');
   console.log(`   Accepted total:                     ${accepted}`);
-  console.log(`     via "stadium" type:               ${acceptedByType}`);
-  console.log(`     via venue-name match:             ${acceptedByName}`);
+  console.log(`     tier 1 - "stadium" type:          ${acceptedByType}`);
+  console.log(`     tier 2 - OSM corroborated:        ${acceptedByOsm}`);
+  console.log(`     tier 2 - venue-name match:        ${acceptedByName}`);
   console.log(`   Rejected:                           ${rejected}`);
+  console.log(`     tier 3 - area-only (no OSM call): ${tier3Rejected}`);
+  console.log(`   OSM requests made:                  ${nominatimRequests}`);
+  console.log(`   OSM cache hits (no request):        ${nominatimCacheHits}`);
   console.log(`   Errored:                            ${errored}`);
   console.log(`   Geocoded (API request made):        ${geocoded}`);
   console.log(`   Overridden (geocode skipped):       ${overridden}`);
   console.log(`   Skipped (not selected):             ${skipped}`);
   console.log(`   Total stadiums seen:                ${accepted + overridden + rejected + errored + skipped}`);
   console.log(`   API requests used:                  ${requestCount} / ${MAX_REQUESTS}`);
+
+  if (osmMatches.length > 0) {
+    console.log('\nAccepted via OSM corroboration (tier 2) - Google had no "stadium" type:');
+    for (const m of osmMatches) {
+      console.log(`   ${m.teamName} (${m.country})`);
+      console.log(`      venue: ${m.venue}`);
+      console.log(`      got:   ${m.formatted}`);
+      console.log(`      types: ${m.types.join(', ')}`);
+      console.log(`      osm:   ${m.osm.category}/${m.osm.type} at ${m.osm.km.toFixed(3)}km - ${m.osm.name}`);
+    }
+  }
 
   if (nameMatches.length > 0) {
     console.log('\nAccepted via venue-name match (no "stadium" type) - worth eyeballing:');
@@ -762,14 +1253,17 @@ async function geocodeStadiums() {
   }
 }
 
-// Check for API key
-if (!GOOGLE_API_KEY || GOOGLE_API_KEY === 'YOUR_KEY_HERE') {
-  console.error('ERROR: Google Maps API key not found!');
+// Check for the geocoding key. The variable is named; its value is not read
+// back, measured or echoed in any form.
+if (!GOOGLE_API_KEY) {
+  console.error('ERROR: REACT_APP_GOOGLE_GEOCODING_KEY is not set.');
   console.error('');
-  console.error('Set one of these in your environment:');
-  console.error('export REACT_APP_GOOGLE_GEOCODING_KEY=your_key_here   (preferred)');
-  console.error('export REACT_APP_GOOGLE_MAPS_API_KEY=your_key_here');
+  console.error('Set it in your environment:');
+  console.error('export REACT_APP_GOOGLE_GEOCODING_KEY=<geocoding key>');
   console.error('');
+  console.error('REACT_APP_GOOGLE_MAPS_API_KEY is NOT accepted as a substitute:');
+  console.error('the browser Maps key is referrer-restricted and fails');
+  console.error('server-side with REQUEST_DENIED on every request.');
   process.exit(1);
 }
 
