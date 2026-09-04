@@ -65,9 +65,36 @@
  *   retried. MAX_REQUESTS caps the run regardless. Either stop writes the
  *   files first, so a partial run is never a lost run.
  *
- * Output: stadiums-premium-candidate.json by default. Pass --apply to write
- *   stadiums-premium.json for real. Every complete API response is persisted
- *   to a sidecar JSON next to the output.
+ * Input: two file shapes, chosen with --input=<path> and detected from the
+ *   PARSED DATA, never the filename - a file can be renamed, its contents
+ *   cannot lie.
+ *     nested  stadiums-premium.json (the default): countries -> leagues ->
+ *             stadiums, venue name in `venue`, identity `teamId`.
+ *     flat    stadiums-apifootball-candidate.json: a venues[] array, venue name
+ *             in `name`, identity `venueId`, `teamIds`/`teamNames` as arrays,
+ *             plus coordinateSource/carryRule/carryExcluded from the
+ *             carry-forward passes.
+ *   Everything between loading and writing works on a uniform view, so the
+ *   geocoding loop never asks which shape it is holding. Writes go back through
+ *   that view into the original record, so the output file is the same
+ *   structure as the input with only the geocoder's own fields changed.
+ *   The flat records carry an `address`; it is deliberately NOT used in the
+ *   query, for the same reason football-data's address is not - see above.
+ *
+ * Overrides and id namespaces: venue-overrides.json declares the provider whose
+ *   team ids it is keyed on (idSource, default football-data). An override is
+ *   applied only when that matches the input shape's namespace - nested is
+ *   football-data, flat is api-football - because the two providers number
+ *   their clubs independently and the numbers collide: football-data's 62 is
+ *   Everton, api-football's 62 is Sheffield United. A mismatch is a silent
+ *   no-op, since neither file is wrong, but the total is counted and printed:
+ *   an overrides file re-keyed for this input has to look different from one
+ *   that has not been.
+ *
+ * Output: <input>-candidate by default (stadiums-premium-candidate.json for the
+ *   default input, <input>.geocode-candidate.json otherwise). Pass --apply to
+ *   write the input file itself for real. Every complete API response is
+ *   persisted to a sidecar JSON next to the output.
  *
  * Selection: every stadium is re-queried by default. --only-missing narrows
  *   the run to records without usable coordinates; --team=<ids> narrows it to
@@ -75,7 +102,8 @@
  *   re-resolved even though it already has coordinates. Skipped records are
  *   not touched at all - they keep every field exactly as loaded.
  *
- * Usage: node scripts/geocode-stadiums.js [--apply] [--only-missing] [--team=<id,id>]
+ * Usage: node scripts/geocode-stadiums.js [--input=<path>] [--apply]
+ *          [--only-missing] [--team=<id,id>]
  */
 
 const fs = require('fs');
@@ -195,10 +223,41 @@ function parseTeamFilter(argv) {
 
 const TEAM_FILTER = parseTeamFilter(process.argv);
 
-const INPUT_PATH = path.join(ROOT, 'stadiums-premium.json');
+const DEFAULT_INPUT_PATH = path.join(ROOT, 'stadiums-premium.json');
+
+/**
+ * --input=<path>. Absent means stadiums-premium.json, so every invocation that
+ * works today keeps working byte for byte. A relative path resolves against the
+ * working directory rather than the repo root, because that is what a shell
+ * completes and what a reader of the command line will assume.
+ */
+function parseInputPath(argv) {
+  const arg = argv.filter(a => a.startsWith('--input=')).pop();
+  if (!arg) return DEFAULT_INPUT_PATH;
+
+  const value = arg.slice('--input='.length).trim();
+  if (value.length === 0) {
+    console.error('ERROR: --input= was given with no path.');
+    process.exit(1);
+  }
+  return path.resolve(process.cwd(), value);
+}
+
+const INPUT_PATH = parseInputPath(process.argv);
+const IS_DEFAULT_INPUT = INPUT_PATH === DEFAULT_INPUT_PATH;
+
+/**
+ * --apply writes back over the input, whatever the input is. A dry run writes a
+ * candidate beside it. The default input keeps its historical candidate name so
+ * existing commands and .gitignore entries still match it; any other input gets
+ * <input>.geocode-candidate.json, which is unambiguous even when the input is
+ * itself called "-candidate".
+ */
 const OUTPUT_PATH = APPLY
   ? INPUT_PATH
-  : path.join(ROOT, 'stadiums-premium-candidate.json');
+  : (IS_DEFAULT_INPUT
+    ? path.join(ROOT, 'stadiums-premium-candidate.json')
+    : INPUT_PATH.replace(/\.json$/, '.geocode-candidate.json'));
 const RAW_PATH = OUTPUT_PATH.replace(/\.json$/, '.geocode-raw.json');
 
 /**
@@ -216,13 +275,89 @@ const AREA_CODE_TO_ISO2 = {
 };
 
 /**
+ * The flat shape carries a country NAME and no area code, so the components=
+ * country: filter needs a name -> ISO2 map instead. These are api-football's
+ * exact spellings, hyphens and all; this table is the one geocode-ab-test.js
+ * used, so the flat shape asks Google the same question the A/B test validated.
+ * A country with no entry here goes out unconstrained, which is a weaker query
+ * but never a wrong one - and that is why "Congo" is deliberately absent, since
+ * it could be CG or CD and a wrong country filter is worse than none.
+ */
+const COUNTRY_NAME_TO_ISO2 = {
+  England: 'GB', Scotland: 'GB', Wales: 'GB', 'Northern-Ireland': 'GB',
+  Spain: 'ES', Italy: 'IT', Germany: 'DE', France: 'FR', Netherlands: 'NL',
+  Portugal: 'PT', Brazil: 'BR', Turkey: 'TR', Norway: 'NO', Monaco: 'MC',
+  Belgium: 'BE', 'Czech-Republic': 'CZ', Ukraine: 'UA', Greece: 'GR',
+  Austria: 'AT', Slovakia: 'SK', Azerbaijan: 'AZ', Switzerland: 'CH',
+  Denmark: 'DK', Sweden: 'SE', Poland: 'PL', Serbia: 'RS', Croatia: 'HR',
+  Ireland: 'IE', Argentina: 'AR', Mexico: 'MX', USA: 'US', Japan: 'JP',
+  'South-Korea': 'KR', China: 'CN', Australia: 'AU', Russia: 'RU',
+  Romania: 'RO', Bulgaria: 'BG', Hungary: 'HU', Finland: 'FI', Iceland: 'IS',
+  Israel: 'IL', Egypt: 'EG', Morocco: 'MA', Tunisia: 'TN', Algeria: 'DZ',
+  'South-Africa': 'ZA', Nigeria: 'NG', Ghana: 'GH', India: 'IN',
+  Indonesia: 'ID', Thailand: 'TH', Vietnam: 'VN', Malaysia: 'MY',
+  Colombia: 'CO', Chile: 'CL', Peru: 'PE', Uruguay: 'UY', Paraguay: 'PY',
+  Ecuador: 'EC', Bolivia: 'BO', Venezuela: 'VE', Canada: 'CA',
+  'Saudi-Arabia': 'SA', Qatar: 'QA', 'United-Arab-Emirates': 'AE',
+  Kazakhstan: 'KZ', Georgia: 'GE', Armenia: 'AM', Belarus: 'BY',
+  Lithuania: 'LT', Latvia: 'LV', Estonia: 'EE', Slovenia: 'SI',
+  'Bosnia-and-Herzegovina': 'BA', Albania: 'AL', 'North-Macedonia': 'MK',
+  Montenegro: 'ME', Kosovo: 'XK', Cyprus: 'CY', Malta: 'MT', Luxembourg: 'LU',
+  Iran: 'IR', Iraq: 'IQ', Jordan: 'JO', Kuwait: 'KW', Oman: 'OM',
+  Bahrain: 'BH', Lebanon: 'LB', Syria: 'SY', Uzbekistan: 'UZ',
+  Andorra: 'AD', Angola: 'AO', Barbados: 'BB', Bangladesh: 'BD',
+  Jamaica: 'JM', 'Trinidad-And-Tobago': 'TT', 'Costa-Rica': 'CR',
+  Panama: 'PA', Guatemala: 'GT', Honduras: 'HN', 'El-Salvador': 'SV',
+  Nicaragua: 'NI', 'Dominican-Republic': 'DO', Haiti: 'HT', Cuba: 'CU',
+  Kenya: 'KE', Tanzania: 'TZ', Uganda: 'UG', Zambia: 'ZM', Zimbabwe: 'ZW',
+  Cameroon: 'CM', Senegal: 'SN', 'Ivory-Coast': 'CI', Mali: 'ML',
+  Ethiopia: 'ET', Sudan: 'SD', Libya: 'LY', Mozambique: 'MZ', Botswana: 'BW',
+  Rwanda: 'RW', Burundi: 'BI', Gabon: 'GA', 'Congo-DR': 'CD',
+  'Burkina-Faso': 'BF', Niger: 'NE', Guinea: 'GN', Benin: 'BJ', Togo: 'TG',
+  Singapore: 'SG', Philippines: 'PH', Myanmar: 'MM', Cambodia: 'KH',
+  Nepal: 'NP', Pakistan: 'PK', 'Sri-Lanka': 'LK',
+  'New-Zealand': 'NZ', Fiji: 'FJ', 'Papua-New-Guinea': 'PG',
+  Moldova: 'MD', Turkmenistan: 'TM', Kyrgyzstan: 'KG', Tajikistan: 'TJ',
+  Mongolia: 'MN', Afghanistan: 'AF', Yemen: 'YE', Palestine: 'PS',
+  'Faroe-Islands': 'FO', Gibraltar: 'GI', 'San-Marino': 'SM',
+  Liechtenstein: 'LI', 'Hong-Kong': 'HK', Macao: 'MO',
+  Bhutan: 'BT', Malawi: 'MW', Bosnia: 'BA', Macedonia: 'MK', Taiwan: 'TW',
+  Bahamas: 'BS', Bermuda: 'BM', Suriname: 'SR', Guyana: 'GY',
+  Lesotho: 'LS', Chad: 'TD', Brunei: 'BN', Tahiti: 'PF',
+};
+
+/**
  * Manual corrections for venues football-data.org has not updated, keyed by
  * teamId. An entry here is authoritative: the stadium is NOT geocoded at all,
  * because an override exists precisely for records the API gets wrong.
+ *
+ * The keys belong to ONE id namespace, declared by the file's own idSource. A
+ * team id means nothing without knowing whose id it is - football-data's 62 is
+ * Everton, api-football's 62 is Sheffield United - so an override is applied
+ * only to records identified in the namespace it was written for. See
+ * SHAPE_ID_SOURCE and resolveOverride.
  */
-const { _comment: _venueOverridesComment, ...VENUE_OVERRIDES } = JSON.parse(
+const {
+  _comment: _venueOverridesComment,
+  _idSourceComment: _venueOverridesIdSourceComment,
+  // Absent means football-data: that is what every entry written so far is, and
+  // the default has to match the file's history rather than be a guess.
+  idSource: VENUE_OVERRIDES_ID_SOURCE = 'football-data',
+  ...VENUE_OVERRIDES
+} = JSON.parse(
   fs.readFileSync(path.join(__dirname, 'venue-overrides.json'), 'utf8')
 );
+
+/**
+ * Which provider's team ids each input shape carries. This is the fact that
+ * makes an override safe or catastrophic: the nested file is football-data's,
+ * the flat file is api-football's, and the two number their clubs
+ * independently.
+ */
+const SHAPE_ID_SOURCE = {
+  nested: 'football-data',
+  flat: 'api-football',
+};
 
 /**
  * Apply a manual override onto a stadium record in place. Only the fields the
@@ -242,6 +377,56 @@ function applyVenueOverride(stadium, override) {
   if (stadium.venue && stadium.address) {
     stadium.fullAddress = `${stadium.venue}, ${stadium.address}`;
   }
+}
+
+/**
+ * Which override, if any, applies to one item. The nested shape has a single
+ * teamId, the flat shape a teamIds array for the several clubs that share a
+ * ground, and an override keyed on any one of them is an override of that
+ * ground.
+ *
+ * Two ids on the same record pointing at DIFFERENT overrides is unresolvable
+ * from here - the two entries disagree about a single physical venue - so it
+ * returns the colliding ids instead of picking one. The caller logs them and
+ * geocodes the record normally, which is the outcome that cannot silently write
+ * the wrong ground.
+ */
+function resolveOverride(item) {
+  const wantedSource = SHAPE_ID_SOURCE[item.shape] || null;
+
+  const hits = [];
+  const seen = new Set();
+  let mismatched = 0;
+
+  for (const id of item.teamIds) {
+    const override = VENUE_OVERRIDES[id];
+    // Same entry reached twice (a duplicated id) is not a second anything.
+    if (!override || seen.has(override)) continue;
+    seen.add(override);
+
+    // The namespace test comes FIRST, before the entry can count as a hit or
+    // as a conflict. An override from another provider's id space is not a
+    // weaker match, it is a different club: a numeric collision, and applying
+    // it would write one club's correction onto another club's ground. Skipped
+    // silently - there is nothing wrong with either file, they simply do not
+    // address the same records - but counted, so a file that has been re-keyed
+    // for this input reads differently from one that has not.
+    const entrySource = override.idSource || VENUE_OVERRIDES_ID_SOURCE;
+    if (entrySource !== wantedSource) {
+      mismatched++;
+      continue;
+    }
+
+    hits.push({ id, override });
+  }
+
+  if (hits.length === 0) {
+    return { override: null, id: null, conflict: null, mismatched };
+  }
+  if (hits.length > 1) {
+    return { override: null, id: null, conflict: hits.map(hit => hit.id), mismatched };
+  }
+  return { override: hits[0].override, id: hits[0].id, conflict: null, mismatched };
 }
 
 /**
@@ -697,29 +882,188 @@ async function geocodeWithRetry(address, iso2) {
 }
 
 /**
- * Sidecar entry for a stadium the run never queried. Same shape as every other
- * record so the raw file stays uniform, with response/query null because no
- * request was made and the cached coordinates echoed back as what it kept.
+ * Which of the two input shapes this file is, decided from the parsed data and
+ * not from the filename. Returns null for anything else, which the caller turns
+ * into a refusal: guessing at an unrecognised structure is how a run silently
+ * geocodes nothing, or writes a file back in a shape its consumers cannot read.
  */
-function skipRecord(stadium, countryName, league, reason) {
+function detectShape(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
+  if (Array.isArray(data.venues)) return 'flat';
+  if (data.countries && typeof data.countries === 'object'
+    && !Array.isArray(data.countries)) {
+    return 'nested';
+  }
+  return null;
+}
+
+/**
+ * How many venue records a parsed file holds, in either shape. Taken once
+ * before the run and once before the write, so a refactor that loses records
+ * cannot quietly overwrite the input with a shorter file.
+ */
+function countRecords(data, shape) {
+  if (shape === 'flat') return Array.isArray(data.venues) ? data.venues.length : 0;
+
+  let total = 0;
+  for (const countryData of Object.values(data.countries || {})) {
+    for (const league of (countryData.leagues || [])) {
+      total += (league.stadiums || []).length;
+    }
+  }
+  return total;
+}
+
+/**
+ * The nested shape as items. The record's own field names are already the ones
+ * the geocoding loop reads and writes, so the view IS the record: no accessor
+ * layer, and therefore nothing in the default path that can drift from what the
+ * script did before --input existed.
+ */
+function nestedItems(data) {
+  const items = [];
+
+  for (const [countryName, countryData] of Object.entries(data.countries)) {
+    for (const league of countryData.leagues) {
+      const total = league.stadiums.length;
+
+      league.stadiums.forEach((stadium, i) => {
+        const areaCode = (stadium.area && stadium.area.code) || null;
+        items.push({
+          shape: 'nested',
+          record: stadium,
+          view: stadium,
+          clearCity: () => { delete stadium.city; },
+          country: countryName,
+          league: league.name,
+          areaCode,
+          iso2: AREA_CODE_TO_ISO2[areaCode] || null,
+          teamIds: stadium.teamId === undefined || stadium.teamId === null
+            ? []
+            : [stadium.teamId],
+          displayName: stadium.teamName || stadium.name || stadium.venue,
+          label: `[${i + 1}/${total}] ${stadium.teamName || stadium.name}`,
+          groups: [countryName, `${league.name} (${total} teams)`],
+          forceGeocode: false,
+        });
+      });
+    }
+  }
+
+  return items;
+}
+
+/**
+ * The flat shape as items. `name` is the only field whose name differs from
+ * what the loop expects, so the view is a thin set of accessors that write
+ * straight through to the record - the output file keeps the flat structure and
+ * gains nothing but the geocoder's own fields.
+ *
+ * `address` is exposed only because applyVenueOverride writes it. It is NOT
+ * reachable from buildAddress, which reads venue and city alone: api-football's
+ * address is a street address and putting it in the query drags the result off
+ * the ground, exactly as football-data's does. The A/B test settled that.
+ */
+function flatItems(data) {
+  const total = data.venues.length;
+
+  return data.venues.map((record, i) => {
+    const teamIds = Array.isArray(record.teamIds)
+      ? record.teamIds.filter(id => id !== null && id !== undefined)
+      : [];
+
+    return {
+      shape: 'flat',
+      record,
+      view: {
+        get venue() { return record.name; },
+        set venue(value) { record.name = value; },
+        get city() { return record.city; },
+        set city(value) { record.city = value; },
+        get address() { return record.address; },
+        set address(value) { record.address = value; },
+        get fullAddress() { return record.fullAddress; },
+        set fullAddress(value) { record.fullAddress = value; },
+        get latitude() { return record.latitude; },
+        set latitude(value) { record.latitude = value; },
+        get longitude() { return record.longitude; },
+        set longitude(value) { record.longitude = value; },
+        get acceptedTier() { return record.acceptedTier; },
+        set acceptedTier(value) { record.acceptedTier = value; },
+        get acceptedBy() { return record.acceptedBy; },
+        set acceptedBy(value) { record.acceptedBy = value; },
+      },
+      clearCity: () => { delete record.city; },
+      country: record.country || null,
+      league: null,
+      areaCode: null,
+      iso2: COUNTRY_NAME_TO_ISO2[record.country] || null,
+      teamIds,
+      displayName: Array.isArray(record.teamNames) && record.teamNames.length > 0
+        ? record.teamNames.join(' / ')
+        : record.name,
+      // No country/league headers to print: the flat file has no such
+      // structure, so the country rides along on the label instead.
+      label: `[${i + 1}/${total}] ${record.name} (${record.country || 'no country'})`,
+      groups: [],
+      // carryExcluded marks the NO_CARRY list. Those venues must be geocoded
+      // even if something has since put coordinates on them - that is the whole
+      // point of excluding them from the carry-forward.
+      forceGeocode: record.carryExcluded === true,
+    };
+  });
+}
+
+/**
+ * The identity fields of a sidecar record. The shapes identify a row
+ * differently and there is no honest way to flatten that: a nested row is one
+ * team at one ground, a flat row is one ground shared by any number of teams.
+ */
+function identityFields(item) {
+  if (item.shape === 'flat') {
+    return {
+      venueId: item.record.venueId ?? null,
+      teamIds: [...item.teamIds],
+      teamNames: Array.isArray(item.record.teamNames)
+        ? [...item.record.teamNames]
+        : [],
+      teamName: item.displayName ?? null,
+    };
+  }
+
   return {
-    teamId: stadium.teamId,
-    teamName: stadium.teamName,
-    venue: stadium.venue,
-    city: stadium.city ?? null,
-    country: countryName,
-    league: league.name,
-    areaCode: (stadium.area && stadium.area.code) || null,
-    iso2: null,
+    teamId: item.record.teamId ?? null,
+    teamName: item.record.teamName ?? null,
+  };
+}
+
+/**
+ * The fields every sidecar record carries, whatever happened to it. Built from
+ * the item's view, so one definition serves both shapes and the raw file stays
+ * uniform within a run.
+ */
+function baseRecord(item) {
+  return {
+    ...identityFields(item),
+    venue: item.view.venue,
+    city: item.view.city ?? null,
+    country: item.country,
+    league: item.league,
+    areaCode: item.areaCode,
+    iso2: item.iso2,
     query: null,
     missingSegments: [],
-    cachedLat: stadium.latitude ?? null,
-    cachedLng: stadium.longitude ?? null,
+    cachedLat: item.view.latitude ?? null,
+    cachedLng: item.view.longitude ?? null,
     response: null,
     fetchError: null,
-    outcome: 'skipped',
-    skipReason: reason,
-    // Never evaluated, so every decision field is null rather than absent.
+    outcome: null,
+    // Present on every record so the sidecar is one uniform shape and an
+    // absent field never has to be read as "no OSM call" or "no tier".
+    // null means the question was never reached: tier is null only for
+    // records that were never evaluated (skipped, overridden, errored),
+    // and the osm* fields are null on tier 1 and tier 3, which spend no
+    // Nominatim request by design.
     tier: null,
     googleLocationType: null,
     osmStatus: null,
@@ -732,11 +1076,25 @@ function skipRecord(stadium, countryName, league, reason) {
 }
 
 /**
+ * Sidecar entry for a venue the run never queried. Same shape as every other
+ * record, with response/query null because no request was made and the cached
+ * coordinates echoed back as what it kept.
+ */
+function skipRecord(item, reason) {
+  return {
+    ...baseRecord(item),
+    iso2: null,
+    outcome: 'skipped',
+    skipReason: reason,
+  };
+}
+
+/**
  * Add coordinates to all stadiums
  */
 async function geocodeStadiums() {
   console.log('GEOCODING STADIUMS\n');
-  console.log(`Mode:   ${APPLY ? 'APPLY (writes the real cache)' : 'DRY (candidate file only)'}`);
+  console.log(`Mode:   ${APPLY ? 'APPLY (writes the input file itself)' : 'DRY (candidate file only)'}`);
   if (TEAM_FILTER) {
     console.log(`Scope:  --team=${[...TEAM_FILTER].join(',')} (${TEAM_FILTER.size} team(s);`
       + ' geocoded even if they already have coordinates)');
@@ -752,13 +1110,40 @@ async function geocodeStadiums() {
   console.log('');
 
   if (!fs.existsSync(INPUT_PATH)) {
-    console.error('ERROR: stadiums-premium.json not found!');
-    console.error('   Run export-stadiums-proxy.js first');
+    console.error(`ERROR: input file not found: ${INPUT_PATH}`);
+    if (IS_DEFAULT_INPUT) console.error('   Run export-stadiums-proxy.js first');
     process.exit(1);
   }
 
   const data = JSON.parse(fs.readFileSync(INPUT_PATH, 'utf8'));
-  console.log(`Loaded: ${data.totalStadiums} stadiums from ${data.totalCountries} countries\n`);
+
+  // Shape comes from the data, never the filename.
+  const shape = detectShape(data);
+  if (!shape) {
+    console.error(`ERROR: ${INPUT_PATH} is not a shape this script can geocode.`);
+    console.error('');
+    console.error('   Expected ONE of:');
+    console.error('     a top-level "venues" array   (flat, api-football)');
+    console.error('     a top-level "countries" object (nested, football-data)');
+    console.error('');
+    console.error('   Found top-level keys: '
+      + (data && typeof data === 'object' ? Object.keys(data).join(', ') || '(none)' : typeof data));
+    console.error('   Refusing to guess.');
+    process.exit(1);
+  }
+
+  const inputCount = countRecords(data, shape);
+  const items = shape === 'flat' ? flatItems(data) : nestedItems(data);
+
+  console.log(`Shape:  ${shape === 'flat'
+    ? 'flat venues[] (venue name in "name", identity venueId)'
+    : 'nested countries[].leagues[].stadiums[] (venue name in "venue", identity teamId)'}`);
+  if (shape === 'nested') {
+    console.log(`Loaded: ${data.totalStadiums} stadiums from ${data.totalCountries} countries\n`);
+  } else {
+    console.log(`Loaded: ${inputCount} venues`
+      + `${data.totalVenues !== undefined ? ` (file reports totalVenues ${data.totalVenues})` : ''}\n`);
+  }
 
   let accepted = 0;
   let overridden = 0;
@@ -768,6 +1153,8 @@ async function geocodeStadiums() {
   let acceptedByName = 0;
   let acceptedByOsm = 0;
   let tier3Rejected = 0;
+  let overrideConflicts = 0;
+  let overrideNamespaceMismatches = 0;
   const nameMatches = [];
   const osmMatches = [];
   let rejected = 0;
@@ -780,331 +1167,298 @@ async function geocodeStadiums() {
   // control still reaches the write step below and the partial run is saved.
   let aborted = null;
 
-  // Every stadium is re-queried, including ones that already have
-  // coordinates: a rejection keeps the existing values, so a re-run can only
-  // improve a record or leave it untouched.
-  for (const [countryName, countryData] of Object.entries(data.countries)) {
-    console.log(`\n${countryName}`);
-    console.log('-'.repeat(50));
+  // Every venue is re-queried, including ones that already have coordinates: a
+  // rejection keeps the existing values, so a re-run can only improve a record
+  // or leave it untouched. One loop over the normalised items, so nothing below
+  // this line knows which shape was loaded.
+  let printedGroups = [];
 
-    for (const league of countryData.leagues) {
-      console.log(`\n${league.name} (${league.stadiums.length} teams)`);
+  for (const item of items) {
+    const { view, label } = item;
 
-      for (let i = 0; i < league.stadiums.length; i++) {
-        const stadium = league.stadiums[i];
-        const label = `[${i + 1}/${league.stadiums.length}] ${stadium.teamName || stadium.name}`;
+    // Country/league headers for the nested shape. The flat shape has no such
+    // structure and declares no groups, so this prints nothing for it.
+    for (let depth = 0; depth < item.groups.length; depth++) {
+      const changed = item.groups
+        .slice(0, depth + 1)
+        .some((group, d) => printedGroups[d] !== group);
+      if (!changed) continue;
+      console.log(`\n${item.groups[depth]}`);
+      if (depth === 0) console.log('-'.repeat(50));
+    }
+    printedGroups = item.groups;
 
-        // Selection runs before everything else, overrides included: a scoped
-        // run must leave every record outside its scope byte-identical, and an
-        // override rewrites fields. Records skipped here keep their coordinates,
-        // their city, and everything else exactly as loaded.
-        if (TEAM_FILTER && !TEAM_FILTER.has(stadium.teamId)) {
-          skipped++;
-          rawRecords.push(skipRecord(stadium, countryName, league, 'not-in-team-filter'));
-          continue;
-        }
-
-        // Overrides win outright and cost no API call. Applied here, after the
-        // geocoding step in pipeline order, so an override always beats a
-        // geocoded value for the same record.
-        const override = VENUE_OVERRIDES[stadium.teamId];
-        if (override) {
-          applyVenueOverride(stadium, override);
-          overridden++;
-          console.log(`  ${label}`);
-          console.log(`    OVERRIDE - skipping geocode`);
-          console.log(`      venue: ${stadium.venue}`);
-          console.log(`      city:  ${stadium.city ?? '(none)'}`);
-          console.log(`      coords: ${stadium.latitude}, ${stadium.longitude}`);
-          console.log(`      reason: ${override.reason || '(none given)'}`);
-          rawRecords.push({
-            teamId: stadium.teamId,
-            teamName: stadium.teamName,
-            venue: stadium.venue,
-            city: stadium.city ?? null,
-            country: countryName,
-            league: league.name,
-            areaCode: (stadium.area && stadium.area.code) || null,
-            iso2: null,
-            query: null,
-            missingSegments: [],
-            cachedLat: stadium.latitude ?? null,
-            cachedLng: stadium.longitude ?? null,
-            response: null,
-            fetchError: null,
-            outcome: 'override',
-            override,
-            // An override is authoritative and never geocoded: no tier was
-            // reached and no OSM request was spent.
-            tier: null,
-            googleLocationType: null,
-            osmStatus: null,
-            osmError: null,
-            osmQueryUrl: null,
-            osmFromCache: null,
-            osmCandidateCount: null,
-            osmNearest: null,
-          });
-          continue;
-        }
-
-        // Checked after the override block on purpose: an override costs no
-        // API request, so --only-missing has no reason to suppress one. Only
-        // --team, which means "touch nothing else", skips overrides too.
-        if (ONLY_MISSING && !TEAM_FILTER && hasValidCoordinates(stadium)) {
-          skipped++;
-          console.log(`  ${label}`);
-          console.log(`    SKIP - already has coordinates: `
-            + `${stadium.latitude}, ${stadium.longitude}`);
-          rawRecords.push(skipRecord(stadium, countryName, league, 'has-coordinates'));
-          continue;
-        }
-
-        const { address, missing } = buildAddress(stadium, countryName);
-        const areaCode = stadium.area && stadium.area.code;
-        const iso2 = AREA_CODE_TO_ISO2[areaCode] || null;
-
-        // The stored city feeds the query only. It is dropped here so it can
-        // never survive into the output; an accepted response re-derives it.
-        const storedCity = stadium.city;
-        delete stadium.city;
-
-        const record = {
-          teamId: stadium.teamId,
-          teamName: stadium.teamName,
-          venue: stadium.venue,
-          city: storedCity ?? null,
-          country: countryName,
-          league: league.name,
-          areaCode: areaCode || null,
-          iso2,
-          query: address,
-          missingSegments: missing,
-          cachedLat: stadium.latitude ?? null,
-          cachedLng: stadium.longitude ?? null,
-          response: null,
-          fetchError: null,
-          outcome: null,
-          // Present on every record so the sidecar is one uniform shape and an
-          // absent field never has to be read as "no OSM call" or "no tier".
-          // null means the question was never reached: tier is null only for
-          // records that were never evaluated (skipped, overridden, errored),
-          // and the osm* fields are null on tier 1 and tier 3, which spend no
-          // Nominatim request by design.
-          tier: null,
-          googleLocationType: null,
-          osmStatus: null,
-          osmError: null,
-          osmQueryUrl: null,
-          osmFromCache: null,
-          osmCandidateCount: null,
-          osmNearest: null,
-        };
-
-        geocoded++;
-        console.log(`  ${label}`);
-        console.log(`    Query: ${address}${iso2 ? `  [country:${iso2}]` : '  [no country filter]'}`);
-
-        try {
-          const { response, retries } = await geocodeWithRetry(address, iso2);
-          record.response = response;
-          record.overQueryLimitRetries = retries;
-
-          const top = response.status === 'OK' && Array.isArray(response.results)
-            && response.results.length > 0
-            ? response.results[0]
-            : null;
-          const types = (top && top.types) || [];
-
-          // ---- THREE-TIER ACCEPTANCE ----
-          //
-          // 1  types includes 'stadium'                      - free, decisive
-          // 2  OSM corroborates the point, OR the venue name
-          //    appears in the formatted address               - costs an OSM call
-          // 3  types describe only an area                    - reject, no OSM call
-          //
-          // Tier 3 is evaluated BEFORE tier 2 so a town-centre fallback never
-          // spends a Nominatim request. Tier 1 is evaluated before both so the
-          // common case stays free.
-          const byType = !!(top && types.includes('stadium'));
-          const areaOnly = !byType && !!top && isAreaOnlyResult(types);
-
-          // The tier a record was decided at, recorded whatever the outcome.
-          // A response with no usable result reaches tier 2 - there is nothing
-          // area-only about it - but has no point for OSM to corroborate, so it
-          // is rejected there without a Nominatim request.
-          const tier = byType ? 1 : (areaOnly ? 3 : 2);
-          record.tier = tier;
-          record.googleLocationType = (top && top.geometry && top.geometry.location_type) || null;
-
-          let osmMatch = null;
-          let byName = false;
-
-          if (top && !byType && !areaOnly) {
-            const osm = await findOsmCorroboration(
-              stadium.venue, countryName,
-              top.geometry.location.lat, top.geometry.location.lng
-            );
-
-            // Recorded on every tier-2 record, accepted or rejected, and
-            // recorded BEFORE the acceptance test so a rejection carries the
-            // same evidence an acceptance does. osmNearest may sit far outside
-            // OSM_MATCH_RADIUS_KM; it is evidence, not a decision.
-            record.osmStatus = osm.status;
-            record.osmError = osm.error;
-            record.osmQueryUrl = osm.queryUrl;
-            record.osmFromCache = osm.fromCache;
-            record.osmCandidateCount = osm.candidateCount;
-            record.osmNearest = osm.nearest;
-
-            // Only the within-radius match decides anything.
-            osmMatch = osm.match;
-
-            // The name-match path is kept as a second tier-2 route: it is what
-            // recovered Nagyerdei Stadion, whose correct street address simply
-            // was not tagged as a stadium and which OSM may not hold either.
-            if (!osmMatch) {
-              byName = venueNameMatches(stadium.venue, top.formatted_address);
-            }
-          }
-
-          if (areaOnly) tier3Rejected++;
-
-          if (byType || osmMatch || byName) {
-            stadium.latitude = top.geometry.location.lat;
-            stadium.longitude = top.geometry.location.lng;
-
-            const city = extractCity(top.address_components || []);
-            if (city) {
-              stadium.city = city;
-            }
-
-            const acceptedBy = byType ? 'stadium-type' : (osmMatch ? 'osm-corroborated' : 'name-match');
-
-            record.outcome = 'accepted';
-            record.acceptedBy = acceptedBy;
-            record.acceptedTier = tier;
-            // Persisted so a later reviewer can see WHY a tier-2 record was
-            // trusted without re-querying anything.
-            record.osmMatch = osmMatch;
-            stadium.acceptedTier = tier;
-            stadium.acceptedBy = acceptedBy;
-
-            accepted++;
-            if (byType) {
-              acceptedByType++;
-            } else if (osmMatch) {
-              acceptedByOsm++;
-              osmMatches.push({
-                teamName: stadium.teamName,
-                venue: stadium.venue,
-                country: countryName,
-                formatted: top.formatted_address,
-                types,
-                osm: osmMatch,
-              });
-            } else {
-              acceptedByName++;
-              nameMatches.push({
-                teamName: stadium.teamName,
-                venue: stadium.venue,
-                country: countryName,
-                formatted: top.formatted_address,
-                types,
-              });
-            }
-
-            console.log(`    ACCEPTED [tier ${tier}: ${acceptedBy}] `
-              + `${stadium.latitude}, ${stadium.longitude}${city ? ` (${city})` : ''}`);
-            if (osmMatch) {
-              console.log(`      OSM ${osmMatch.category}/${osmMatch.type} `
-                + `${osmMatch.km.toFixed(3)}km away: ${osmMatch.name}`);
-            }
-            if (byName) console.log(`      matched: ${top.formatted_address}`);
-          } else {
-            // A rejection must never strip a field: put the cached city back.
-            if (storedCity !== undefined) {
-              stadium.city = storedCity;
-            }
-            record.outcome = 'rejected';
-            record.rejectedTier = tier;
-            record.osmMatch = null;
-            rejected++;
-            const rejection = {
-              teamName: stadium.teamName,
-              venue: stadium.venue,
-              country: countryName,
-              league: league.name,
-              query: address,
-              status: response.status,
-              formatted: top ? top.formatted_address : null,
-              types,
-              keptLat: stadium.latitude ?? null,
-              keptLng: stadium.longitude ?? null,
-            };
-            rejections.push(rejection);
-            console.log(`    REJECTED [tier ${areaOnly ? '3: area-only, no OSM call' : '2: no corroboration'}]`
-              + ` (${response.status})`);
-            console.log(`      got:   ${top ? top.formatted_address : '(no result)'}`);
-            console.log(`      types: ${types.length ? types.join(', ') : '(none)'}`);
-            // The near miss, when there was one: a nearest OSM feature just
-            // outside the radius reads very differently from one 40km away.
-            if (record.osmNearest) {
-              console.log(`      osm nearest (not corroborating): `
-                + `${record.osmNearest.category}/${record.osmNearest.type} `
-                + `${record.osmNearest.km.toFixed(3)}km - ${record.osmNearest.name}`);
-            } else if (record.osmStatus) {
-              console.log(`      osm: ${record.osmStatus}`
-                + `${record.osmError ? ` (${record.osmError})` : ''}`);
-            }
-            console.log(`      keeping cached: ${rejection.keptLat}, ${rejection.keptLng}`);
-          }
-        } catch (err) {
-          if (err instanceof RunAborted) {
-            // Not this stadium's fault: it keeps its cached values like any
-            // rejection, and the run stops here.
-            if (storedCity !== undefined) {
-              stadium.city = storedCity;
-            }
-            record.fetchError = err.message;
-            record.outcome = 'aborted';
-            rawRecords.push(record);
-            aborted = err;
-            console.error(`    ABORTING RUN - ${err.message}`);
-            console.log(`      keeping cached: ${stadium.latitude}, ${stadium.longitude}`);
-            break;
-          }
-          record.fetchError = String(err.message);
-          // Same as a rejection: keep whatever the cache already had.
-          if (storedCity !== undefined) {
-            stadium.city = storedCity;
-          }
-          record.outcome = 'error';
-          errored++;
-          rejections.push({
-            teamName: stadium.teamName,
-            venue: stadium.venue,
-            country: countryName,
-            league: league.name,
-            query: address,
-            status: `ERROR: ${err.message}`,
-            formatted: null,
-            types: [],
-            keptLat: stadium.latitude ?? null,
-            keptLng: stadium.longitude ?? null,
-          });
-          console.error(`    ERROR: ${err.message}`);
-          console.log(`      keeping cached: ${stadium.latitude}, ${stadium.longitude}`);
-        }
-
-        rawRecords.push(record);
-        await sleep(CALL_DELAY_MS);
-      }
-
-      if (aborted) break;
+    // Selection runs before everything else, overrides included: a scoped
+    // run must leave every record outside its scope byte-identical, and an
+    // override rewrites fields. Records skipped here keep their coordinates,
+    // their city, and everything else exactly as loaded.
+    if (TEAM_FILTER && !item.teamIds.some(id => TEAM_FILTER.has(id))) {
+      skipped++;
+      rawRecords.push(skipRecord(item, 'not-in-team-filter'));
+      continue;
     }
 
-    if (aborted) break;
+    // Overrides win outright and cost no API call. Applied here, after the
+    // geocoding step in pipeline order, so an override always beats a
+    // geocoded value for the same record.
+    const { override, id: overrideTeamId, conflict, mismatched } = resolveOverride(item);
+    overrideNamespaceMismatches += mismatched;
+
+    if (conflict) {
+      // Two entries disagree about one ground. Guessing would write one club's
+      // correction onto another club's venue, so the record is geocoded
+      // normally instead and the collision is left visible.
+      overrideConflicts++;
+      console.log(`  ${label}`);
+      console.log(`    OVERRIDE CONFLICT - team ids ${conflict.join(', ')} on this one`);
+      console.log('      record carry different overrides. Not guessing: no override');
+      console.log('      applied, geocoding this record normally.');
+    } else if (override) {
+      applyVenueOverride(view, override);
+      overridden++;
+      console.log(`  ${label}`);
+      console.log(`    OVERRIDE - skipping geocode`);
+      console.log(`      venue: ${view.venue}`);
+      console.log(`      city:  ${view.city ?? '(none)'}`);
+      console.log(`      coords: ${view.latitude}, ${view.longitude}`);
+      console.log(`      reason: ${override.reason || '(none given)'}`);
+      rawRecords.push({
+        ...baseRecord(item),
+        iso2: null,
+        outcome: 'override',
+        override,
+        overrideTeamId,
+      });
+      continue;
+    }
+
+    // Checked after the override block on purpose: an override costs no
+    // API request, so --only-missing has no reason to suppress one. Only
+    // --team, which means "touch nothing else", skips overrides too.
+    // forceGeocode wins over the coordinate test: a NO_CARRY venue is on that
+    // list because its coordinates are not to be trusted.
+    if (ONLY_MISSING && !TEAM_FILTER && !item.forceGeocode && hasValidCoordinates(view)) {
+      skipped++;
+      console.log(`  ${label}`);
+      console.log(`    SKIP - already has coordinates: `
+        + `${view.latitude}, ${view.longitude}`);
+      rawRecords.push(skipRecord(item, 'has-coordinates'));
+      continue;
+    }
+
+    const { address, missing } = buildAddress(view, item.country);
+    const iso2 = item.iso2;
+
+    const record = baseRecord(item);
+    record.query = address;
+    record.missingSegments = missing;
+
+    // The stored city feeds the query only. It is dropped here so it can
+    // never survive into the output; an accepted response re-derives it.
+    const storedCity = view.city;
+    item.clearCity();
+
+    geocoded++;
+    console.log(`  ${label}`);
+    if (item.forceGeocode) {
+      console.log('    (carryExcluded - on the NO_CARRY list, geocoded regardless)');
+    }
+    console.log(`    Query: ${address}${iso2 ? `  [country:${iso2}]` : '  [no country filter]'}`);
+
+    try {
+      const { response, retries } = await geocodeWithRetry(address, iso2);
+      record.response = response;
+      record.overQueryLimitRetries = retries;
+
+      const top = response.status === 'OK' && Array.isArray(response.results)
+        && response.results.length > 0
+        ? response.results[0]
+        : null;
+      const types = (top && top.types) || [];
+
+      // ---- THREE-TIER ACCEPTANCE ----
+      //
+      // 1  types includes 'stadium'                      - free, decisive
+      // 2  OSM corroborates the point, OR the venue name
+      //    appears in the formatted address               - costs an OSM call
+      // 3  types describe only an area                    - reject, no OSM call
+      //
+      // Tier 3 is evaluated BEFORE tier 2 so a town-centre fallback never
+      // spends a Nominatim request. Tier 1 is evaluated before both so the
+      // common case stays free.
+      const byType = !!(top && types.includes('stadium'));
+      const areaOnly = !byType && !!top && isAreaOnlyResult(types);
+
+      // The tier a record was decided at, recorded whatever the outcome.
+      // A response with no usable result reaches tier 2 - there is nothing
+      // area-only about it - but has no point for OSM to corroborate, so it
+      // is rejected there without a Nominatim request.
+      const tier = byType ? 1 : (areaOnly ? 3 : 2);
+      record.tier = tier;
+      record.googleLocationType = (top && top.geometry && top.geometry.location_type) || null;
+
+      let osmMatch = null;
+      let byName = false;
+
+      if (top && !byType && !areaOnly) {
+        const osm = await findOsmCorroboration(
+          view.venue, item.country,
+          top.geometry.location.lat, top.geometry.location.lng
+        );
+
+        // Recorded on every tier-2 record, accepted or rejected, and
+        // recorded BEFORE the acceptance test so a rejection carries the
+        // same evidence an acceptance does. osmNearest may sit far outside
+        // OSM_MATCH_RADIUS_KM; it is evidence, not a decision.
+        record.osmStatus = osm.status;
+        record.osmError = osm.error;
+        record.osmQueryUrl = osm.queryUrl;
+        record.osmFromCache = osm.fromCache;
+        record.osmCandidateCount = osm.candidateCount;
+        record.osmNearest = osm.nearest;
+
+        // Only the within-radius match decides anything.
+        osmMatch = osm.match;
+
+        // The name-match path is kept as a second tier-2 route: it is what
+        // recovered Nagyerdei Stadion, whose correct street address simply
+        // was not tagged as a stadium and which OSM may not hold either.
+        if (!osmMatch) {
+          byName = venueNameMatches(view.venue, top.formatted_address);
+        }
+      }
+
+      if (areaOnly) tier3Rejected++;
+
+      if (byType || osmMatch || byName) {
+        view.latitude = top.geometry.location.lat;
+        view.longitude = top.geometry.location.lng;
+
+        const city = extractCity(top.address_components || []);
+        if (city) {
+          view.city = city;
+        }
+
+        const acceptedBy = byType ? 'stadium-type' : (osmMatch ? 'osm-corroborated' : 'name-match');
+
+        record.outcome = 'accepted';
+        record.acceptedBy = acceptedBy;
+        record.acceptedTier = tier;
+        // Persisted so a later reviewer can see WHY a tier-2 record was
+        // trusted without re-querying anything.
+        record.osmMatch = osmMatch;
+        view.acceptedTier = tier;
+        view.acceptedBy = acceptedBy;
+
+        accepted++;
+        if (byType) {
+          acceptedByType++;
+        } else if (osmMatch) {
+          acceptedByOsm++;
+          osmMatches.push({
+            teamName: item.displayName,
+            venue: view.venue,
+            country: item.country,
+            formatted: top.formatted_address,
+            types,
+            osm: osmMatch,
+          });
+        } else {
+          acceptedByName++;
+          nameMatches.push({
+            teamName: item.displayName,
+            venue: view.venue,
+            country: item.country,
+            formatted: top.formatted_address,
+            types,
+          });
+        }
+
+        console.log(`    ACCEPTED [tier ${tier}: ${acceptedBy}] `
+          + `${view.latitude}, ${view.longitude}${city ? ` (${city})` : ''}`);
+        if (osmMatch) {
+          console.log(`      OSM ${osmMatch.category}/${osmMatch.type} `
+            + `${osmMatch.km.toFixed(3)}km away: ${osmMatch.name}`);
+        }
+        if (byName) console.log(`      matched: ${top.formatted_address}`);
+      } else {
+        // A rejection must never strip a field: put the cached city back.
+        if (storedCity !== undefined) {
+          view.city = storedCity;
+        }
+        record.outcome = 'rejected';
+        record.rejectedTier = tier;
+        record.osmMatch = null;
+        rejected++;
+        const rejection = {
+          teamName: item.displayName,
+          venue: view.venue,
+          country: item.country,
+          league: item.league,
+          query: address,
+          status: response.status,
+          formatted: top ? top.formatted_address : null,
+          types,
+          keptLat: view.latitude ?? null,
+          keptLng: view.longitude ?? null,
+        };
+        rejections.push(rejection);
+        console.log(`    REJECTED [tier ${areaOnly ? '3: area-only, no OSM call' : '2: no corroboration'}]`
+          + ` (${response.status})`);
+        console.log(`      got:   ${top ? top.formatted_address : '(no result)'}`);
+        console.log(`      types: ${types.length ? types.join(', ') : '(none)'}`);
+        // The near miss, when there was one: a nearest OSM feature just
+        // outside the radius reads very differently from one 40km away.
+        if (record.osmNearest) {
+          console.log(`      osm nearest (not corroborating): `
+            + `${record.osmNearest.category}/${record.osmNearest.type} `
+            + `${record.osmNearest.km.toFixed(3)}km - ${record.osmNearest.name}`);
+        } else if (record.osmStatus) {
+          console.log(`      osm: ${record.osmStatus}`
+            + `${record.osmError ? ` (${record.osmError})` : ''}`);
+        }
+        console.log(`      keeping cached: ${rejection.keptLat}, ${rejection.keptLng}`);
+      }
+    } catch (err) {
+      if (err instanceof RunAborted) {
+        // Not this venue's fault: it keeps its cached values like any
+        // rejection, and the run stops here.
+        if (storedCity !== undefined) {
+          view.city = storedCity;
+        }
+        record.fetchError = err.message;
+        record.outcome = 'aborted';
+        rawRecords.push(record);
+        aborted = err;
+        console.error(`    ABORTING RUN - ${err.message}`);
+        console.log(`      keeping cached: ${view.latitude}, ${view.longitude}`);
+        break;
+      }
+      record.fetchError = String(err.message);
+      // Same as a rejection: keep whatever the cache already had.
+      if (storedCity !== undefined) {
+        view.city = storedCity;
+      }
+      record.outcome = 'error';
+      errored++;
+      rejections.push({
+        teamName: item.displayName,
+        venue: view.venue,
+        country: item.country,
+        league: item.league,
+        query: address,
+        status: `ERROR: ${err.message}`,
+        formatted: null,
+        types: [],
+        keptLat: view.latitude ?? null,
+        keptLng: view.longitude ?? null,
+      });
+      console.error(`    ERROR: ${err.message}`);
+      console.log(`      keeping cached: ${view.latitude}, ${view.longitude}`);
+    }
+
+    rawRecords.push(record);
+    await sleep(CALL_DELAY_MS);
   }
 
   // Update metadata
@@ -1118,12 +1472,18 @@ async function geocodeStadiums() {
     osmRequests: nominatimRequests,
     osmCacheHits: nominatimCacheHits,
     overridden,
+    overrideConflicts,
+    overrideNamespaceMismatches,
+    overrideIdSource: VENUE_OVERRIDES_ID_SOURCE,
+    inputIdSource: SHAPE_ID_SOURCE[shape] || null,
     rejected,
     errored,
     skipped,
     geocoded,
     total: accepted + overridden + rejected + errored,
     totalStadiums: accepted + overridden + rejected + errored + skipped,
+    inputPath: INPUT_PATH,
+    inputShape: shape,
     scope: TEAM_FILTER
       ? { mode: 'team', teamIds: [...TEAM_FILTER] }
       : { mode: ONLY_MISSING ? 'only-missing' : 'all' },
@@ -1132,9 +1492,12 @@ async function geocodeStadiums() {
     aborted: aborted ? { reason: aborted.reason, message: aborted.message } : null,
   };
 
-  fs.writeFileSync(OUTPUT_PATH, JSON.stringify(data, null, 2));
+  // The sidecar goes first, and unconditionally. It is the only record of work
+  // that has already been paid for, and the guard below can refuse the output.
   fs.writeFileSync(RAW_PATH, JSON.stringify({
     generatedAt: new Date().toISOString(),
+    input: INPUT_PATH,
+    inputShape: shape,
     queryShape: "venue + ', ' + relaxCity(city) + ', ' + countryName; components=country:<ISO2>",
     acceptanceRule: {
       tier1: "results[0].types includes 'stadium'",
@@ -1172,6 +1535,26 @@ async function geocodeStadiums() {
     records: rawRecords,
   }, null, 2));
 
+  // Pre-write tripwire. Nothing in this script adds or removes a record, so an
+  // output holding fewer than the input did means a bug in the normalising
+  // layer, not a smaller world - and with --apply the output IS the input, so
+  // writing it would destroy the records it lost. Refuse instead. The sidecar
+  // above is already on disk, so a refusal never costs the run's API spend.
+  const outputCount = countRecords(data, shape);
+  if (outputCount < inputCount) {
+    console.error('\n' + '='.repeat(60));
+    console.error('REFUSING TO WRITE: the output holds fewer records than the input.');
+    console.error(`   input:  ${inputCount}`);
+    console.error(`   output: ${outputCount}  (${inputCount - outputCount} lost)`);
+    console.error(`   would have written: ${OUTPUT_PATH}`);
+    console.error('   This is a bug in the script, not a data condition. Nothing was');
+    console.error(`   written except the sidecar: ${RAW_PATH}`);
+    console.error('='.repeat(60));
+    process.exit(1);
+  }
+
+  fs.writeFileSync(OUTPUT_PATH, JSON.stringify(data, null, 2));
+
   console.log('\n' + '='.repeat(60));
   console.log(aborted ? 'GEOCODING ABORTED - PARTIAL RESULTS SAVED' : 'GEOCODING COMPLETE');
   console.log('='.repeat(60));
@@ -1187,6 +1570,15 @@ async function geocodeStadiums() {
   console.log(`   Errored:                            ${errored}`);
   console.log(`   Geocoded (API request made):        ${geocoded}`);
   console.log(`   Overridden (geocode skipped):       ${overridden}`);
+  if (overrideConflicts > 0) {
+    console.log(`   Override conflicts (none applied):  ${overrideConflicts}`);
+  }
+  // Printed unconditionally, zero included: the whole point of the count is
+  // that a re-keyed overrides file looks different from one that has not been
+  // re-keyed, and a line that only appears on failure cannot show that.
+  console.log(`   Overrides skipped, wrong id source: ${overrideNamespaceMismatches}`
+    + `  (file is "${VENUE_OVERRIDES_ID_SOURCE}", this input is`
+    + ` "${SHAPE_ID_SOURCE[shape]}")`);
   console.log(`   Skipped (not selected):             ${skipped}`);
   console.log(`   Total stadiums seen:                ${accepted + overridden + rejected + errored + skipped}`);
   console.log(`   API requests used:                  ${requestCount} / ${MAX_REQUESTS}`);

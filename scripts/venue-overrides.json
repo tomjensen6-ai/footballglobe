@@ -1,5 +1,7 @@
 {
   "_comment": "Corrections for venues football-data.org has not updated. Their club metadata has lastUpdated 2022. Remove entries once upstream is fixed.",
+  "_idSourceComment": "The id namespace every key below belongs to. Team ids are NOT portable between providers: football-data.org's 62 is Everton, api-football's 62 is Sheffield United, and applying one file's corrections to the other's ids silently rewrites the wrong grounds. A consumer must refuse to apply these entries to records identified in another namespace. An individual entry may carry its own \"idSource\" to override this; one without it inherits this value.",
+  "idSource": "football-data",
   "62": {
     "venue": "Hill Dickinson Stadium",
     "address": "Regent Road, Liverpool L3 0BE",
