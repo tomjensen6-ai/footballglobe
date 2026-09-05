@@ -18,7 +18,7 @@
  *           applies - it is what recovers correctly-located grounds that
  *           nobody has tagged as a stadium.
  *   tier 3  types describing only an AREA - locality, political, sublocality,
- *           administrative_area_*, neighborhood, colloquial_area, route - are
+ *           administrative_area_*, neighborhood, colloquial_area - are
  *           the geocoder falling back to the region, and are rejected without
  *           spending an OSM request.
  *   A rejection still keeps whatever coordinates the record already had: a bad
@@ -175,7 +175,7 @@ const OSM_SPORT_TYPES = new Set(['stadium', 'pitch', 'sports_centre']);
  */
 const AREA_ONLY_TYPES = new Set([
   'locality', 'political', 'sublocality', 'sublocality_level_1',
-  'sublocality_level_2', 'neighborhood', 'colloquial_area', 'route',
+  'sublocality_level_2', 'neighborhood', 'colloquial_area',
 ]);
 
 function isAreaOnlyResult(types) {
@@ -1062,8 +1062,9 @@ function baseRecord(item) {
     // absent field never has to be read as "no OSM call" or "no tier".
     // null means the question was never reached: tier is null only for
     // records that were never evaluated (skipped, overridden, errored),
-    // and the osm* fields are null on tier 1 and tier 3, which spend no
-    // Nominatim request by design.
+    // and the osm* fields are null on tiers 1 and 3, and on the tier-2 rows
+    // with no usable result to corroborate, none of which spend a Nominatim
+    // request by design.
     tier: null,
     googleLocationType: null,
     osmStatus: null,
@@ -1500,24 +1501,34 @@ async function geocodeStadiums() {
     inputShape: shape,
     queryShape: "venue + ', ' + relaxCity(city) + ', ' + countryName; components=country:<ISO2>",
     acceptanceRule: {
+      version: 2,
+      versionNote: 'v2 sends route-typed results to tier 2, where OSM corroboration '
+        + 'decides them; v1 rejected them at tier 3 without an OSM call',
       tier1: "results[0].types includes 'stadium'",
       tier2: `OSM leisure=stadium|pitch|sports_centre within ${OSM_MATCH_RADIUS_KM}km of results[0], `
         + 'or venue name contained in formatted_address',
       tier3: 'reject without an OSM call when types are area-only '
-        + '(locality/political/sublocality/administrative_area_*/neighborhood/colloquial_area/route)',
+        + '(locality/political/sublocality/administrative_area_*/neighborhood/colloquial_area)',
     },
     // What every record carries, and - as important - what it does not mean.
     recordFields: {
-      tier: '1, 2 or 3; null only for records never evaluated (skipped, overridden, errored)',
+      tier: '1, 2 or 3; null only for records never evaluated (skipped, overridden, errored). '
+        + 'NOT a record of which test ran: a response with no usable result (ZERO_RESULTS, '
+        + 'any other non-OK status, or OK with an empty results array) is assigned tier 2 '
+        + 'without ever reaching the tier-2 test, because there is no point for OSM to '
+        + 'corroborate. Analysis of tier 2 must therefore filter on osmStatus !== null',
       googleLocationType: 'results[0].geometry.location_type, null when there was no result',
-      osmStatus: "'ok' | 'empty' | 'failed'; null on tiers 1 and 3, which spend no OSM request",
+      osmStatus: "'ok' | 'empty' | 'failed'; null on tiers 1 and 3, which spend no OSM "
+        + 'request, and null on the tier-2 rows that had no usable result to corroborate '
+        + '(ZERO_RESULTS and friends), which spend no OSM request either',
       osmError: 'failure reason when osmStatus is failed, else null',
       osmQueryUrl: 'the Nominatim URL that produced these results. On a cache hit it is '
         + 'rebuilt from the cached entry\'s own query, NOT from this row\'s venue/country: '
         + 'the cache is keyed on the normalised pair, so the fetch may have been made '
         + 'under a different spelling of the same ground',
       osmFromCache: 'true if these results came off disk, false if this run fetched them; '
-        + 'null on tiers 1 and 3. A re-run is almost all true - it is the only record '
+        + 'null on tiers 1 and 3, and on the tier-2 rows that had no usable result to '
+        + 'corroborate. A re-run is almost all true - it is the only record '
         + 'of which rows this run actually put on the wire',
       osmCandidateCount: 'qualifying OSM features seen at ANY distance',
       osmNearest: `nearest qualifying feature at ANY distance - EVIDENCE ONLY. `
