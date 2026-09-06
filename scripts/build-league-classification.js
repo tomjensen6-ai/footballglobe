@@ -50,7 +50,7 @@ const APPLY = process.argv.includes('--apply');
 // Candidate beside the real file, never on top of it.
 const OUTPUT_PATH = APPLY ? OUTPUT_REAL_PATH : OUTPUT_CANDIDATE_PATH;
 
-const RULES_VERSION = 3;
+const RULES_VERSION = 4;
 
 /**
  * The leagues file is the first non-flag argument. A relative path resolves
@@ -80,6 +80,21 @@ const LEAGUES_PATH = parseLeaguesPath(process.argv);
 // no seasonal maintenance; they only need revisiting when a new league of that
 // kind enters scope.
 // ---------------------------------------------------------------------------
+
+/**
+ * The pseudo-country API-Football files continental and international
+ * competitions under. Leagues there are not domestic divisions, so they are
+ * excluded whatever their name says - which is why this check runs before even
+ * the men-id override below.
+ *
+ * Without it, UEFA Youth League (id 14) attaches to venues across Spain,
+ * England, Germany, Italy, Portugal, the Netherlands and France, and would
+ * render as a league entry inside each of those countries' division lists.
+ * The scope file already leaves out the Champions League, the Europa League
+ * and the national-team tournaments, so today this rule catches only id 14 -
+ * but it generalises the moment another continental competition enters scope.
+ */
+const WORLD_COUNTRY = 'World';
 
 /**
  * Ids that jump every rule below and land in `men` directly.
@@ -120,8 +135,9 @@ const WOMEN_PATTERN = /women|femin|femenin|femenil|femmin|frauen|dames|kvinn|kvi
  * Revisit this ordering if women's youth leagues actually turn up in scope and
  * anything downstream starts treating `women` as a senior-only set.
  */
-function classify(id, name) {
+function classify(id, name, country) {
   const n = name || '';
+  if (country === WORLD_COUNTRY) return 'excluded';
   if (MEN_ID_OVERRIDES.has(id)) return 'men';
   if (EXCLUDED_CUP_IDS.has(id) || CUP_PATTERN.test(n)) return 'excluded';
   if (PHASE_PATTERN.test(n)) return 'excluded';
@@ -194,7 +210,7 @@ function build() {
   // ---- CLASSIFY ----
   const classified = scopeIds.map(id => {
     const { name, country } = byId.get(id);
-    return { id, name, country, category: classify(id, name) };
+    return { id, name, country, category: classify(id, name, country) };
   });
 
   const counts = { men: 0, women: 0, other: 0, excluded: 0 };
