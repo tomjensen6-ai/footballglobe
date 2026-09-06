@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { fgForwardGeocode, fgReverseGeocode, fgFootball } from './lib/fgApi';
 import { 
   fgFootballCompetitions, 
@@ -1875,6 +1875,16 @@ const FootballGlobe = () => {
     setStadiumPins(stadiumsWithCoords);
     console.log(`📊 Updated sidebar: ${stadiumsWithCoords.length} stadiums`);
 
+    // The dropdown must name the league whose pins were just drawn, and those
+    // are topLeague's. This used to live inside the standings-success arm
+    // below, so a country whose top league has no cached standings - which is
+    // nearly all of them, the standings cache holds 9 football-data.org ids
+    // while stadiums are keyed by API-Football ids - left selectedLeague null
+    // and the selector fell back to its "All leagues" default while top-league
+    // pins sat on the map. Selecting the league is about what is displayed, not
+    // about whether a table happened to be cached, so it belongs here.
+    setSelectedLeague(topLeague ? topLeague.id.toString() : null);
+
     // Get standings from cache (use transformed data which has leagueId)
     if (stadiumsWithCoords.length > 0 && stadiumsWithCoords[0].leagueId) {
       const leagueId = stadiumsWithCoords[0].leagueId;
@@ -1888,7 +1898,6 @@ const FootballGlobe = () => {
         };
         
         setStandings([standingsData]); // Your UI expects array
-        setSelectedLeague(topLeague ? topLeague.id.toString() : null);
         
         console.log(`⚡ STANDINGS: Loaded ${leagueStandings.standings.table.length} teams for ${leagueStandings.competition.name}`);
         console.log('📊 First team:', leagueStandings.standings.table[0].team.name, '-', leagueStandings.standings.table[0].points, 'pts');
@@ -3391,6 +3400,34 @@ const map = new MapCtor(mapRef.current, {
     };
   }, [googleMapsReady, cacheLoaded, cachedStadiums, isMapLoaded]);
 
+  /**
+   * Distinct venues in the selected country across ALL of its leagues - the
+   * number the "All leagues" option would actually put on the map.
+   *
+   * The key is the one the 'all' branch of the league dropdown dedupes on
+   * (venue|latitude|longitude), so the label cannot promise a count that
+   * selecting it fails to produce. stadiumPins.length is NOT usable here: it
+   * is whatever is on the map right now, so picking the Championship made the
+   * option read "All leagues (24 stadiums)".
+   *
+   * Memoised because it walks every league and every stadium in the country,
+   * and the sidebar re-renders on hover, selection and pin changes that leave
+   * both inputs untouched. Falls back to stadiumPins.length when the country
+   * has no cache entry, so the label degrades to the old number instead of
+   * claiming zero.
+   */
+  const allLeaguesVenueCount = useMemo(() => {
+    const leagues = cachedStadiums?.countries?.[selectedCountry]?.leagues;
+    if (!leagues) return null;
+    const seen = new Set();
+    for (const league of leagues) {
+      for (const stadium of league.stadiums || []) {
+        seen.add(`${stadium.venue}|${stadium.latitude}|${stadium.longitude}`);
+      }
+    }
+    return seen.size;
+  }, [selectedCountry, cachedStadiums]);
+
   return (
     <div className="premium-container relative overflow-hidden">
       
@@ -3772,43 +3809,57 @@ const map = new MapCtor(mapRef.current, {
               {/* Enhanced League Selector */}
               {availableLeagues.length > 0 && (
                 <div style={{ marginBottom: '1rem' }}>
+                  {/* The count is availableLeagues only. The dropdown below shows
+                      one MORE entry than this number, because "All leagues" is an
+                      option rather than a league. */}
                   <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '0.75rem' }}>
                     🏆 League Selector ({availableLeagues.length} leagues)
                   </h3>
                   
                   <select 
-                    value={selectedLeague || 'top'} 
+                    value={selectedLeague || 'all'} 
                     onChange={(e) => {
                       const leagueValue = e.target.value;
                       setSelectedLeague(leagueValue);
                       
                       console.log(`🔄 League dropdown changed to: ${leagueValue}`);
                       
-                      if (leagueValue === 'top') {
-                        // Show top league stadiums only (matches country-click behavior)
-                        console.log('🔄 SWITCHING: Back to top league view');
+                      if (leagueValue === 'all') {
+                        // Show every stadium in the country, across all of its leagues.
+                        console.log('🔄 SWITCHING: All leagues view');
                         
                         if (selectedCountry) {
-                          // Get country data and top league
-                          const selectedCountryCode = translateCountryNameToCode(selectedCountry) || selectedCountry;
+                          // selectedCountry IS the premium file's country key, so it
+                          // indexes the cache directly. The old path sent it through
+                          // translateCountryNameToCode and then COUNTRY_CODE_TO_NAME,
+                          // a round trip that only ever worked by falling through to
+                          // the name it started with.
+                          const countryData = cachedStadiums?.countries?.[selectedCountry];
+                          const leagues = countryData?.leagues || [];
                           
-                          // IMPORTANT: Convert code to name (ENG → England) because cache uses full names
-                          const countryNameForLookup = COUNTRY_CODE_TO_NAME[selectedCountryCode] || 
-                                                      COUNTRY_CODE_TO_NAME[selectedCountry] || 
-                                                      selectedCountry;
-                          const countryData = cachedStadiums?.countries?.[countryNameForLookup];
-                          const topLeague = countryData?.leagues?.[0];
+                          // One physical ground can be listed in several leagues - a
+                          // stadium hosting both men's and women's football appears once
+                          // in each - and every extra listing would drop a second marker
+                          // on the same spot. Venue name plus coordinates is the identity
+                          // here: teamId belongs to a club, not to a ground.
+                          const seen = new Set();
+                          const allLeagueStadiums = [];
+                          for (const league of leagues) {
+                            for (const stadium of league.stadiums || []) {
+                              const key = `${stadium.venue}|${stadium.latitude}|${stadium.longitude}`;
+                              if (seen.has(key)) continue;
+                              seen.add(key);
+                              allLeagueStadiums.push({
+                                ...stadium,
+                                leagueName: league.name,
+                                leagueId: league.id,
+                                country: selectedCountry
+                              });
+                            }
+                          }
                           
-                          // Get all stadiums for country
-                          const allStadiums = getStadiumsFromCache(selectedCountryCode || selectedCountry);
-                          
-                          // Filter to TOP LEAGUE ONLY (same as country click)
-                          const topLeagueStadiums = topLeague 
-                            ? allStadiums.filter(stadium => stadium.leagueId === topLeague.id)
-                            : allStadiums;
-                          
-                          if (topLeagueStadiums.length > 0) {
-                            const stadiumsWithCoords = topLeagueStadiums.map(stadium => ({
+                          if (allLeagueStadiums.length > 0) {
+                            const stadiumsWithCoords = allLeagueStadiums.map(stadium => ({
                               // Spread first: this list omitted city, so popups
                               // opened from this path had no travel links.
                               ...stadium,
@@ -3846,9 +3897,12 @@ const map = new MapCtor(mapRef.current, {
                               }, 300);
                             }
                             
-                            console.log(`✅ Showing ${stadiumsWithCoords.length} top league stadiums (${topLeague?.name || 'default'})`);
+                            console.log(`✅ Showing ${stadiumsWithCoords.length} stadiums across ${leagues.length} leagues in ${selectedCountry}`);
                             
-                            // Load standings for top league
+                            // Standings stay with the country's first league: a table
+                            // belongs to one competition, and there is no combined table
+                            // to show for "all leagues".
+                            const topLeague = leagues[0];
                             if (topLeague) {
                               const leagueStandings = getStandingsFromCache(topLeague.id);
                               if (leagueStandings) {
@@ -3985,7 +4039,7 @@ const map = new MapCtor(mapRef.current, {
                       fontSize: '0.875rem'
                     }}
                   >
-                    <option value="top">🏆 Top Leagues ({stadiumPins.length} stadiums)</option>
+                    <option value="all">🌍 All leagues ({allLeaguesVenueCount ?? stadiumPins.length} stadiums)</option>
                     {availableLeagues.map(league => (
                       <option key={league.id} value={league.id}>
                         {league.type === 'League' ? '🏟️' : '🏆'} {league.name}
@@ -3993,7 +4047,7 @@ const map = new MapCtor(mapRef.current, {
                     ))}
                   </select>
                   
-                  {selectedLeague && selectedLeague !== 'top' && (
+                  {selectedLeague && selectedLeague !== 'all' && (
                     <div style={{
                       marginTop: '0.5rem',
                       padding: '0.5rem',
