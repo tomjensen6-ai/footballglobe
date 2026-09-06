@@ -12,12 +12,20 @@
  *
  * Output (nested), mirroring the real public/stadiums-premium.json:
  *   { lastUpdated, totalStadiums, ..., countries: { "England": {
- *       name, code, leagues: [ { id, name, tier, stadiums: [ ... ] } ] } } }
+ *       name, code, leagues: [ { id, name, category, tier, stadiums } ] } } }
  *
- * Every country gets exactly ONE synthetic league, "All venues". The app's
- * topLeague = countryData?.leagues?.[0] therefore always resolves, and its
- * "filter to top league only" step becomes a no-op that keeps every venue
- * rather than a filter that silently drops most of them.
+ * Leagues are REAL leagues, taken from scripts/league-classification.json:
+ * every country lists its men's leagues in order, then its women's, then its
+ * youth/reserve ("other") ones, and a league with no venues is left out. A
+ * venue is filed under the single lowest-order league it belongs to WITHIN a
+ * category, so it appears once per category it plays in - a ground hosting
+ * both men's and women's football is listed in one men's league and one
+ * women's league. Venues whose only leagues are excluded are dropped.
+ *
+ * A country with no classified leagues at all still gets the old single
+ * synthetic "All venues" league - Brunei, Chad and Liechtenstein are the
+ * cases in the current data. The app's topLeague = countryData?.leagues?.[0]
+ * therefore still always resolves.
  *
  * Output: <output>.premium-candidate.json by default. --apply overwrites
  *   public/stadiums-premium.json itself, and only after the shrink guard
@@ -33,6 +41,7 @@ const ROOT = path.join(__dirname, '..');
 
 const DEFAULT_INPUT_PATH = path.join(ROOT, 'stadiums-apifootball-geocoding.json');
 const PREMIUM_PATH = path.join(ROOT, 'public', 'stadiums-premium.json');
+const CLASSIFICATION_PATH = path.join(__dirname, 'league-classification.json');
 
 const APPLY = process.argv.includes('--apply');
 
@@ -68,6 +77,84 @@ const OUTPUT_PATH = APPLY
 const SYNTHETIC_LEAGUE_ID_BASE = 900001;
 
 const SYNTHETIC_LEAGUE_NAME = 'All venues';
+
+/**
+ * The categories that make it into the output, in the order a country lists
+ * them. `excluded` is deliberately absent: it is the one classification that
+ * puts a venue nowhere.
+ */
+const CATEGORY_ORDER = ['men', 'women', 'other'];
+
+/**
+ * The classification is a hard dependency, not an optional enrichment: without
+ * it there are no league names, no categories and no ordering, and the only
+ * thing left to emit would be the synthetic league this build exists to
+ * replace. So it is loaded first and its absence stops the run.
+ */
+function loadClassification() {
+  if (!fs.existsSync(CLASSIFICATION_PATH)) {
+    console.error(`ERROR: classification not found: ${CLASSIFICATION_PATH}`);
+    console.error('   Build it first:');
+    console.error('     node scripts/build-league-classification.js --apply');
+    process.exit(1);
+  }
+  let doc;
+  try {
+    doc = JSON.parse(fs.readFileSync(CLASSIFICATION_PATH, 'utf8'));
+  } catch (err) {
+    console.error(`ERROR: classification is not valid JSON: ${CLASSIFICATION_PATH}`);
+    console.error(`  ${err.message}`);
+    process.exit(1);
+  }
+  if (!doc || !doc.leagues || typeof doc.leagues !== 'object') {
+    console.error(`ERROR: classification has no leagues map: ${CLASSIFICATION_PATH}`);
+    console.error('   Rebuild it: node scripts/build-league-classification.js --apply');
+    process.exit(1);
+  }
+  return doc;
+}
+
+/**
+ * The single league a venue is listed under per category: the LOWEST `order`
+ * it belongs to, so a club that plays in the top flight is filed there rather
+ * than in whatever secondary competition it also appears in. Ties on order -
+ * possible when a venue's leagues come from two different classification
+ * countries - break on the lower league id, so the pick is deterministic.
+ * Excluded leagues, and ids the classification has never heard of, take part
+ * in nothing; a venue left with an empty map here is dropped by the caller.
+ */
+function pickLeaguesByCategory(leagueIds, leagueMeta) {
+  const picked = new Map();
+  const ids = Array.isArray(leagueIds) ? leagueIds : [];
+  for (const rawId of ids) {
+    const meta = leagueMeta[String(rawId)];
+    if (!meta || !CATEGORY_ORDER.includes(meta.category)) continue;
+    const candidate = {
+      id: Number(rawId),
+      name: meta.name,
+      category: meta.category,
+      order: meta.order,
+    };
+    const current = picked.get(meta.category);
+    if (!current
+        || candidate.order < current.order
+        || (candidate.order === current.order && candidate.id < current.id)) {
+      picked.set(meta.category, candidate);
+    }
+  }
+  return picked;
+}
+
+/**
+ * Capacity descending, so the grounds a viewer recognises sit at the top of
+ * the sidebar's first ten. Ties break on venue name so the order is total and
+ * the output is byte-stable across runs.
+ */
+function sortStadiums(stadiums) {
+  stadiums.sort((a, b) => (b.capacity - a.capacity)
+    || String(a.venue || '').localeCompare(String(b.venue || '')));
+  return stadiums;
+}
 
 /**
  * Country code, first three letters uppercased. That is exactly the scheme the
@@ -144,6 +231,10 @@ function stadiumRecord(venue) {
     // Not read by the app. Kept because it is the only stable identifier back
     // to the flat file, and a build with no way home is hard to audit.
     venueId: venue.venueId ?? null,
+    // The venue's FULL league list, not just the league it is filed under
+    // here. Carrying it makes every placement auditable against the
+    // classification without going back to the flat file.
+    leagueIds: Array.isArray(venue.leagueIds) ? [...venue.leagueIds] : [],
   };
 }
 
@@ -164,7 +255,15 @@ function build() {
   console.log('BUILD PREMIUM FROM GEOCODED\n');
   console.log(`Mode:   ${APPLY ? 'APPLY (overwrites public/stadiums-premium.json)' : 'CANDIDATE (writes a candidate file only)'}`);
   console.log(`Input:  ${INPUT_PATH}`);
+  console.log(`Leagues: ${CLASSIFICATION_PATH}`);
   console.log(`Output: ${OUTPUT_PATH}`);
+  console.log('');
+
+  const classification = loadClassification();
+  const leagueMeta = classification.leagues;
+  console.log(`Classification: season ${classification.season}, rules v${classification.rulesVersion}, `
+    + `${Object.keys(leagueMeta).length} leagues `
+    + `(${JSON.stringify(classification.counts)})`);
   console.log('');
 
   if (!fs.existsSync(INPUT_PATH)) {
@@ -182,10 +281,16 @@ function build() {
   const venuesRead = data.venues.length;
   let skippedNoCoords = 0;
   let skippedNoCountry = 0;
+  // Venues left with no category after classification. In practice these are
+  // venues whose every league is `excluded`; a venue carrying no league ids at
+  // all, or only ids the classification does not know, would land here too.
+  let droppedExcludedOnly = 0;
 
   // Grouped by the country string EXACTLY as the flat file spells it. No
   // normalising, no mapping table: an invented country name here would be a
-  // country the app can never look up.
+  // country the app can never look up. Each entry keeps the venue's record
+  // alongside the one league it takes per category, so the country pass below
+  // never has to look at the flat file again.
   const byCountry = new Map();
 
   for (const venue of data.venues) {
@@ -199,7 +304,10 @@ function build() {
       continue;
     }
     if (!byCountry.has(country)) byCountry.set(country, []);
-    byCountry.get(country).push(stadiumRecord(venue));
+    byCountry.get(country).push({
+      record: stadiumRecord(venue),
+      leagues: pickLeaguesByCategory(venue.leagueIds, leagueMeta),
+    });
   }
 
   const countryNames = [...byCountry.keys()].sort();
@@ -215,14 +323,17 @@ function build() {
   const countries = {};
   const codeCollisions = new Map();
 
-  for (const name of countryNames) {
-    const stadiums = byCountry.get(name);
+  // Countries that fell back to the synthetic league because nothing they host
+  // survived classification. Logged by name: a country appearing here that is
+  // not expected to is a classification gap, not a quiet default.
+  const fallbackCountries = [];
 
-    // Capacity descending, so the grounds a viewer recognises sit at the top of
-    // the sidebar's first ten. Ties break on venue name so the order is total
-    // and the output is byte-stable across runs.
-    stadiums.sort((a, b) => (b.capacity - a.capacity)
-      || String(a.venue || '').localeCompare(String(b.venue || '')));
+  // Distinct venues, NOT league memberships. A venue in both a men's and a
+  // women's league is one placement here and two records in the output.
+  let placedDistinct = 0;
+
+  for (const name of countryNames) {
+    const entries = byCountry.get(name);
 
     const code = countryCode(name);
     if (code) {
@@ -230,21 +341,66 @@ function build() {
       codeCollisions.get(code).push(name);
     }
 
-    countries[name] = {
-      name,
-      code,
-      leagues: [
+    // id -> league under construction. Built from the leagues this country's
+    // venues actually land in, so an empty league is never emitted.
+    const leaguesById = new Map();
+    let placedHere = 0;
+
+    for (const entry of entries) {
+      if (entry.leagues.size === 0) continue;
+      placedHere++;
+      for (const league of entry.leagues.values()) {
+        if (!leaguesById.has(league.id)) {
+          leaguesById.set(league.id, { ...league, stadiums: [] });
+        }
+        leaguesById.get(league.id).stadiums.push(entry.record);
+      }
+    }
+
+    let leagues;
+    if (leaguesById.size === 0) {
+      // No classified league anywhere in this country - keep the old single
+      // synthetic league rather than emitting a country with no leagues at all,
+      // which the app's topLeague lookup could not survive.
+      fallbackCountries.push(name);
+      placedDistinct += entries.length;
+      leagues = [
         {
           id: leagueIdByCountry.get(name),
           name: SYNTHETIC_LEAGUE_NAME,
           tier: 1,
-          stadiums,
+          stadiums: sortStadiums(entries.map(e => e.record)),
         },
-      ],
-    };
+      ];
+    } else {
+      droppedExcludedOnly += entries.length - placedHere;
+      placedDistinct += placedHere;
+      // men, then women, then other; within a category by classification order,
+      // then by id so the sort is total and the output byte-stable.
+      leagues = [...leaguesById.values()]
+        .sort((a, b) =>
+          (CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category))
+          || (a.order - b.order)
+          || (a.id - b.id))
+        .map(league => ({
+          id: league.id,
+          name: league.name,
+          category: league.category,
+          // tier is DISPLAY ORDER within the category, derived from ascending
+          // league id, and is not a claim about the real football pyramid. Id
+          // order is reliable for the top flight but inverts in places - in
+          // Spain, Segunda RFEF sits at higher ids than Tercera.
+          tier: league.order + 1,
+          stadiums: sortStadiums(league.stadiums),
+        }));
+    }
+
+    countries[name] = { name, code, leagues };
   }
 
-  const written = countryNames.reduce((n, c) => n + byCountry.get(c).length, 0);
+  const written = Object.values(countries)
+    .reduce((n, c) => n + c.leagues.reduce((m, l) => m + l.stadiums.length, 0), 0);
+  const totalLeagues = Object.values(countries).reduce((n, c) => n + c.leagues.length, 0);
   const now = new Date();
 
   const output = {
@@ -256,10 +412,41 @@ function build() {
     source: 'api-football',
     exportMethod: 'build-premium-from-geocoded',
     totalCountries: countryNames.length,
-    totalLeagues: countryNames.length,
+    totalLeagues,
     totalStadiums: written,
     countries,
   };
+
+  // ---- RECONCILIATION ----
+  // Every venue read must be accounted for exactly once: skipped, dropped, or
+  // placed. Placed counts DISTINCT venues, not league memberships, because one
+  // venue can be listed in several leagues; counting memberships here would
+  // hide a real loss behind a multi-category venue.
+  const reconciled = skippedNoCoords + skippedNoCountry + droppedExcludedOnly + placedDistinct;
+
+  console.log('-'.repeat(60));
+  console.log('RECONCILIATION');
+  console.log('-'.repeat(60));
+  console.log(`  venues read:             ${venuesRead}`);
+  console.log(`  skipped (no coords):     ${skippedNoCoords}`);
+  console.log(`  skipped (no country):    ${skippedNoCountry}`);
+  console.log(`  dropped (excluded only): ${droppedExcludedOnly}`);
+  console.log(`  placed (distinct):       ${placedDistinct}`);
+  console.log(`  ${reconciled === venuesRead ? 'balances' : 'DOES NOT BALANCE'}: `
+    + `${skippedNoCoords} + ${skippedNoCountry} + ${droppedExcludedOnly} + ${placedDistinct} `
+    + `= ${reconciled} vs ${venuesRead} read`);
+  console.log('');
+
+  if (reconciled !== venuesRead) {
+    console.error('='.repeat(60));
+    console.error('REFUSING TO WRITE');
+    console.error('='.repeat(60));
+    console.error(`  skipped + dropped + placed = ${reconciled}, venues read = ${venuesRead}`);
+    console.error('  Every venue must be accounted for exactly once. A mismatch means');
+    console.error('  venues are being lost or double-counted between the flat file and');
+    console.error('  the nested output, which is exactly the bug this build must not ship.');
+    process.exit(1);
+  }
 
   // ---- SHRINK GUARD ----
   // The published file is what the live map reads. A build that would publish
@@ -303,10 +490,17 @@ function build() {
   console.log('SUMMARY');
   console.log('-'.repeat(60));
   console.log(`  venues read:             ${venuesRead}`);
-  console.log(`  skipped (no coords):     ${skippedNoCoords}`);
-  console.log(`  skipped (no country):    ${skippedNoCountry}`);
-  console.log(`  stadiums written:        ${written}`);
+  console.log(`  placed (distinct):       ${placedDistinct}`);
+  console.log(`  stadium records written: ${countNestedStadiums(output)}`);
+  console.log(`  leagues:                 ${totalLeagues}`);
   console.log(`  countries:               ${countryNames.length}`);
+  // countNestedStadiums counts league MEMBERSHIPS, so it exceeds the distinct
+  // placed count by exactly the number of extra categories venues appear in -
+  // a ground hosting men's and women's football is counted twice there, once
+  // here. The two numbers differing is expected, not a defect.
+  const duplicated = countNestedStadiums(output) - placedDistinct;
+  console.log(`  records - distinct:      ${duplicated}`
+    + `  (venues listed in more than one category)`);
 
   const largest = countryNames
     .map(name => ({ name, n: byCountry.get(name).length }))
@@ -319,10 +513,14 @@ function build() {
   }
 
   console.log('\n' + '-'.repeat(60));
-  console.log(`SYNTHETIC LEAGUE IDS (base ${SYNTHETIC_LEAGUE_ID_BASE}, sorted country order)`);
+  console.log(`SYNTHETIC FALLBACK COUNTRIES (no classified league; base ${SYNTHETIC_LEAGUE_ID_BASE})`);
   console.log('-'.repeat(60));
-  for (const name of countryNames) {
-    console.log(`  ${leagueIdByCountry.get(name)}  ${name}`);
+  if (fallbackCountries.length === 0) {
+    console.log('  none - every country resolved to at least one real league');
+  } else {
+    for (const name of fallbackCountries) {
+      console.log(`  ${leagueIdByCountry.get(name)}  ${name}`);
+    }
   }
 
   const collided = [...codeCollisions.entries()].filter(([, names]) => names.length > 1);
