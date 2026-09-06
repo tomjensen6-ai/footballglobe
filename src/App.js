@@ -102,6 +102,72 @@ const googleToFootballCode = (googleCode) => {
   return GOOGLE_TO_FOOTBALL_CODE[googleCode] || googleCode;
 };
 
+// ===== Country boundary source =====
+// Subunits, not admin_0_countries: England/Scotland/Wales/Northern-Ireland are
+// separate premium keys and only the subunit layer separates them.
+const NE_GEOJSON_URL =
+  'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_map_subunits.geojson';
+
+// Single in-flight/parsed promise. Both the polygon render and every hover
+// highlight share it, so the ~3MB payload is fetched and JSON-parsed once.
+let neGeoJsonPromise = null;
+const loadCountryGeoJson = () => {
+  if (!neGeoJsonPromise) {
+    neGeoJsonPromise = fetch(NE_GEOJSON_URL)
+      .then(res => {
+        if (!res.ok) throw new Error(`GeoJSON HTTP ${res.status}`);
+        return res.json();
+      })
+      .catch(err => {
+        neGeoJsonPromise = null; // a transient failure must not poison the session
+        throw err;
+      });
+  }
+  return neGeoJsonPromise;
+};
+
+// lowercase, [-_] to space, strip non-letters, collapse space, trim
+const normaliseCountry = (s) =>
+  String(s == null ? '' : s)
+    .toLowerCase()
+    .replace(/[-_]/g, ' ')
+    .replace(/[^a-z\s]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const COUNTRY_ALIASES = {
+  'usa': 'united states of america',
+  'bosnia': 'bosnia and herzegovina',
+  'macedonia': 'north macedonia'
+};
+
+const applyCountryAlias = (n) => COUNTRY_ALIASES[n] || n;
+
+// byName keys on NAME_EN and NAME; byAdmin keys on ADMIN. Values are Sets of
+// feature INDEXES so a feature is never collected twice for one country.
+const buildFeatureIndexes = (geoJson) => {
+  const byName = new Map();
+  const byAdmin = new Map();
+  const add = (index, key, i) => {
+    if (!key) return;
+    if (!index.has(key)) index.set(key, new Set());
+    index.get(key).add(i);
+  };
+  geoJson.features.forEach((f, i) => {
+    const p = f.properties || {};
+    add(byName, normaliseCountry(p.NAME_EN), i);
+    add(byName, normaliseCountry(p.NAME), i);
+    add(byAdmin, normaliseCountry(p.ADMIN), i);
+  });
+  return { byName, byAdmin };
+};
+
+const resolveCountryFeatures = (countryKey, byName, byAdmin) => {
+  const lookup = applyCountryAlias(normaliseCountry(countryKey));
+  const hit = byName.get(lookup) || byAdmin.get(lookup);
+  return hit && hit.size > 0 ? [...hit] : [];
+};
+
 // ===== NEW: Translate country NAME to code =====
 const translateCountryNameToCode = (countryNameOrCode) => {
   // If it's already a 3-letter code, return it as-is
@@ -151,26 +217,92 @@ if (!GOOGLE_KEY) console.warn('Google key missing: GOOGLE_KEY is empty.');
 if (!FOOTBALL_KEY) console.warn('Football key missing: FOOTBALL_KEY is empty.');
 
 
-// --- Google Maps readiness helper ---
-async function ensureGoogleMapsReady() {
-  if (window.google?.maps?.Map) return;
-  if (window.google?.maps?.importLibrary) return;
+// --- Google Maps loader: ONE script tag for the whole app ---
+// A second tag with different params re-registers google.maps, which swaps the
+// class identities out from under any object already built from the first one.
+// That is what produced 133x "setMap: not an instance of Map": the Map came
+// from loader A, the Polygons (built after an await) from loader B.
+//
+// Library set is deliberately minimal. `places` was requested by both old
+// loaders and is used nowhere. `marker` is not needed either: the two
+// `new google.maps.Marker` calls are the legacy core Marker, and no mapId is
+// set, so AdvancedMarkerElement is not in play. Geocoding goes through the
+// server proxy in lib/fgApi.js, not google.maps.Geocoder.
+let googleMapsPromise = null;
 
-  if (!document.querySelector('script[data-google-maps-loader]')) {
+function loadGoogleMapsOnce() {
+  if (googleMapsPromise) return googleMapsPromise;
+
+  // Already usable (warm reload, or a tag from a previous mount finished).
+  if (typeof window.google?.maps?.Map === 'function') {
+    googleMapsPromise = Promise.resolve();
+    return googleMapsPromise;
+  }
+
+  googleMapsPromise = new Promise((resolve, reject) => {
+    if (!GOOGLE_KEY) {
+      reject(new Error('Google Maps key missing: GOOGLE_KEY is empty.'));
+      return;
+    }
+
+    const finish = async () => {
+      // "Tag loaded" is NOT "API usable": with loading=async the bootstrap has
+      // not even attached importLibrary by the time onload fires, so testing it
+      // once and skipping the await left us with no Map constructor. Poll for
+      // whichever shows up first - a populated legacy namespace, or the
+      // bootstrap's importLibrary - instead of giving up on the first miss.
+      const POLL_MS = 50;
+      const TIMEOUT_MS = 10000;
+      try {
+        const deadline = Date.now() + TIMEOUT_MS;
+        while (typeof window.google?.maps?.Map !== 'function') {
+          if (typeof window.google?.maps?.importLibrary === 'function') {
+            await window.google.maps.importLibrary('maps');
+            break; // fall through to the Map re-check below
+          }
+          if (Date.now() >= deadline) break;
+          await new Promise((r) => setTimeout(r, POLL_MS));
+        }
+        if (typeof window.google?.maps?.Map !== 'function') {
+          // Name what was actually missing so the next failure is diagnosable.
+          const missing = typeof window.google?.maps?.importLibrary === 'function'
+            ? 'window.google.maps.importLibrary was present but importLibrary("maps") did not produce window.google.maps.Map'
+            : 'neither window.google.maps.Map nor window.google.maps.importLibrary ever appeared';
+          throw new Error(
+            `Google Maps unusable after ${TIMEOUT_MS}ms: ${missing}.`
+          );
+        }
+        resolve();
+      } catch (err) {
+        googleMapsPromise = null; // allow a retry
+        reject(err);
+      }
+    };
+
+    const existing = document.querySelector('script[data-google-maps-loader]');
+    if (existing) {
+      existing.addEventListener('load', finish, { once: true });
+      existing.addEventListener('error',
+        () => { googleMapsPromise = null; reject(new Error('Google Maps script failed to load.')); },
+        { once: true });
+      return;
+    }
+
     const s = document.createElement('script');
-    s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_KEY}&v=weekly&libraries=maps,marker,places`;
+    s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_KEY}` +
+            `&v=weekly&libraries=maps&language=en&loading=async`;
     s.async = true;
     s.defer = true;
     s.setAttribute('data-google-maps-loader', '1');
+    s.onload = finish;
+    s.onerror = () => {
+      googleMapsPromise = null;
+      reject(new Error('Google Maps script failed to load.'));
+    };
     document.head.appendChild(s);
-  }
+  });
 
-  for (let i = 0; i < 80; i++) {
-    if (window.google?.maps?.Map || window.google?.maps?.importLibrary) return;
-    // eslint-disable-next-line no-await-in-loop
-    await new Promise(r => setTimeout(r, 100));
-  }
-  throw new Error('Google Maps API loaded but constructors are unavailable.');
+  return googleMapsPromise;
 }
 
 
@@ -181,6 +313,11 @@ const FootballGlobe = () => {
   const mapRef = useRef(null);
   const googleMapRef = useRef(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
+  // Google's readiness as explicit state. window.google is a plain global, so
+  // reading it inside an effect gives React nothing to re-run on: the init
+  // effect fired twice before the script resolved and then had no dependency
+  // left to change, hanging the map forever.
+  const [googleMapsReady, setGoogleMapsReady] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(null);
   // Mobile-only slide-over drawer state for the country sidebar (desktop ignores this - the
   // sidebar is a permanent pane there). Starts closed each time a new country is selected.
@@ -1537,31 +1674,26 @@ const FootballGlobe = () => {
   };
 
   // GLOBAL FUNCTION: Handle popup button clicks
-  window.clickCountryFromPopup = async (countryName) => {
-    console.log(`🎯 CLICKED: ${countryName} - Using cache!`);
+  // countryKey is the exact stadiums-premium.json key ("South-Africa"). It is the
+  // country's identity end to end: no 3-letter code is derived from it.
+  window.clickCountryFromPopup = async (countryKey) => {
+    console.log(`🎯 CLICKED: ${countryKey} - Using cache!`);
     setIsLoading(true);
-    setSelectedCountry(countryName);
-    
-    // Translate country name to code (e.g., "England" -> "ENG")
-    const selectedCountryCode = translateCountryNameToCode(countryName);
-    const selectedCountryName = countryName;
-    
-    if (!selectedCountryCode) {
-      console.error('❌ Could not find country code for:', countryName);
+    setSelectedCountry(countryKey);
+
+    const countryData = cachedStadiums?.countries?.[countryKey];
+    if (!countryData) {
+      console.error('❌ Country key not present in stadium cache:', countryKey);
       setIsLoading(false);
       return;
     }
-    
-    console.log(`🔍 Looking up: "${selectedCountryCode}" → "${selectedCountryName}"`);
-    
-        
+
+    const selectedCountryName = countryKey;
+    console.log(`🔍 Looking up: "${countryKey}"`);
+
     // Get ALL stadiums for this country from cache
-    const allStadiumsForCountry = getStadiumsFromCache(selectedCountryCode);
-    
-    // Get country data to find top league
-    // IMPORTANT: Convert code to name (ENG → England) because cache uses full names
-    const countryNameForLookup = COUNTRY_CODE_TO_NAME[selectedCountryCode] || selectedCountryName;
-    const countryData = cachedStadiums?.countries?.[countryNameForLookup];
+    const allStadiumsForCountry = getStadiumsFromCache(countryKey);
+
     const topLeague = countryData?.leagues?.[0]; // First league = top priority (Premier League, Bundesliga, etc)
     
     // Filter to TOP LEAGUE ONLY
@@ -1632,7 +1764,7 @@ const FootballGlobe = () => {
 
         // 🔥 CRITICAL: Validate coordinate ranges for Portugal
         // 🔥 CRITICAL: Validate coordinate ranges for Portugal (including Azores & Madeira)
-        if (selectedCountryCode === 'POR') {
+        if (countryKey === 'Portugal') {
           // Mainland Portugal: 36-43°N, 10-6°W
           // Madeira: 32-33°N, 16-17°W
           // Azores: 37-40°N, 25-31°W
@@ -1770,7 +1902,7 @@ const FootballGlobe = () => {
         const countryLeagues = countryData.leagues.map(league => ({
           id: league.id,
           name: league.name,
-          country: selectedCountryCode
+          country: countryKey
         }));
         
         setAvailableLeagues(countryLeagues);
@@ -1854,7 +1986,7 @@ const FootballGlobe = () => {
     }
 
     setIsLoading(false);
-    console.log(`✅ COMPLETE: ${selectedCountryCode} loaded in <1 second!`);
+    console.log(`✅ COMPLETE: ${countryKey} loaded in <1 second!`);
   };
   const initializeMap = () => {
     (async () => {
@@ -1872,11 +2004,17 @@ const FootballGlobe = () => {
 
       // Prefer legacy constructor if present
       let MapCtor = window.google?.maps?.Map;
+      // Capture the namespace alongside the constructor. Every google.maps.*
+      // read that happens after an await must come from this reference, never
+      // from the mutable global - that pairing is what keeps class identities
+      // consistent, so a Polygon built minutes later still accepts this Map.
+      let gmaps = window.google?.maps;
 
 if (typeof MapCtor !== 'function') {
   if (window.google?.maps?.importLibrary) {
     const mapsModule = await window.google.maps.importLibrary('maps'); // { Map, ... }
     MapCtor = mapsModule && mapsModule.Map;
+    gmaps = window.google?.maps; // re-pair after the await
   }
 }
 
@@ -1954,7 +2092,7 @@ const map = new MapCtor(mapRef.current, {
     });
     
     // Force Google Maps to initialize mousemove events
-    window.google.maps.event.trigger(map, 'resize');
+    gmaps.event.trigger(map, 'resize');
     
     // Add a small delay before setting up hover effects
     setTimeout(() => {
@@ -2042,10 +2180,15 @@ const map = new MapCtor(mapRef.current, {
    
     setIsMapLoaded(true);
 
-    // 🔥 NEW: Render countries on map after initialization
-    if (countriesDataRef.current.length > 0) {
-      console.log('🎨 Rendering countries on map...');
-      renderCountriesOnMap(map, countriesDataRef.current);
+    // Polygons come from the stadium cache, not the football API. The API list
+    // still drives hover popups and on-demand lookups; it no longer decides
+    // what is green or clickable.
+    const countryKeys = Object.keys(cachedStadiums?.countries || {});
+    if (countryKeys.length > 0) {
+      console.log(`🎨 Rendering ${countryKeys.length} countries on map...`);
+      renderCountriesOnMap(map, countryKeys, gmaps);
+    } else {
+      console.warn('⚠️ Stadium cache empty at map init - no country polygons rendered');
     }
       })();
     };
@@ -2095,8 +2238,7 @@ const map = new MapCtor(mapRef.current, {
       
       // Add professional delay
       setTimeout(() => {
-        fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson')
-          .then(response => response.json())
+        loadCountryGeoJson()
           .then(geoJsonData => {
             const countryFeature = geoJsonData.features.find(feature => {
               const featureCode = feature.properties.ISO_A2;
@@ -2479,10 +2621,21 @@ const map = new MapCtor(mapRef.current, {
             // Simple zoom to country
             map.panTo(countryData.center || { lat: event.latLng.lat(), lng: event.latLng.lng() });
 
-            const countryPolys = (window.countryPolygons || []).filter(p => p.countryData?.code === countryData.code);
+            // Polygons now carry `countryKey` (the exact premium key) and hold
+            // every ring as a separate path, so match on the normalised key and
+            // walk getPaths(). Kept rather than deleted: this is the ONLY zoom on
+            // this path - displayStadiumPins moves no camera, and the fitBounds
+            // over markers belongs to clickCountryFromPopup, not here. Reachable
+            // only for countries with no polygon, since a clickable polygon
+            // swallows the map click.
+            const clickedKey = normaliseCountry(detectedCountryName);
+            const countryPolys = (window.countryPolygons || [])
+              .filter(p => normaliseCountry(p.countryKey) === clickedKey);
             if (countryPolys.length > 0) {
               const bounds = new window.google.maps.LatLngBounds();
-              countryPolys.forEach(p => p.getPath().forEach(pt => bounds.extend(pt)));
+              countryPolys.forEach(p =>
+                p.getPaths().forEach(path => path.forEach(pt => bounds.extend(pt)))
+              );
               map.fitBounds(bounds);
             }
 
@@ -2567,118 +2720,90 @@ const map = new MapCtor(mapRef.current, {
   };
 
   // NEW FUNCTION: Render all countries on initial map load
-  const renderCountriesOnMap = async (map, countries) => {
-    console.log(`🎨 RENDERING: ${countries.length} countries on map`);
-    
+  // gmaps is the google.maps namespace captured in initializeMap alongside the
+  // Map constructor. It is passed in rather than read off window because the
+  // GeoJSON await below is long enough for a second loader to swap the global,
+  // which is what made every Polygon reject this Map with "not an instance of Map".
+  const renderCountriesOnMap = async (map, countryKeys, gmaps) => {
+    console.log(`🎨 RENDERING: ${countryKeys.length} countries on map`);
+
     try {
-      // Fetch GeoJSON data
-      const response = await fetch('https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson');
-      const geoJsonData = await response.json();
-      
-      // Store all country polygons
+      const geoJsonData = await loadCountryGeoJson();
+      const { byName, byAdmin } = buildFeatureIndexes(geoJsonData);
+
       window.countryPolygons = [];
-      
-      countries.forEach(country => {
-        // Find matching GeoJSON feature
-        const feature = geoJsonData.features.find(f => {
-          const code = f.properties.ISO_A2;
-          const name = f.properties.NAME_EN || f.properties.NAME;
-          
-          // Special case: England uses code "ENG" but GeoJSON uses "GB"
-          if (country.code === 'ENG' && code === 'GB') {
-            return true;
-          }
-          
-          return code === country.code || 
-                code?.toLowerCase() === country.code?.toLowerCase() ||
-                name?.toLowerCase() === country.name?.toLowerCase();
-        });
-        
-        if (!feature) {
-          console.warn(`⚠️ No GeoJSON found for ${country.name}`);
+      const unmatched = [];
+
+      countryKeys.forEach(countryKey => {
+        const idxs = resolveCountryFeatures(countryKey, byName, byAdmin);
+        if (idxs.length === 0) {
+          unmatched.push(countryKey);
           return;
         }
-        
-        // Create polygon(s) for this country
-        const createPolygon = (coordinates) => {
-          const paths = coordinates.map(coord => ({
-            lat: coord[1],
-            lng: coord[0]
+
+        // EVERY ring of every resolved feature becomes a path on ONE polygon.
+        // The old code took coordinates[0] only, which discarded interior rings.
+        // That matters here: Lesotho and San-Marino are both premium keys and
+        // both are enclaves. Without their holes punched out, South-Africa's and
+        // Italy's fills cover them and they can never be clicked.
+        const paths = [];
+        idxs.forEach(i => {
+          const g = geoJsonData.features[i].geometry;
+          if (!g) return;
+          const polys = g.type === 'Polygon' ? [g.coordinates]
+                      : g.type === 'MultiPolygon' ? g.coordinates
+                      : [];
+          polys.forEach(rings => rings.forEach(ring => {
+            paths.push(ring.map(coord => ({ lat: coord[1], lng: coord[0] })));
           }));
-          
-          return new window.google.maps.Polygon({
-            paths: paths,
-            strokeColor: '#22c55e',
-            strokeOpacity: 0.6,
-            strokeWeight: 1,
-            fillColor: '#22c55e',
-            fillOpacity: 0.2,
-            map: map,
-            zIndex: 100,
-            clickable: true
-          });
-        };
-        
-        let polygons = [];
-        
-        if (feature.geometry.type === 'Polygon') {
-          polygons.push(createPolygon(feature.geometry.coordinates[0]));
-        } else if (feature.geometry.type === 'MultiPolygon') {
-          feature.geometry.coordinates.forEach(polygon => {
-            polygons.push(createPolygon(polygon[0]));
-          });
-        }
-        
-        // Store polygons with country data
-        country.polygons = polygons;
-        polygons.forEach(polygon => {
-          polygon.countryData = country;
-          window.countryPolygons.push(polygon);
-
-          // Add click listener to polygon
-          polygon.addListener('click', () => {
-            console.log(`🎯 POLYGON CLICKED: ${country.name}`);
-
-            let lat = country.center?.lat;
-            let lng = country.center?.lng;
-
-            if (lat == null || lng == null) {
-              const bounds = new window.google.maps.LatLngBounds();
-              (country.polygons || [polygon]).forEach(p => {
-                p.getPath().forEach(pt => bounds.extend(pt));
-              });
-              const center = bounds.getCenter();
-              lat = center.lat();
-              lng = center.lng();
-              console.log(`📐 CENTER FROM BOUNDS: ${country.name} → ${lat}, ${lng}`);
-            }
-
-            window.clickCountryFromPopup(country.code, country.name, lat, lng);
-          });
-          
-          // Add hover effects
-          polygon.addListener('mouseover', () => {
-            polygon.setOptions({
-              fillOpacity: 0.4,
-              strokeWeight: 2
-            });
-            map.setOptions({ draggableCursor: 'pointer' });
-          });
-          
-          polygon.addListener('mouseout', () => {
-            polygon.setOptions({
-              fillOpacity: 0.2,
-              strokeWeight: 1
-            });
-            map.setOptions({ draggableCursor: 'grab' });
-          });
         });
-        
-        console.log(`✅ Rendered: ${country.name}`);
+
+        if (paths.length === 0) {
+          unmatched.push(countryKey);
+          return;
+        }
+
+        // One Polygon per country, not one per ring: ~133 objects instead of
+        // several hundred, and hover restyling is a single setOptions call.
+        const polygon = new gmaps.Polygon({
+          paths: paths,
+          strokeColor: '#22c55e',
+          strokeOpacity: 0.6,
+          strokeWeight: 1,
+          fillColor: '#22c55e',
+          fillOpacity: 0.2,
+          map: map,
+          zIndex: 100,
+          clickable: true
+        });
+
+        polygon.countryKey = countryKey;
+        window.countryPolygons.push(polygon);
+
+        polygon.addListener('click', () => {
+          console.log(`🎯 POLYGON CLICKED: ${countryKey}`);
+          window.clickCountryFromPopup(countryKey);
+        });
+
+        polygon.addListener('mouseover', () => {
+          polygon.setOptions({
+            fillOpacity: 0.4,
+            strokeWeight: 2
+          });
+          map.setOptions({ draggableCursor: 'pointer' });
+        });
+
+        polygon.addListener('mouseout', () => {
+          polygon.setOptions({
+            fillOpacity: 0.2,
+            strokeWeight: 1
+          });
+          map.setOptions({ draggableCursor: 'grab' });
+        });
       });
-      
-      console.log(`🎨 RENDER COMPLETE: ${window.countryPolygons.length} polygons created`);
-      
+
+      console.log(`🎨 RENDER COMPLETE: ${window.countryPolygons.length} polygons, ${unmatched.length} unmatched`, unmatched);
+
     } catch (error) {
       console.error('❌ Failed to render countries:', error);
     }
@@ -3223,45 +3348,38 @@ const map = new MapCtor(mapRef.current, {
 
   // Load Google Maps API
   useEffect(() => {
-    const loadGoogleMaps = () => {
-      if (!window.google && GOOGLE_KEY) {
-        const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_KEY}&libraries=places&loading=async&language=en`;
-        script.async = true;
-        script.defer = true;
-        script.onload = () => {
-          console.log('🔍 Google Maps API loaded successfully');
-          console.log('📊 Countries data length at API load:', countriesData.length);
-          // Don't initialize here - let the second useEffect handle it
-        };
-        script.onerror = (error) => {
-          console.error('❌ Failed to load Google Maps API:', error);
-        };
-        document.head.appendChild(script);
-      } else if (window.google) {
-        console.log('🔍 Google Maps API already loaded');
-      }
-    };
-
-    loadGoogleMaps();
+    let cancelled = false;
+    loadGoogleMapsOnce()
+      .then(() => {
+        if (cancelled) return;
+        console.log('🔍 Google Maps API loaded successfully');
+        console.log('📊 Countries data length at API load:', countriesData.length);
+        // Set only now: the Map constructor is verified to exist.
+        setGoogleMapsReady(true);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error('❌ Failed to load Google Maps API:', error);
+      });
+    return () => { cancelled = true; };
   }, []);
 
   // Initialize map when BOTH Google Maps AND countries data are ready
   useEffect(() => {
     console.log('🎯 Checking initialization conditions:');
+    console.log('   - googleMapsReady:', googleMapsReady);
     console.log('   - window.google:', !!window.google);
     console.log('   - mapRef.current:', !!mapRef.current);
     console.log('   - countriesData.length:', countriesData.length);
     console.log('   - isMapLoaded:', isMapLoaded);
     console.log('   - isLoadingCountries:', isLoadingCountries);
-    
-    if (window.google && mapRef.current && countriesData.length > 0 && !isMapLoaded && !isLoadingCountries) {
+
+    if (googleMapsReady && mapRef.current && cacheLoaded && cachedStadiums?.countries && !isMapLoaded) {
       console.log('🚀 ALL CONDITIONS MET - Initializing map with countries data...');
-      (function run() {
-        Promise.resolve()
-          .then(() => ensureGoogleMapsReady())
-          .then(() => initializeMap()); // keep your function name
-      })();
+      // googleMapsReady already means "Map constructor verified", so there is
+      // nothing left to ensure. Calling a second loader here is what injected
+      // the duplicate tag.
+      initializeMap();
 
 
     }
@@ -3271,7 +3389,7 @@ const map = new MapCtor(mapRef.current, {
         window.google?.maps?.event?.clearListeners(googleMapRef.current, 'mousemove');
       }
     };
-  }, [countriesData, isMapLoaded, isLoadingCountries]);
+  }, [googleMapsReady, cacheLoaded, cachedStadiums, isMapLoaded]);
 
   return (
     <div className="premium-container relative overflow-hidden">
