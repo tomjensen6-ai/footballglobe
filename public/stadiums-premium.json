@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-06T16:32:12.082Z",
+  "generatedAt": "2026-09-06T16:57:47.879Z",
   "lastUpdated": "2026-09-06",
   "source": "api-football",
   "exportMethod": "build-premium-from-geocoded",
-  "totalCountries": 134,
-  "totalLeagues": 502,
-  "totalStadiums": 3481,
+  "totalCountries": 135,
+  "totalLeagues": 492,
+  "totalStadiums": 3489,
   "countries": {
     "Albania": {
       "name": "Albania",
@@ -940,30 +940,6 @@
               "venueId": 3721,
               "leagueIds": [
                 397
-              ]
-            }
-          ]
-        },
-        {
-          "id": 1037,
-          "name": "Paraibano 2",
-          "category": "men",
-          "tier": 42,
-          "stadiums": [
-            {
-              "teamId": 10150,
-              "teamName": "Santa Rita",
-              "venue": "Estádio 4 de Janeiro",
-              "latitude": -7.623759199999999,
-              "longitude": 15.0580126,
-              "city": "Uige",
-              "capacity": 5000,
-              "area": {
-                "name": "Angola"
-              },
-              "venueId": 7449,
-              "leagueIds": [
-                1037
               ]
             }
           ]
@@ -2859,6 +2835,22 @@
               ]
             },
             {
+              "teamId": 942,
+              "teamName": "Wellington Phoenix",
+              "venue": "Sky Stadium",
+              "latitude": -41.2730489,
+              "longitude": 174.7858977,
+              "city": "Wellington",
+              "capacity": 37034,
+              "area": {
+                "name": "New-Zealand"
+              },
+              "venueId": 130,
+              "leagueIds": [
+                188
+              ]
+            },
+            {
               "teamId": 946,
               "teamName": "Newcastle Jets",
               "venue": "McDonald Jones Stadium",
@@ -2902,6 +2894,22 @@
                 "name": "Australia"
               },
               "venueId": 18601,
+              "leagueIds": [
+                188
+              ]
+            },
+            {
+              "teamId": 24608,
+              "teamName": "Auckland",
+              "venue": "Go Media Stadium",
+              "latitude": -36.9182825,
+              "longitude": 174.8123959,
+              "city": "Auckland",
+              "capacity": 30000,
+              "area": {
+                "name": "New-Zealand"
+              },
+              "venueId": 21101,
               "leagueIds": [
                 188
               ]
@@ -6734,32 +6742,6 @@
           ]
         },
         {
-          "id": 759,
-          "name": "Liga Mayor",
-          "category": "men",
-          "tier": 1,
-          "stadiums": [
-            {
-              "teamId": 12935,
-              "teamName": "Galícia / SSA U20 / Atlántico",
-              "venue": "Estádio Governador Roberto Santos",
-              "latitude": -12.9462132,
-              "longitude": -38.4178685,
-              "city": "Salvador de Bahia, Bahia",
-              "capacity": 32157,
-              "area": {
-                "name": "Brazil"
-              },
-              "venueId": 11287,
-              "leagueIds": [
-                602,
-                1073,
-                759
-              ]
-            }
-          ]
-        },
-        {
           "id": 72,
           "name": "Serie B",
           "category": "men",
@@ -10577,6 +10559,22 @@
               ]
             },
             {
+              "teamId": 10150,
+              "teamName": "Santa Rita",
+              "venue": "Estádio 4 de Janeiro",
+              "latitude": -7.623759199999999,
+              "longitude": 15.0580126,
+              "city": "Uige",
+              "capacity": 5000,
+              "area": {
+                "name": "Angola"
+              },
+              "venueId": 7449,
+              "leagueIds": [
+                1037
+              ]
+            },
+            {
               "teamId": 18306,
               "teamName": "Auto Esporte",
               "venue": "Estádio Leonardo Vinagre da Silveira",
@@ -11005,6 +11003,30 @@
               "venueId": 8270,
               "leagueIds": [
                 1124
+              ]
+            }
+          ]
+        },
+        {
+          "id": 1133,
+          "name": "Goiano - 3",
+          "category": "men",
+          "tier": 50,
+          "stadiums": [
+            {
+              "teamId": 8569,
+              "teamName": "Royal",
+              "venue": "Stade Wobi",
+              "latitude": 11.1821081,
+              "longitude": -4.2970574,
+              "city": "Bobo-Dioulasso",
+              "capacity": 10000,
+              "area": {
+                "name": "Burkina-Faso"
+              },
+              "venueId": 4740,
+              "leagueIds": [
+                1133
               ]
             }
           ]
@@ -12260,9 +12282,8 @@
       "code": "BRU",
       "leagues": [
         {
-          "id": 278,
-          "name": "Super League",
-          "category": "men",
+          "id": 900020,
+          "name": "All venues",
           "tier": 1,
           "stadiums": [
             {
@@ -13002,9 +13023,8 @@
       "code": "BUR",
       "leagues": [
         {
-          "id": 276,
-          "name": "FKF Premier League",
-          "category": "men",
+          "id": 900022,
+          "name": "All venues",
           "tier": 1,
           "stadiums": [
             {
@@ -13022,15 +13042,7 @@
               "leagueIds": [
                 276
               ]
-            }
-          ]
-        },
-        {
-          "id": 1133,
-          "name": "Goiano - 3",
-          "category": "men",
-          "tier": 50,
-          "stadiums": [
+            },
             {
               "teamId": 8569,
               "teamName": "Royal",
@@ -13236,6 +13248,22 @@
               ]
             },
             {
+              "teamId": 15566,
+              "teamName": "Gazelle",
+              "venue": "Stade Omnisports Idriss Mahamat Ouya",
+              "latitude": 12.1000299,
+              "longitude": 15.0551758,
+              "city": "N'Djamena",
+              "capacity": 30000,
+              "area": {
+                "name": "Chad"
+              },
+              "venueId": 4731,
+              "leagueIds": [
+                411
+              ]
+            },
+            {
               "teamId": 5401,
               "teamName": "Cotonsport",
               "venue": "Stade Omnisport Roumdé Adjia",
@@ -13247,6 +13275,22 @@
                 "name": "Cameroon"
               },
               "venueId": 4073,
+              "leagueIds": [
+                411
+              ]
+            },
+            {
+              "teamId": 16526,
+              "teamName": "Jeunes Fauves",
+              "venue": "Stade Municipal Denis Sassou N'Guesso",
+              "latitude": -4.2074509,
+              "longitude": 12.6857748,
+              "city": "Dolisie",
+              "capacity": 20000,
+              "area": {
+                "name": "Congo"
+              },
+              "venueId": 11539,
               "leagueIds": [
                 411
               ]
@@ -13299,62 +13343,6 @@
       "name": "Canada",
       "code": "CAN",
       "leagues": [
-        {
-          "id": 253,
-          "name": "Major League Soccer",
-          "category": "men",
-          "tier": 1,
-          "stadiums": [
-            {
-              "teamId": 1603,
-              "teamName": "Vancouver Whitecaps",
-              "venue": "BC Place",
-              "latitude": 49.27675,
-              "longitude": -123.111999,
-              "city": "Vancouver",
-              "capacity": 54405,
-              "area": {
-                "name": "Canada"
-              },
-              "venueId": 19445,
-              "leagueIds": [
-                253
-              ]
-            },
-            {
-              "teamId": 1601,
-              "teamName": "Toronto FC",
-              "venue": "BMO Field",
-              "latitude": 43.6331948,
-              "longitude": -79.41856349999999,
-              "city": "Toronto",
-              "capacity": 36045,
-              "area": {
-                "name": "Canada"
-              },
-              "venueId": 312,
-              "leagueIds": [
-                253
-              ]
-            },
-            {
-              "teamId": 1614,
-              "teamName": "CF Montreal",
-              "venue": "Stade Saputo",
-              "latitude": 45.5630738,
-              "longitude": -73.5526584,
-              "city": "Montréal",
-              "capacity": 20801,
-              "area": {
-                "name": "Canada"
-              },
-              "venueId": 310,
-              "leagueIds": [
-                253
-              ]
-            }
-          ]
-        },
         {
           "id": 479,
           "name": "Canadian Premier League",
@@ -13459,31 +13447,6 @@
               ]
             }
           ]
-        },
-        {
-          "id": 909,
-          "name": "MLS Next Pro",
-          "category": "other",
-          "tier": 1,
-          "stadiums": [
-            {
-              "teamId": 2623,
-              "teamName": "York United / Toronto II",
-              "venue": "York Lions Stadium",
-              "latitude": 43.7752121,
-              "longitude": -79.5066049,
-              "city": "Toronto",
-              "capacity": 8000,
-              "area": {
-                "name": "Canada"
-              },
-              "venueId": 2601,
-              "leagueIds": [
-                479,
-                909
-              ]
-            }
-          ]
         }
       ]
     },
@@ -13492,9 +13455,8 @@
       "code": "CHA",
       "leagues": [
         {
-          "id": 411,
-          "name": "Elite One",
-          "category": "men",
+          "id": 900027,
+          "name": "All venues",
           "tier": 1,
           "stadiums": [
             {
@@ -14843,9 +14805,8 @@
       "code": "CON",
       "leagues": [
         {
-          "id": 411,
-          "name": "Elite One",
-          "category": "men",
+          "id": 900031,
+          "name": "All venues",
           "tier": 1,
           "stadiums": [
             {
@@ -17237,6 +17198,38 @@
         }
       ]
     },
+    "Dominican-Republic": {
+      "name": "Dominican-Republic",
+      "code": "DOM",
+      "leagues": [
+        {
+          "id": 759,
+          "name": "Liga Mayor",
+          "category": "men",
+          "tier": 1,
+          "stadiums": [
+            {
+              "teamId": 12935,
+              "teamName": "Galícia / SSA U20 / Atlántico",
+              "venue": "Estádio Governador Roberto Santos",
+              "latitude": -12.9462132,
+              "longitude": -38.4178685,
+              "city": "Salvador de Bahia, Bahia",
+              "capacity": 32157,
+              "area": {
+                "name": "Brazil"
+              },
+              "venueId": 11287,
+              "leagueIds": [
+                602,
+                1073,
+                759
+              ]
+            }
+          ]
+        }
+      ]
+    },
     "Ecuador": {
       "name": "Ecuador",
       "code": "ECU",
@@ -17544,31 +17537,6 @@
               "venueId": 21645,
               "leagueIds": [
                 243
-              ]
-            }
-          ]
-        },
-        {
-          "id": 1229,
-          "name": "Liga Women",
-          "category": "women",
-          "tier": 1,
-          "stadiums": [
-            {
-              "teamId": 1156,
-              "teamName": "Aucas / Alianza Lima W",
-              "venue": "Estadio Cooprogreso Gonzalo Pozo Ripalda",
-              "latitude": -0.2788903,
-              "longitude": -78.54615249999999,
-              "city": "Quito",
-              "capacity": 21689,
-              "area": {
-                "name": "Ecuador"
-              },
-              "venueId": 19380,
-              "leagueIds": [
-                242,
-                1229
               ]
             }
           ]
@@ -17944,6 +17912,23 @@
           "category": "men",
           "tier": 2,
           "stadiums": [
+            {
+              "teamId": 4666,
+              "teamName": "Hércules",
+              "venue": "Estadio José Rico Pérez",
+              "latitude": 38.3573154,
+              "longitude": -0.4926576,
+              "city": "Alicante",
+              "capacity": 29584,
+              "area": {
+                "name": "Spain"
+              },
+              "venueId": 3517,
+              "leagueIds": [
+                1219,
+                436
+              ]
+            },
             {
               "teamId": 5632,
               "teamName": "Once Municipal",
@@ -18338,6 +18323,22 @@
               ]
             },
             {
+              "teamId": 43,
+              "teamName": "Cardiff",
+              "venue": "Cardiff City Stadium",
+              "latitude": 51.4728372,
+              "longitude": -3.2030343,
+              "city": "Caerdydd",
+              "capacity": 33280,
+              "area": {
+                "name": "Wales"
+              },
+              "venueId": 516,
+              "leagueIds": [
+                40
+              ]
+            },
+            {
               "teamId": 62,
               "teamName": "Sheffield Utd / Sheffield United U21 / Sheffield United W",
               "venue": "Bramall Lane",
@@ -18553,6 +18554,22 @@
               ]
             },
             {
+              "teamId": 76,
+              "teamName": "Swansea",
+              "venue": "Swansea.com Stadium",
+              "latitude": 51.6427499,
+              "longitude": -3.9345855,
+              "city": "Plasmarl",
+              "capacity": 21028,
+              "area": {
+                "name": "Wales"
+              },
+              "venueId": 12273,
+              "leagueIds": [
+                40
+              ]
+            },
+            {
               "teamId": 1355,
               "teamName": "Portsmouth",
               "venue": "Fratton Park",
@@ -18580,6 +18597,22 @@
                 "name": "England"
               },
               "venueId": 559,
+              "leagueIds": [
+                40
+              ]
+            },
+            {
+              "teamId": 1837,
+              "teamName": "Wrexham",
+              "venue": "STōK Cae Ras",
+              "latitude": 53.0519612,
+              "longitude": -3.0038042,
+              "city": "Wrexham",
+              "capacity": 19118,
+              "area": {
+                "name": "Wales"
+              },
+              "venueId": 19926,
               "leagueIds": [
                 40
               ]
@@ -19062,6 +19095,22 @@
                 "name": "England"
               },
               "venueId": 510,
+              "leagueIds": [
+                42
+              ]
+            },
+            {
+              "teamId": 1367,
+              "teamName": "Newport County",
+              "venue": "Rodney Parade",
+              "latitude": 51.5882553,
+              "longitude": -2.9880271,
+              "city": "Newport",
+              "capacity": 11676,
+              "area": {
+                "name": "Wales"
+              },
+              "venueId": 563,
               "leagueIds": [
                 42
               ]
@@ -19841,6 +19890,22 @@
               ]
             },
             {
+              "teamId": 7732,
+              "teamName": "Merthyr Town",
+              "venue": "Penydarren Park",
+              "latitude": 51.7524015,
+              "longitude": -3.3761609,
+              "city": "Merthyr Tydfil",
+              "capacity": 5000,
+              "area": {
+                "name": "Wales"
+              },
+              "venueId": 10651,
+              "leagueIds": [
+                50
+              ]
+            },
+            {
               "teamId": 4679,
               "teamName": "Chorley",
               "venue": "Victory Park",
@@ -19918,30 +19983,6 @@
               "venueId": 5523,
               "leagueIds": [
                 50
-              ]
-            }
-          ]
-        },
-        {
-          "id": 731,
-          "name": "Football League - Lowland League",
-          "category": "men",
-          "tier": 6,
-          "stadiums": [
-            {
-              "teamId": 6759,
-              "teamName": "Berwick Rangers",
-              "venue": "Shielfield Park",
-              "latitude": 55.7605533,
-              "longitude": -2.013905,
-              "city": "Tweedmouth",
-              "capacity": 4476,
-              "area": {
-                "name": "England"
-              },
-              "venueId": 4940,
-              "leagueIds": [
-                731
               ]
             }
           ]
@@ -35089,6 +35130,22 @@
               ]
             },
             {
+              "teamId": 8560,
+              "teamName": "Police",
+              "venue": "Stade Dr Issoufou Joseph Conombo",
+              "latitude": 12.3606528,
+              "longitude": -1.5291904,
+              "city": "Ouagadougou",
+              "capacity": 15000,
+              "area": {
+                "name": "Burkina-Faso"
+              },
+              "venueId": 5758,
+              "leagueIds": [
+                276
+              ]
+            },
+            {
               "teamId": 2474,
               "teamName": "Ulinzi Stars",
               "venue": "Afraha Stadium",
@@ -35583,9 +35640,8 @@
       "code": "LIE",
       "leagues": [
         {
-          "id": 207,
-          "name": "Super League",
-          "category": "men",
+          "id": 900072,
+          "name": "All venues",
           "tier": 1,
           "stadiums": [
             {
@@ -36262,6 +36318,22 @@
                 "name": "Malaysia"
               },
               "venueId": 21442,
+              "leagueIds": [
+                278
+              ]
+            },
+            {
+              "teamId": 4202,
+              "teamName": "DPMM FC Brunei",
+              "venue": "Stadium Sultan Hassanal Bolkiah",
+              "latitude": 4.9289155,
+              "longitude": 114.9455735,
+              "city": "Bandar Seri Begawan",
+              "capacity": 28000,
+              "area": {
+                "name": "Brunei"
+              },
+              "venueId": 3206,
               "leagueIds": [
                 278
               ]
@@ -38787,9 +38859,8 @@
       "code": "NEW",
       "leagues": [
         {
-          "id": 188,
-          "name": "A-League",
-          "category": "men",
+          "id": 900087,
+          "name": "All venues",
           "tier": 1,
           "stadiums": [
             {
@@ -38868,6 +38939,23 @@
               "venueId": 3501,
               "leagueIds": [
                 396
+              ]
+            },
+            {
+              "teamId": 23311,
+              "teamName": "San Marcos",
+              "venue": "Estadio Rosas Pampa",
+              "latitude": -9.526521299999999,
+              "longitude": -77.53363790000002,
+              "city": "Huaraz",
+              "capacity": 18724,
+              "area": {
+                "name": "Peru"
+              },
+              "venueId": 1951,
+              "leagueIds": [
+                396,
+                282
               ]
             },
             {
@@ -40945,31 +41033,6 @@
           ]
         },
         {
-          "id": 396,
-          "name": "Primera Division",
-          "category": "men",
-          "tier": 1,
-          "stadiums": [
-            {
-              "teamId": 23311,
-              "teamName": "San Marcos",
-              "venue": "Estadio Rosas Pampa",
-              "latitude": -9.526521299999999,
-              "longitude": -77.53363790000002,
-              "city": "Huaraz",
-              "capacity": 18724,
-              "area": {
-                "name": "Peru"
-              },
-              "venueId": 1951,
-              "leagueIds": [
-                396,
-                282
-              ]
-            }
-          ]
-        },
-        {
           "id": 282,
           "name": "Segunda División",
           "category": "men",
@@ -41149,6 +41212,31 @@
               "venueId": 20640,
               "leagueIds": [
                 282
+              ]
+            }
+          ]
+        },
+        {
+          "id": 1229,
+          "name": "Liga Women",
+          "category": "women",
+          "tier": 1,
+          "stadiums": [
+            {
+              "teamId": 1156,
+              "teamName": "Aucas / Alianza Lima W",
+              "venue": "Estadio Cooprogreso Gonzalo Pozo Ripalda",
+              "latitude": -0.2788903,
+              "longitude": -78.54615249999999,
+              "city": "Quito",
+              "capacity": 21689,
+              "area": {
+                "name": "Ecuador"
+              },
+              "venueId": 19380,
+              "leagueIds": [
+                242,
+                1229
               ]
             }
           ]
@@ -45978,6 +46066,38 @@
           "tier": 1,
           "stadiums": [
             {
+              "teamId": 5239,
+              "teamName": "Al Merreikh",
+              "venue": "Al-Merreikh Stadium",
+              "latitude": 15.6413303,
+              "longitude": 32.4716005,
+              "city": "Omdurman",
+              "capacity": 43645,
+              "area": {
+                "name": "Sudan"
+              },
+              "venueId": 1499,
+              "leagueIds": [
+                405
+              ]
+            },
+            {
+              "teamId": 5237,
+              "teamName": "Al Hilal Omdurman",
+              "venue": "Al-Hilal Stadium",
+              "latitude": 15.6472653,
+              "longitude": 32.474966,
+              "city": "Omdurman",
+              "capacity": 25000,
+              "area": {
+                "name": "Sudan"
+              },
+              "venueId": 3957,
+              "leagueIds": [
+                405
+              ]
+            },
+            {
               "teamId": 5309,
               "teamName": "APR / Police / Rayon Sports",
               "venue": "Kigali Pelé Stadium",
@@ -47231,6 +47351,22 @@
                 "name": "Scotland"
               },
               "venueId": 3518,
+              "leagueIds": [
+                731
+              ]
+            },
+            {
+              "teamId": 6759,
+              "teamName": "Berwick Rangers",
+              "venue": "Shielfield Park",
+              "latitude": 55.7605533,
+              "longitude": -2.013905,
+              "city": "Tweedmouth",
+              "capacity": 4476,
+              "area": {
+                "name": "England"
+              },
+              "venueId": 4940,
               "leagueIds": [
                 731
               ]
@@ -50125,31 +50261,6 @@
           ]
         },
         {
-          "id": 1219,
-          "name": "Copa Presidente",
-          "category": "men",
-          "tier": 2,
-          "stadiums": [
-            {
-              "teamId": 4666,
-              "teamName": "Hércules",
-              "venue": "Estadio José Rico Pérez",
-              "latitude": 38.3573154,
-              "longitude": -0.4926576,
-              "city": "Alicante",
-              "capacity": 29584,
-              "area": {
-                "name": "Spain"
-              },
-              "venueId": 3517,
-              "leagueIds": [
-                1219,
-                436
-              ]
-            }
-          ]
-        },
-        {
           "id": 435,
           "name": "Primera División RFEF - Group 1",
           "category": "men",
@@ -52297,46 +52408,6 @@
               ]
             }
           ]
-        },
-        {
-          "id": 405,
-          "name": "National Soccer League",
-          "category": "men",
-          "tier": 1,
-          "stadiums": [
-            {
-              "teamId": 5239,
-              "teamName": "Al Merreikh",
-              "venue": "Al-Merreikh Stadium",
-              "latitude": 15.6413303,
-              "longitude": 32.4716005,
-              "city": "Omdurman",
-              "capacity": 43645,
-              "area": {
-                "name": "Sudan"
-              },
-              "venueId": 1499,
-              "leagueIds": [
-                405
-              ]
-            },
-            {
-              "teamId": 5237,
-              "teamName": "Al Hilal Omdurman",
-              "venue": "Al-Hilal Stadium",
-              "latitude": 15.6472653,
-              "longitude": 32.474966,
-              "city": "Omdurman",
-              "capacity": 25000,
-              "area": {
-                "name": "Sudan"
-              },
-              "venueId": 3957,
-              "leagueIds": [
-                405
-              ]
-            }
-          ]
         }
       ]
     },
@@ -53800,6 +53871,22 @@
               "venueId": 1544,
               "leagueIds": [
                 600,
+                207
+              ]
+            },
+            {
+              "teamId": 660,
+              "teamName": "FC Vaduz",
+              "venue": "Rheinpark Stadion",
+              "latitude": 47.1405543,
+              "longitude": 9.5101023,
+              "city": "Vaduz",
+              "capacity": 7564,
+              "area": {
+                "name": "Liechtenstein"
+              },
+              "venueId": 1545,
+              "leagueIds": [
                 207
               ]
             },
@@ -56813,6 +56900,22 @@
               ]
             },
             {
+              "teamId": 1603,
+              "teamName": "Vancouver Whitecaps",
+              "venue": "BC Place",
+              "latitude": 49.27675,
+              "longitude": -123.111999,
+              "city": "Vancouver",
+              "capacity": 54405,
+              "area": {
+                "name": "Canada"
+              },
+              "venueId": 19445,
+              "leagueIds": [
+                253
+              ]
+            },
+            {
               "teamId": 1604,
               "teamName": "New York City FC",
               "venue": "Yankee Stadium",
@@ -56824,6 +56927,22 @@
                 "name": "USA"
               },
               "venueId": 1833,
+              "leagueIds": [
+                253
+              ]
+            },
+            {
+              "teamId": 1601,
+              "teamName": "Toronto FC",
+              "venue": "BMO Field",
+              "latitude": 43.6331948,
+              "longitude": -79.41856349999999,
+              "city": "Toronto",
+              "capacity": 36045,
+              "area": {
+                "name": "Canada"
+              },
+              "venueId": 312,
               "leagueIds": [
                 253
               ]
@@ -57058,6 +57177,22 @@
                 "name": "USA"
               },
               "venueId": 12667,
+              "leagueIds": [
+                253
+              ]
+            },
+            {
+              "teamId": 1614,
+              "teamName": "CF Montreal",
+              "venue": "Stade Saputo",
+              "latitude": 45.5630738,
+              "longitude": -73.5526584,
+              "city": "Montréal",
+              "capacity": 20801,
+              "area": {
+                "name": "Canada"
+              },
+              "venueId": 310,
               "leagueIds": [
                 253
               ]
@@ -58769,6 +58904,23 @@
               },
               "venueId": 20584,
               "leagueIds": [
+                909
+              ]
+            },
+            {
+              "teamId": 2623,
+              "teamName": "York United / Toronto II",
+              "venue": "York Lions Stadium",
+              "latitude": 43.7752121,
+              "longitude": -79.5066049,
+              "city": "Toronto",
+              "capacity": 8000,
+              "area": {
+                "name": "Canada"
+              },
+              "venueId": 2601,
+              "leagueIds": [
+                479,
                 909
               ]
             },
@@ -60776,62 +60928,6 @@
           ]
         },
         {
-          "id": 40,
-          "name": "Championship",
-          "category": "men",
-          "tier": 2,
-          "stadiums": [
-            {
-              "teamId": 43,
-              "teamName": "Cardiff",
-              "venue": "Cardiff City Stadium",
-              "latitude": 51.4728372,
-              "longitude": -3.2030343,
-              "city": "Caerdydd",
-              "capacity": 33280,
-              "area": {
-                "name": "Wales"
-              },
-              "venueId": 516,
-              "leagueIds": [
-                40
-              ]
-            },
-            {
-              "teamId": 76,
-              "teamName": "Swansea",
-              "venue": "Swansea.com Stadium",
-              "latitude": 51.6427499,
-              "longitude": -3.9345855,
-              "city": "Plasmarl",
-              "capacity": 21028,
-              "area": {
-                "name": "Wales"
-              },
-              "venueId": 12273,
-              "leagueIds": [
-                40
-              ]
-            },
-            {
-              "teamId": 1837,
-              "teamName": "Wrexham",
-              "venue": "STōK Cae Ras",
-              "latitude": 53.0519612,
-              "longitude": -3.0038042,
-              "city": "Wrexham",
-              "capacity": 19118,
-              "area": {
-                "name": "Wales"
-              },
-              "venueId": 19926,
-              "leagueIds": [
-                40
-              ]
-            }
-          ]
-        },
-        {
           "id": 111,
           "name": "FAW Championship",
           "category": "men",
@@ -60995,54 +61091,6 @@
               "venueId": 19948,
               "leagueIds": [
                 111
-              ]
-            }
-          ]
-        },
-        {
-          "id": 42,
-          "name": "League Two",
-          "category": "men",
-          "tier": 4,
-          "stadiums": [
-            {
-              "teamId": 1367,
-              "teamName": "Newport County",
-              "venue": "Rodney Parade",
-              "latitude": 51.5882553,
-              "longitude": -2.9880271,
-              "city": "Newport",
-              "capacity": 11676,
-              "area": {
-                "name": "Wales"
-              },
-              "venueId": 563,
-              "leagueIds": [
-                42
-              ]
-            }
-          ]
-        },
-        {
-          "id": 50,
-          "name": "National League - North",
-          "category": "men",
-          "tier": 6,
-          "stadiums": [
-            {
-              "teamId": 7732,
-              "teamName": "Merthyr Town",
-              "venue": "Penydarren Park",
-              "latitude": 51.7524015,
-              "longitude": -3.3761609,
-              "city": "Merthyr Tydfil",
-              "capacity": 5000,
-              "area": {
-                "name": "Wales"
-              },
-              "venueId": 10651,
-              "leagueIds": [
-                50
               ]
             }
           ]

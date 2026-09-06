@@ -22,10 +22,20 @@
  * both men's and women's football is listed in one men's league and one
  * women's league. Venues whose only leagues are excluded are dropped.
  *
- * A country with no classified leagues at all still gets the old single
- * synthetic "All venues" league - Brunei, Chad and Liechtenstein are the
- * cases in the current data. The app's topLeague = countryData?.leagues?.[0]
- * therefore still always resolves.
+ * A league is listed under the country that RUNS it - the classification's
+ * country - not the country its grounds sit in. Grouping by the venue's own
+ * country instead made England's Championship show 21 of its 24 clubs, because
+ * Cardiff, Swansea and Wrexham were filed under Wales, and gave Wales two
+ * different tier-2 leagues both called Championship. A venue whose leagues
+ * resolve to several countries is listed once under each, the same way it is
+ * listed once per category. The stadium record's area.name still carries the
+ * venue's OWN country: where a ground sits is a geographic fact and the app
+ * may show it.
+ *
+ * A country left with no leagues of its own still gets the old single
+ * synthetic "All venues" league, built from the venues that sit there -
+ * Brunei and Chad play only in other countries' leagues. The app's
+ * topLeague = countryData?.leagues?.[0] therefore still always resolves.
  *
  * Output: <output>.premium-candidate.json by default. --apply overwrites
  *   public/stadiums-premium.json itself, and only after the shrink guard
@@ -134,6 +144,9 @@ function pickLeaguesByCategory(leagueIds, leagueMeta) {
       name: meta.name,
       category: meta.category,
       order: meta.order,
+      // The country that RUNS the league, which is where this venue gets
+      // listed - not necessarily the country the ground stands in.
+      country: meta.country,
     };
     const current = picked.get(meta.category);
     if (!current
@@ -214,6 +227,10 @@ function teamIdOf(venue) {
  * Only `name` is emitted; the real file's area also carries code and flag,
  * neither of which is read anywhere in App.js.
  *
+ * area.name is the venue's OWN country even when the venue is listed under
+ * another country's league: Wrexham's ground is in Wales however English its
+ * league is, and that is what a viewer reading the popup expects to see.
+ *
  * undefined is coerced to null throughout: JSON.stringify drops undefined
  * keys, and a record missing a key reads very differently from one holding
  * null when someone diffs two builds.
@@ -286,12 +303,14 @@ function build() {
   // all, or only ids the classification does not know, would land here too.
   let droppedExcludedOnly = 0;
 
-  // Grouped by the country string EXACTLY as the flat file spells it. No
-  // normalising, no mapping table: an invented country name here would be a
-  // country the app can never look up. Each entry keeps the venue's record
-  // alongside the one league it takes per category, so the country pass below
-  // never has to look at the flat file again.
-  const byCountry = new Map();
+  // Venues grouped by the country string EXACTLY as the flat file spells it.
+  // No normalising, no mapping table: an invented country name here would be a
+  // country the app can never look up. This grouping is NOT what the output
+  // leagues are built from - that is done by league country below - but it is
+  // what the synthetic fallback and the per-country stats are built from.
+  // Each entry keeps the venue's record alongside the one league it takes per
+  // category, so neither pass has to look at the flat file again.
+  const byVenueCountry = new Map();
 
   for (const venue of data.venues) {
     if (!hasCoordinates(venue)) {
@@ -303,81 +322,88 @@ function build() {
       skippedNoCountry++;
       continue;
     }
-    if (!byCountry.has(country)) byCountry.set(country, []);
-    byCountry.get(country).push({
+    if (!byVenueCountry.has(country)) byVenueCountry.set(country, []);
+    byVenueCountry.get(country).push({
+      country,
       record: stadiumRecord(venue),
       leagues: pickLeaguesByCategory(venue.leagueIds, leagueMeta),
     });
   }
 
-  const countryNames = [...byCountry.keys()].sort();
+  const venueCountryNames = [...byVenueCountry.keys()].sort();
 
-  // Ids are handed out in sorted country order, so the same input always
-  // produces the same id for the same country. Re-running this build does not
-  // renumber anything that was already published.
+  // Ids are handed out in sorted VENUE country order, over every country that
+  // has venues rather than only the ones that end up needing a synthetic
+  // league, so the same input always produces the same id for the same country
+  // and re-running this build does not renumber anything already published.
   const leagueIdByCountry = new Map();
-  countryNames.forEach((name, i) => {
+  venueCountryNames.forEach((name, i) => {
     leagueIdByCountry.set(name, SYNTHETIC_LEAGUE_ID_BASE + i);
   });
+
+  // ---- PLACE: every venue under the country of each league it takes ----
+  // league country -> (league id -> league under construction). A venue whose
+  // categories resolve to different countries lands in each of them; nothing
+  // here consults the venue's own country.
+  const byLeagueCountry = new Map();
+
+  // Distinct venues whose league country differs from where the ground stands.
+  let crossCountryVenues = 0;
+
+  for (const entries of byVenueCountry.values()) {
+    for (const entry of entries) {
+      let crossed = false;
+      for (const league of entry.leagues.values()) {
+        if (league.country !== entry.country) crossed = true;
+        if (!byLeagueCountry.has(league.country)) {
+          byLeagueCountry.set(league.country, new Map());
+        }
+        const leaguesHere = byLeagueCountry.get(league.country);
+        if (!leaguesHere.has(league.id)) {
+          leaguesHere.set(league.id, { ...league, stadiums: [] });
+        }
+        leaguesHere.get(league.id).stadiums.push(entry.record);
+      }
+      if (crossed) crossCountryVenues++;
+    }
+  }
+
+  // Countries holding venues but running no league of their own. They keep the
+  // old single synthetic league, built from the venues that SIT there, rather
+  // than vanishing from the map: Brunei and Chad play only in other countries'
+  // leagues. Logged by name - an unexpected country here is a classification
+  // gap, not a quiet default.
+  const fallbackCountries = venueCountryNames.filter(name => !byLeagueCountry.has(name));
+  const fallbackSet = new Set(fallbackCountries);
+
+  // Distinct venues, NOT league memberships and NOT country listings: a venue
+  // is counted once however many leagues or countries it appears under. A
+  // venue placed nowhere at all is a drop.
+  let placedDistinct = 0;
+  for (const [country, entries] of byVenueCountry) {
+    for (const entry of entries) {
+      if (entry.leagues.size > 0 || fallbackSet.has(country)) placedDistinct++;
+      else droppedExcludedOnly++;
+    }
+  }
+
+  const countryNames = [...new Set([...byLeagueCountry.keys(), ...fallbackCountries])].sort();
 
   const countries = {};
   const codeCollisions = new Map();
 
-  // Countries that fell back to the synthetic league because nothing they host
-  // survived classification. Logged by name: a country appearing here that is
-  // not expected to is a classification gap, not a quiet default.
-  const fallbackCountries = [];
-
-  // Distinct venues, NOT league memberships. A venue in both a men's and a
-  // women's league is one placement here and two records in the output.
-  let placedDistinct = 0;
-
   for (const name of countryNames) {
-    const entries = byCountry.get(name);
-
     const code = countryCode(name);
     if (code) {
       if (!codeCollisions.has(code)) codeCollisions.set(code, []);
       codeCollisions.get(code).push(name);
     }
 
-    // id -> league under construction. Built from the leagues this country's
-    // venues actually land in, so an empty league is never emitted.
-    const leaguesById = new Map();
-    let placedHere = 0;
-
-    for (const entry of entries) {
-      if (entry.leagues.size === 0) continue;
-      placedHere++;
-      for (const league of entry.leagues.values()) {
-        if (!leaguesById.has(league.id)) {
-          leaguesById.set(league.id, { ...league, stadiums: [] });
-        }
-        leaguesById.get(league.id).stadiums.push(entry.record);
-      }
-    }
-
     let leagues;
-    if (leaguesById.size === 0) {
-      // No classified league anywhere in this country - keep the old single
-      // synthetic league rather than emitting a country with no leagues at all,
-      // which the app's topLeague lookup could not survive.
-      fallbackCountries.push(name);
-      placedDistinct += entries.length;
-      leagues = [
-        {
-          id: leagueIdByCountry.get(name),
-          name: SYNTHETIC_LEAGUE_NAME,
-          tier: 1,
-          stadiums: sortStadiums(entries.map(e => e.record)),
-        },
-      ];
-    } else {
-      droppedExcludedOnly += entries.length - placedHere;
-      placedDistinct += placedHere;
+    if (byLeagueCountry.has(name)) {
       // men, then women, then other; within a category by classification order,
       // then by id so the sort is total and the output byte-stable.
-      leagues = [...leaguesById.values()]
+      leagues = [...byLeagueCountry.get(name).values()]
         .sort((a, b) =>
           (CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category))
           || (a.order - b.order)
@@ -393,6 +419,15 @@ function build() {
           tier: league.order + 1,
           stadiums: sortStadiums(league.stadiums),
         }));
+    } else {
+      leagues = [
+        {
+          id: leagueIdByCountry.get(name),
+          name: SYNTHETIC_LEAGUE_NAME,
+          tier: 1,
+          stadiums: sortStadiums(byVenueCountry.get(name).map(e => e.record)),
+        },
+      ];
     }
 
     countries[name] = { name, code, leagues };
@@ -432,6 +467,10 @@ function build() {
   console.log(`  skipped (no country):    ${skippedNoCountry}`);
   console.log(`  dropped (excluded only): ${droppedExcludedOnly}`);
   console.log(`  placed (distinct):       ${placedDistinct}`);
+  console.log(`  listed under another country's league: ${crossCountryVenues}`);
+  console.log('    expected - Wrexham plays in England\'s Championship, Berwick');
+  console.log('    Rangers in Scotland\'s Lowland League. A small number of these');
+  console.log('    are bad source data rather than real cross-border clubs.');
   console.log(`  ${reconciled === venuesRead ? 'balances' : 'DOES NOT BALANCE'}: `
     + `${skippedNoCoords} + ${skippedNoCountry} + ${droppedExcludedOnly} + ${placedDistinct} `
     + `= ${reconciled} vs ${venuesRead} read`);
@@ -502,8 +541,13 @@ function build() {
   console.log(`  records - distinct:      ${duplicated}`
     + `  (venues listed in more than one category)`);
 
+  // Counted from what was emitted, so a country's number is the records it
+  // actually shows - not the venues that happen to sit inside its borders.
   const largest = countryNames
-    .map(name => ({ name, n: byCountry.get(name).length }))
+    .map(name => ({
+      name,
+      n: countries[name].leagues.reduce((m, l) => m + l.stadiums.length, 0),
+    }))
     .sort((a, b) => b.n - a.n || a.name.localeCompare(b.name))
     .slice(0, 5);
 
