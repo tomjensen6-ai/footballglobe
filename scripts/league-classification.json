@@ -1,0 +1,4698 @@
+{
+  "generatedAt": "2026-09-06T16:03:59.598Z",
+  "season": 2026,
+  "rulesVersion": 1,
+  "counts": {
+    "men": 639,
+    "women": 38,
+    "excluded": 104
+  },
+  "leagues": {
+    "14": {
+      "name": "UEFA Youth League",
+      "country": "World",
+      "category": "excluded",
+      "order": 0
+    },
+    "39": {
+      "name": "Premier League",
+      "country": "England",
+      "category": "men",
+      "order": 0
+    },
+    "40": {
+      "name": "Championship",
+      "country": "England",
+      "category": "men",
+      "order": 1
+    },
+    "41": {
+      "name": "League One",
+      "country": "England",
+      "category": "men",
+      "order": 2
+    },
+    "42": {
+      "name": "League Two",
+      "country": "England",
+      "category": "men",
+      "order": 3
+    },
+    "43": {
+      "name": "National League",
+      "country": "England",
+      "category": "men",
+      "order": 4
+    },
+    "44": {
+      "name": "FA WSL",
+      "country": "England",
+      "category": "women",
+      "order": 0
+    },
+    "49": {
+      "name": "National League - Play-offs",
+      "country": "England",
+      "category": "excluded",
+      "order": 0
+    },
+    "50": {
+      "name": "National League - North",
+      "country": "England",
+      "category": "men",
+      "order": 5
+    },
+    "51": {
+      "name": "National League - South",
+      "country": "England",
+      "category": "men",
+      "order": 6
+    },
+    "52": {
+      "name": "Non League Div One - Isthmian North",
+      "country": "England",
+      "category": "men",
+      "order": 7
+    },
+    "53": {
+      "name": "Non League Div One - Isthmian South Central",
+      "country": "England",
+      "category": "men",
+      "order": 8
+    },
+    "54": {
+      "name": "Non League Div One - Northern West",
+      "country": "England",
+      "category": "men",
+      "order": 9
+    },
+    "55": {
+      "name": "Non League Div One - Northern Midlands",
+      "country": "England",
+      "category": "men",
+      "order": 10
+    },
+    "56": {
+      "name": "Non League Div One - Southern South",
+      "country": "England",
+      "category": "men",
+      "order": 11
+    },
+    "57": {
+      "name": "Non League Div One - Isthmian South East",
+      "country": "England",
+      "category": "men",
+      "order": 12
+    },
+    "58": {
+      "name": "Non League Premier - Isthmian",
+      "country": "England",
+      "category": "men",
+      "order": 13
+    },
+    "59": {
+      "name": "Non League Premier - Northern",
+      "country": "England",
+      "category": "men",
+      "order": 14
+    },
+    "60": {
+      "name": "Non League Premier - Southern South",
+      "country": "England",
+      "category": "men",
+      "order": 15
+    },
+    "61": {
+      "name": "Ligue 1",
+      "country": "France",
+      "category": "men",
+      "order": 0
+    },
+    "62": {
+      "name": "Ligue 2",
+      "country": "France",
+      "category": "men",
+      "order": 1
+    },
+    "63": {
+      "name": "Ligue 3",
+      "country": "France",
+      "category": "men",
+      "order": 2
+    },
+    "64": {
+      "name": "Feminine Division 1",
+      "country": "France",
+      "category": "women",
+      "order": 0
+    },
+    "67": {
+      "name": "National 2 - Group A",
+      "country": "France",
+      "category": "men",
+      "order": 3
+    },
+    "68": {
+      "name": "National 2 - Group B",
+      "country": "France",
+      "category": "men",
+      "order": 4
+    },
+    "69": {
+      "name": "National 2 - Group C",
+      "country": "France",
+      "category": "men",
+      "order": 5
+    },
+    "70": {
+      "name": "National 2 - Group D",
+      "country": "France",
+      "category": "men",
+      "order": 6
+    },
+    "71": {
+      "name": "Serie A",
+      "country": "Brazil",
+      "category": "men",
+      "order": 0
+    },
+    "72": {
+      "name": "Serie B",
+      "country": "Brazil",
+      "category": "men",
+      "order": 1
+    },
+    "74": {
+      "name": "Brasileiro Women",
+      "country": "Brazil",
+      "category": "women",
+      "order": 0
+    },
+    "75": {
+      "name": "Serie C",
+      "country": "Brazil",
+      "category": "men",
+      "order": 2
+    },
+    "76": {
+      "name": "Serie D",
+      "country": "Brazil",
+      "category": "men",
+      "order": 3
+    },
+    "78": {
+      "name": "Bundesliga",
+      "country": "Germany",
+      "category": "men",
+      "order": 0
+    },
+    "79": {
+      "name": "2. Bundesliga",
+      "country": "Germany",
+      "category": "men",
+      "order": 1
+    },
+    "80": {
+      "name": "3. Liga",
+      "country": "Germany",
+      "category": "men",
+      "order": 2
+    },
+    "82": {
+      "name": "Frauen Bundesliga",
+      "country": "Germany",
+      "category": "women",
+      "order": 0
+    },
+    "83": {
+      "name": "Regionalliga - Bayern",
+      "country": "Germany",
+      "category": "men",
+      "order": 3
+    },
+    "84": {
+      "name": "Regionalliga - Nord",
+      "country": "Germany",
+      "category": "men",
+      "order": 4
+    },
+    "85": {
+      "name": "Regionalliga - Nordost",
+      "country": "Germany",
+      "category": "men",
+      "order": 5
+    },
+    "86": {
+      "name": "Regionalliga - SudWest",
+      "country": "Germany",
+      "category": "men",
+      "order": 6
+    },
+    "87": {
+      "name": "Regionalliga - West",
+      "country": "Germany",
+      "category": "men",
+      "order": 7
+    },
+    "88": {
+      "name": "Eredivisie",
+      "country": "Netherlands",
+      "category": "men",
+      "order": 0
+    },
+    "89": {
+      "name": "Eerste Divisie",
+      "country": "Netherlands",
+      "category": "men",
+      "order": 1
+    },
+    "91": {
+      "name": "Eredivisie Women",
+      "country": "Netherlands",
+      "category": "women",
+      "order": 0
+    },
+    "92": {
+      "name": "Derde Divisie",
+      "country": "Netherlands",
+      "category": "men",
+      "order": 2
+    },
+    "94": {
+      "name": "Primeira Liga",
+      "country": "Portugal",
+      "category": "men",
+      "order": 0
+    },
+    "95": {
+      "name": "Segunda Liga",
+      "country": "Portugal",
+      "category": "men",
+      "order": 1
+    },
+    "98": {
+      "name": "J1 League",
+      "country": "Japan",
+      "category": "men",
+      "order": 0
+    },
+    "99": {
+      "name": "J2 League",
+      "country": "Japan",
+      "category": "men",
+      "order": 1
+    },
+    "100": {
+      "name": "J3 League",
+      "country": "Japan",
+      "category": "men",
+      "order": 2
+    },
+    "103": {
+      "name": "Eliteserien",
+      "country": "Norway",
+      "category": "men",
+      "order": 0
+    },
+    "104": {
+      "name": "1. Division",
+      "country": "Norway",
+      "category": "men",
+      "order": 1
+    },
+    "106": {
+      "name": "Ekstraklasa",
+      "country": "Poland",
+      "category": "men",
+      "order": 0
+    },
+    "107": {
+      "name": "I Liga",
+      "country": "Poland",
+      "category": "men",
+      "order": 1
+    },
+    "109": {
+      "name": "II Liga - East",
+      "country": "Poland",
+      "category": "men",
+      "order": 2
+    },
+    "110": {
+      "name": "Premier League",
+      "country": "Wales",
+      "category": "men",
+      "order": 0
+    },
+    "111": {
+      "name": "FAW Championship",
+      "country": "Wales",
+      "category": "men",
+      "order": 1
+    },
+    "113": {
+      "name": "Allsvenskan",
+      "country": "Sweden",
+      "category": "men",
+      "order": 0
+    },
+    "114": {
+      "name": "Superettan",
+      "country": "Sweden",
+      "category": "men",
+      "order": 1
+    },
+    "116": {
+      "name": "Premier League",
+      "country": "Belarus",
+      "category": "men",
+      "order": 0
+    },
+    "117": {
+      "name": "1. Division",
+      "country": "Belarus",
+      "category": "men",
+      "order": 1
+    },
+    "118": {
+      "name": "2. Division",
+      "country": "Belarus",
+      "category": "men",
+      "order": 2
+    },
+    "119": {
+      "name": "Superliga",
+      "country": "Denmark",
+      "category": "men",
+      "order": 0
+    },
+    "120": {
+      "name": "1. Division",
+      "country": "Denmark",
+      "category": "men",
+      "order": 1
+    },
+    "122": {
+      "name": "2. Division",
+      "country": "Denmark",
+      "category": "men",
+      "order": 2
+    },
+    "124": {
+      "name": "Denmark Series - Group 1",
+      "country": "Denmark",
+      "category": "men",
+      "order": 3
+    },
+    "125": {
+      "name": "Denmark Series - Group 2",
+      "country": "Denmark",
+      "category": "men",
+      "order": 4
+    },
+    "126": {
+      "name": "Denmark Series - Group 3",
+      "country": "Denmark",
+      "category": "men",
+      "order": 5
+    },
+    "127": {
+      "name": "Denmark Series - Group 4",
+      "country": "Denmark",
+      "category": "men",
+      "order": 6
+    },
+    "128": {
+      "name": "Liga Profesional Argentina",
+      "country": "Argentina",
+      "category": "men",
+      "order": 0
+    },
+    "129": {
+      "name": "Primera Nacional",
+      "country": "Argentina",
+      "category": "men",
+      "order": 1
+    },
+    "131": {
+      "name": "Primera B Metropolitana",
+      "country": "Argentina",
+      "category": "men",
+      "order": 2
+    },
+    "132": {
+      "name": "Primera C",
+      "country": "Argentina",
+      "category": "men",
+      "order": 3
+    },
+    "133": {
+      "name": "Primera D",
+      "country": "Argentina",
+      "category": "men",
+      "order": 4
+    },
+    "134": {
+      "name": "Torneo Federal A",
+      "country": "Argentina",
+      "category": "men",
+      "order": 5
+    },
+    "135": {
+      "name": "Serie A",
+      "country": "Italy",
+      "category": "men",
+      "order": 0
+    },
+    "136": {
+      "name": "Serie B",
+      "country": "Italy",
+      "category": "men",
+      "order": 1
+    },
+    "138": {
+      "name": "Serie C - Girone A",
+      "country": "Italy",
+      "category": "men",
+      "order": 2
+    },
+    "139": {
+      "name": "Serie A Women",
+      "country": "Italy",
+      "category": "women",
+      "order": 0
+    },
+    "140": {
+      "name": "La Liga",
+      "country": "Spain",
+      "category": "men",
+      "order": 0
+    },
+    "141": {
+      "name": "Segunda División",
+      "country": "Spain",
+      "category": "men",
+      "order": 1
+    },
+    "142": {
+      "name": "Primera División Femenina",
+      "country": "Spain",
+      "category": "women",
+      "order": 0
+    },
+    "144": {
+      "name": "Jupiler Pro League",
+      "country": "Belgium",
+      "category": "men",
+      "order": 0
+    },
+    "145": {
+      "name": "Challenger Pro League",
+      "country": "Belgium",
+      "category": "men",
+      "order": 1
+    },
+    "146": {
+      "name": "Super League Women",
+      "country": "Belgium",
+      "category": "women",
+      "order": 0
+    },
+    "148": {
+      "name": "Second Amateur Division - ACFF",
+      "country": "Belgium",
+      "category": "men",
+      "order": 2
+    },
+    "149": {
+      "name": "Second Amateur Division - VFV A",
+      "country": "Belgium",
+      "category": "men",
+      "order": 3
+    },
+    "150": {
+      "name": "Second Amateur Division - VFV B",
+      "country": "Belgium",
+      "category": "men",
+      "order": 4
+    },
+    "151": {
+      "name": "Third Amateur Division - VFV A",
+      "country": "Belgium",
+      "category": "men",
+      "order": 5
+    },
+    "152": {
+      "name": "Third Amateur Division - VFV B",
+      "country": "Belgium",
+      "category": "men",
+      "order": 6
+    },
+    "153": {
+      "name": "Provincial - Antwerpen",
+      "country": "Belgium",
+      "category": "men",
+      "order": 7
+    },
+    "154": {
+      "name": "Provincial - Brabant VFV",
+      "country": "Belgium",
+      "category": "men",
+      "order": 8
+    },
+    "155": {
+      "name": "Provincial - Hainaut",
+      "country": "Belgium",
+      "category": "men",
+      "order": 9
+    },
+    "156": {
+      "name": "Provincial - Liege",
+      "country": "Belgium",
+      "category": "men",
+      "order": 10
+    },
+    "157": {
+      "name": "Provincial - Limburg",
+      "country": "Belgium",
+      "category": "men",
+      "order": 11
+    },
+    "158": {
+      "name": "Provincial - Luxembourg",
+      "country": "Belgium",
+      "category": "men",
+      "order": 12
+    },
+    "159": {
+      "name": "Provincial - Namur",
+      "country": "Belgium",
+      "category": "men",
+      "order": 13
+    },
+    "160": {
+      "name": "Provincial - Oost-Vlaanderen",
+      "country": "Belgium",
+      "category": "men",
+      "order": 14
+    },
+    "161": {
+      "name": "Provincial - West-Vlaanderen",
+      "country": "Belgium",
+      "category": "men",
+      "order": 15
+    },
+    "162": {
+      "name": "Primera División",
+      "country": "Costa-Rica",
+      "category": "men",
+      "order": 0
+    },
+    "163": {
+      "name": "Liga de Ascenso",
+      "country": "Costa-Rica",
+      "category": "men",
+      "order": 1
+    },
+    "164": {
+      "name": "Úrvalsdeild",
+      "country": "Iceland",
+      "category": "men",
+      "order": 0
+    },
+    "165": {
+      "name": "1. Deild",
+      "country": "Iceland",
+      "category": "men",
+      "order": 1
+    },
+    "166": {
+      "name": "2. Deild",
+      "country": "Iceland",
+      "category": "men",
+      "order": 2
+    },
+    "169": {
+      "name": "Super League",
+      "country": "China",
+      "category": "men",
+      "order": 0
+    },
+    "170": {
+      "name": "League One",
+      "country": "China",
+      "category": "men",
+      "order": 1
+    },
+    "172": {
+      "name": "First League",
+      "country": "Bulgaria",
+      "category": "men",
+      "order": 0
+    },
+    "173": {
+      "name": "Second League",
+      "country": "Bulgaria",
+      "category": "men",
+      "order": 1
+    },
+    "175": {
+      "name": "Third League - Northeast",
+      "country": "Bulgaria",
+      "category": "men",
+      "order": 2
+    },
+    "176": {
+      "name": "Third League - Northwest",
+      "country": "Bulgaria",
+      "category": "men",
+      "order": 3
+    },
+    "177": {
+      "name": "Third League - Southeast",
+      "country": "Bulgaria",
+      "category": "men",
+      "order": 4
+    },
+    "178": {
+      "name": "Third League - Southwest",
+      "country": "Bulgaria",
+      "category": "men",
+      "order": 5
+    },
+    "179": {
+      "name": "Premiership",
+      "country": "Scotland",
+      "category": "men",
+      "order": 0
+    },
+    "180": {
+      "name": "Championship",
+      "country": "Scotland",
+      "category": "men",
+      "order": 1
+    },
+    "183": {
+      "name": "League One",
+      "country": "Scotland",
+      "category": "men",
+      "order": 2
+    },
+    "184": {
+      "name": "League Two",
+      "country": "Scotland",
+      "category": "men",
+      "order": 3
+    },
+    "186": {
+      "name": "Ligue 1",
+      "country": "Algeria",
+      "category": "men",
+      "order": 0
+    },
+    "187": {
+      "name": "Ligue 2",
+      "country": "Algeria",
+      "category": "men",
+      "order": 1
+    },
+    "188": {
+      "name": "A-League",
+      "country": "Australia",
+      "category": "men",
+      "order": 0
+    },
+    "189": {
+      "name": "Capital Territory NPL",
+      "country": "Australia",
+      "category": "men",
+      "order": 1
+    },
+    "190": {
+      "name": "A-League Women",
+      "country": "Australia",
+      "category": "women",
+      "order": 0
+    },
+    "191": {
+      "name": "Brisbane Premier League",
+      "country": "Australia",
+      "category": "men",
+      "order": 2
+    },
+    "192": {
+      "name": "New South Wales NPL",
+      "country": "Australia",
+      "category": "men",
+      "order": 3
+    },
+    "193": {
+      "name": "Northern Territory Premier League",
+      "country": "Australia",
+      "category": "men",
+      "order": 4
+    },
+    "194": {
+      "name": "South Australia NPL",
+      "country": "Australia",
+      "category": "men",
+      "order": 5
+    },
+    "195": {
+      "name": "Victoria NPL",
+      "country": "Australia",
+      "category": "men",
+      "order": 6
+    },
+    "196": {
+      "name": "Western Australia NPL",
+      "country": "Australia",
+      "category": "men",
+      "order": 7
+    },
+    "197": {
+      "name": "Super League 1",
+      "country": "Greece",
+      "category": "men",
+      "order": 0
+    },
+    "198": {
+      "name": "Football League",
+      "country": "Greece",
+      "category": "men",
+      "order": 1
+    },
+    "200": {
+      "name": "Botola Pro",
+      "country": "Morocco",
+      "category": "men",
+      "order": 0
+    },
+    "201": {
+      "name": "Botola 2",
+      "country": "Morocco",
+      "category": "men",
+      "order": 1
+    },
+    "202": {
+      "name": "Ligue 1",
+      "country": "Tunisia",
+      "category": "men",
+      "order": 0
+    },
+    "203": {
+      "name": "Süper Lig",
+      "country": "Turkey",
+      "category": "men",
+      "order": 0
+    },
+    "204": {
+      "name": "1. Lig",
+      "country": "Turkey",
+      "category": "men",
+      "order": 1
+    },
+    "205": {
+      "name": "2. Lig",
+      "country": "Turkey",
+      "category": "men",
+      "order": 2
+    },
+    "207": {
+      "name": "Super League",
+      "country": "Switzerland",
+      "category": "men",
+      "order": 0
+    },
+    "208": {
+      "name": "Challenge League",
+      "country": "Switzerland",
+      "category": "men",
+      "order": 1
+    },
+    "210": {
+      "name": "HNL",
+      "country": "Croatia",
+      "category": "men",
+      "order": 0
+    },
+    "211": {
+      "name": "First NL",
+      "country": "Croatia",
+      "category": "men",
+      "order": 1
+    },
+    "213": {
+      "name": "Third NL - Istok",
+      "country": "Croatia",
+      "category": "men",
+      "order": 2
+    },
+    "214": {
+      "name": "Third NL - Jug",
+      "country": "Croatia",
+      "category": "men",
+      "order": 3
+    },
+    "215": {
+      "name": "Third NL - Sjever",
+      "country": "Croatia",
+      "category": "men",
+      "order": 4
+    },
+    "216": {
+      "name": "Third NL - Sredite",
+      "country": "Croatia",
+      "category": "men",
+      "order": 5
+    },
+    "217": {
+      "name": "Third NL - Zapad",
+      "country": "Croatia",
+      "category": "men",
+      "order": 6
+    },
+    "218": {
+      "name": "Bundesliga",
+      "country": "Austria",
+      "category": "men",
+      "order": 0
+    },
+    "219": {
+      "name": "2. Liga",
+      "country": "Austria",
+      "category": "men",
+      "order": 1
+    },
+    "221": {
+      "name": "Regionalliga - Ost",
+      "country": "Austria",
+      "category": "men",
+      "order": 2
+    },
+    "222": {
+      "name": "Regionalliga - Mitte",
+      "country": "Austria",
+      "category": "men",
+      "order": 3
+    },
+    "223": {
+      "name": "Regionalliga - West",
+      "country": "Austria",
+      "category": "men",
+      "order": 4
+    },
+    "224": {
+      "name": "Landesliga - Burgenland",
+      "country": "Austria",
+      "category": "men",
+      "order": 5
+    },
+    "225": {
+      "name": "Landesliga - Karnten",
+      "country": "Austria",
+      "category": "men",
+      "order": 6
+    },
+    "226": {
+      "name": "Landesliga - Niederosterreich",
+      "country": "Austria",
+      "category": "men",
+      "order": 7
+    },
+    "227": {
+      "name": "Landesliga - Oberosterreich",
+      "country": "Austria",
+      "category": "men",
+      "order": 8
+    },
+    "228": {
+      "name": "Landesliga - Salzburg",
+      "country": "Austria",
+      "category": "men",
+      "order": 9
+    },
+    "229": {
+      "name": "Landesliga - Steiermark",
+      "country": "Austria",
+      "category": "men",
+      "order": 10
+    },
+    "230": {
+      "name": "Landesliga - Tirol",
+      "country": "Austria",
+      "category": "men",
+      "order": 11
+    },
+    "231": {
+      "name": "Landesliga - Vorarlbergliga",
+      "country": "Austria",
+      "category": "men",
+      "order": 12
+    },
+    "232": {
+      "name": "Landesliga - Wien",
+      "country": "Austria",
+      "category": "men",
+      "order": 13
+    },
+    "233": {
+      "name": "Premier League",
+      "country": "Egypt",
+      "category": "men",
+      "order": 0
+    },
+    "234": {
+      "name": "Liga Nacional",
+      "country": "Honduras",
+      "category": "men",
+      "order": 0
+    },
+    "235": {
+      "name": "Premier League",
+      "country": "Russia",
+      "category": "men",
+      "order": 0
+    },
+    "236": {
+      "name": "First League",
+      "country": "Russia",
+      "category": "men",
+      "order": 1
+    },
+    "238": {
+      "name": "Youth Championship",
+      "country": "Russia",
+      "category": "excluded",
+      "order": 0
+    },
+    "239": {
+      "name": "Primera A",
+      "country": "Colombia",
+      "category": "men",
+      "order": 0
+    },
+    "240": {
+      "name": "Primera B",
+      "country": "Colombia",
+      "category": "men",
+      "order": 1
+    },
+    "242": {
+      "name": "Liga Pro",
+      "country": "Ecuador",
+      "category": "men",
+      "order": 0
+    },
+    "243": {
+      "name": "Liga Pro Serie B",
+      "country": "Ecuador",
+      "category": "men",
+      "order": 1
+    },
+    "244": {
+      "name": "Veikkausliiga",
+      "country": "Finland",
+      "category": "men",
+      "order": 0
+    },
+    "245": {
+      "name": "Ykkönen",
+      "country": "Finland",
+      "category": "men",
+      "order": 1
+    },
+    "247": {
+      "name": "Kakkonen - Lohko A",
+      "country": "Finland",
+      "category": "men",
+      "order": 2
+    },
+    "248": {
+      "name": "Kakkonen - Lohko B",
+      "country": "Finland",
+      "category": "men",
+      "order": 3
+    },
+    "249": {
+      "name": "Kakkonen - Lohko C",
+      "country": "Finland",
+      "category": "men",
+      "order": 4
+    },
+    "250": {
+      "name": "Division Profesional - Apertura",
+      "country": "Paraguay",
+      "category": "men",
+      "order": 0
+    },
+    "251": {
+      "name": "Division Intermedia",
+      "country": "Paraguay",
+      "category": "men",
+      "order": 1
+    },
+    "252": {
+      "name": "Division Profesional - Clausura",
+      "country": "Paraguay",
+      "category": "men",
+      "order": 2
+    },
+    "253": {
+      "name": "Major League Soccer",
+      "country": "USA",
+      "category": "men",
+      "order": 0
+    },
+    "254": {
+      "name": "NWSL Women",
+      "country": "USA",
+      "category": "women",
+      "order": 0
+    },
+    "255": {
+      "name": "USL Championship",
+      "country": "USA",
+      "category": "men",
+      "order": 1
+    },
+    "256": {
+      "name": "USL League Two",
+      "country": "USA",
+      "category": "men",
+      "order": 2
+    },
+    "258": {
+      "name": "Canadian Soccer League",
+      "country": "Canada",
+      "category": "men",
+      "order": 0
+    },
+    "260": {
+      "name": "Pacific Coast Soccer League",
+      "country": "Canada",
+      "category": "men",
+      "order": 1
+    },
+    "261": {
+      "name": "National Division",
+      "country": "Luxembourg",
+      "category": "men",
+      "order": 0
+    },
+    "262": {
+      "name": "Liga MX",
+      "country": "Mexico",
+      "category": "men",
+      "order": 0
+    },
+    "263": {
+      "name": "Liga de Expansión MX",
+      "country": "Mexico",
+      "category": "men",
+      "order": 1
+    },
+    "265": {
+      "name": "Primera División",
+      "country": "Chile",
+      "category": "men",
+      "order": 0
+    },
+    "266": {
+      "name": "Primera B",
+      "country": "Chile",
+      "category": "men",
+      "order": 1
+    },
+    "268": {
+      "name": "Primera División",
+      "country": "Uruguay",
+      "category": "men",
+      "order": 0
+    },
+    "269": {
+      "name": "Segunda División",
+      "country": "Uruguay",
+      "category": "men",
+      "order": 1
+    },
+    "271": {
+      "name": "NB I",
+      "country": "Hungary",
+      "category": "men",
+      "order": 0
+    },
+    "272": {
+      "name": "NB II",
+      "country": "Hungary",
+      "category": "men",
+      "order": 1
+    },
+    "274": {
+      "name": "Liga 1",
+      "country": "Indonesia",
+      "category": "men",
+      "order": 0
+    },
+    "275": {
+      "name": "Liga 2",
+      "country": "Indonesia",
+      "category": "men",
+      "order": 1
+    },
+    "276": {
+      "name": "FKF Premier League",
+      "country": "Kenya",
+      "category": "men",
+      "order": 0
+    },
+    "277": {
+      "name": "Super League",
+      "country": "Kenya",
+      "category": "men",
+      "order": 1
+    },
+    "278": {
+      "name": "Super League",
+      "country": "Malaysia",
+      "category": "men",
+      "order": 0
+    },
+    "279": {
+      "name": "Premier League",
+      "country": "Malaysia",
+      "category": "men",
+      "order": 1
+    },
+    "281": {
+      "name": "Primera División",
+      "country": "Peru",
+      "category": "men",
+      "order": 0
+    },
+    "282": {
+      "name": "Segunda División",
+      "country": "Peru",
+      "category": "men",
+      "order": 1
+    },
+    "283": {
+      "name": "Liga I",
+      "country": "Romania",
+      "category": "men",
+      "order": 0
+    },
+    "284": {
+      "name": "Liga II",
+      "country": "Romania",
+      "category": "men",
+      "order": 1
+    },
+    "286": {
+      "name": "Super Liga",
+      "country": "Serbia",
+      "category": "men",
+      "order": 0
+    },
+    "287": {
+      "name": "Prva Liga",
+      "country": "Serbia",
+      "category": "men",
+      "order": 1
+    },
+    "288": {
+      "name": "Premier Soccer League",
+      "country": "South-Africa",
+      "category": "men",
+      "order": 0
+    },
+    "289": {
+      "name": "1st Division",
+      "country": "South-Africa",
+      "category": "men",
+      "order": 1
+    },
+    "290": {
+      "name": "Persian Gulf Pro League",
+      "country": "Iran",
+      "category": "men",
+      "order": 0
+    },
+    "291": {
+      "name": "Azadegan League",
+      "country": "Iran",
+      "category": "men",
+      "order": 1
+    },
+    "292": {
+      "name": "K League 1",
+      "country": "South-Korea",
+      "category": "men",
+      "order": 0
+    },
+    "293": {
+      "name": "K League 2",
+      "country": "South-Korea",
+      "category": "men",
+      "order": 1
+    },
+    "295": {
+      "name": "K3 League",
+      "country": "South-Korea",
+      "category": "men",
+      "order": 2
+    },
+    "296": {
+      "name": "Thai League 1",
+      "country": "Thailand",
+      "category": "men",
+      "order": 0
+    },
+    "297": {
+      "name": "Thai League 2",
+      "country": "Thailand",
+      "category": "men",
+      "order": 1
+    },
+    "299": {
+      "name": "Primera División",
+      "country": "Venezuela",
+      "category": "men",
+      "order": 0
+    },
+    "300": {
+      "name": "Segunda División",
+      "country": "Venezuela",
+      "category": "men",
+      "order": 1
+    },
+    "301": {
+      "name": "Pro League",
+      "country": "United-Arab-Emirates",
+      "category": "men",
+      "order": 0
+    },
+    "303": {
+      "name": "Division 1",
+      "country": "United-Arab-Emirates",
+      "category": "men",
+      "order": 1
+    },
+    "304": {
+      "name": "Liga Panameña de Fútbol",
+      "country": "Panama",
+      "category": "men",
+      "order": 0
+    },
+    "305": {
+      "name": "Stars League",
+      "country": "Qatar",
+      "category": "men",
+      "order": 0
+    },
+    "306": {
+      "name": "Second Division",
+      "country": "Qatar",
+      "category": "men",
+      "order": 1
+    },
+    "307": {
+      "name": "Pro League",
+      "country": "Saudi-Arabia",
+      "category": "men",
+      "order": 0
+    },
+    "308": {
+      "name": "Division 1",
+      "country": "Saudi-Arabia",
+      "category": "men",
+      "order": 1
+    },
+    "309": {
+      "name": "Division 2",
+      "country": "Saudi-Arabia",
+      "category": "men",
+      "order": 2
+    },
+    "310": {
+      "name": "Superliga",
+      "country": "Albania",
+      "category": "men",
+      "order": 0
+    },
+    "311": {
+      "name": "1st Division",
+      "country": "Albania",
+      "category": "men",
+      "order": 1
+    },
+    "312": {
+      "name": "1a Divisió",
+      "country": "Andorra",
+      "category": "men",
+      "order": 0
+    },
+    "313": {
+      "name": "2a Divisió",
+      "country": "Andorra",
+      "category": "men",
+      "order": 1
+    },
+    "315": {
+      "name": "Premijer Liga",
+      "country": "Bosnia",
+      "category": "men",
+      "order": 0
+    },
+    "316": {
+      "name": "1st League - FBiH",
+      "country": "Bosnia",
+      "category": "men",
+      "order": 1
+    },
+    "317": {
+      "name": "1st League - RS",
+      "country": "Bosnia",
+      "category": "men",
+      "order": 2
+    },
+    "318": {
+      "name": "1. Division",
+      "country": "Cyprus",
+      "category": "men",
+      "order": 0
+    },
+    "319": {
+      "name": "2. Division",
+      "country": "Cyprus",
+      "category": "men",
+      "order": 1
+    },
+    "320": {
+      "name": "3. Division",
+      "country": "Cyprus",
+      "category": "men",
+      "order": 2
+    },
+    "322": {
+      "name": "Premier League",
+      "country": "Jamaica",
+      "category": "men",
+      "order": 0
+    },
+    "323": {
+      "name": "Indian Super League",
+      "country": "India",
+      "category": "men",
+      "order": 0
+    },
+    "324": {
+      "name": "I-League",
+      "country": "India",
+      "category": "men",
+      "order": 1
+    },
+    "326": {
+      "name": "Erovnuli Liga 2",
+      "country": "Georgia",
+      "category": "men",
+      "order": 0
+    },
+    "327": {
+      "name": "Erovnuli Liga",
+      "country": "Georgia",
+      "category": "men",
+      "order": 1
+    },
+    "328": {
+      "name": "Esiliiga A",
+      "country": "Estonia",
+      "category": "men",
+      "order": 0
+    },
+    "329": {
+      "name": "Meistriliiga",
+      "country": "Estonia",
+      "category": "men",
+      "order": 1
+    },
+    "330": {
+      "name": "Premier League",
+      "country": "Kuwait",
+      "category": "men",
+      "order": 0
+    },
+    "331": {
+      "name": "Division 1",
+      "country": "Kuwait",
+      "category": "men",
+      "order": 1
+    },
+    "332": {
+      "name": "Super Liga",
+      "country": "Slovakia",
+      "category": "men",
+      "order": 0
+    },
+    "333": {
+      "name": "Premier League",
+      "country": "Ukraine",
+      "category": "men",
+      "order": 0
+    },
+    "334": {
+      "name": "Persha Liga",
+      "country": "Ukraine",
+      "category": "men",
+      "order": 1
+    },
+    "336": {
+      "name": "Druha Liga",
+      "country": "Ukraine",
+      "category": "men",
+      "order": 2
+    },
+    "337": {
+      "name": "Druha Liga - Group B",
+      "country": "Ukraine",
+      "category": "men",
+      "order": 3
+    },
+    "338": {
+      "name": "Primera Division",
+      "country": "Guatemala",
+      "category": "men",
+      "order": 0
+    },
+    "339": {
+      "name": "Liga Nacional",
+      "country": "Guatemala",
+      "category": "men",
+      "order": 1
+    },
+    "340": {
+      "name": "V.League 1",
+      "country": "Vietnam",
+      "category": "men",
+      "order": 0
+    },
+    "342": {
+      "name": "Premier League",
+      "country": "Armenia",
+      "category": "men",
+      "order": 0
+    },
+    "343": {
+      "name": "First League",
+      "country": "Armenia",
+      "category": "men",
+      "order": 1
+    },
+    "344": {
+      "name": "Primera División",
+      "country": "Bolivia",
+      "category": "men",
+      "order": 0
+    },
+    "345": {
+      "name": "Czech Liga",
+      "country": "Czech-Republic",
+      "category": "men",
+      "order": 0
+    },
+    "346": {
+      "name": "FNL",
+      "country": "Czech-Republic",
+      "category": "men",
+      "order": 1
+    },
+    "348": {
+      "name": "3. liga - CFL A",
+      "country": "Czech-Republic",
+      "category": "men",
+      "order": 2
+    },
+    "349": {
+      "name": "3. liga - MSFL",
+      "country": "Czech-Republic",
+      "category": "men",
+      "order": 3
+    },
+    "350": {
+      "name": "4. liga - Divizie A",
+      "country": "Czech-Republic",
+      "category": "men",
+      "order": 4
+    },
+    "351": {
+      "name": "4. liga - Divizie B",
+      "country": "Czech-Republic",
+      "category": "men",
+      "order": 5
+    },
+    "352": {
+      "name": "4. liga - Divizie C",
+      "country": "Czech-Republic",
+      "category": "men",
+      "order": 6
+    },
+    "353": {
+      "name": "4. liga - Divizie D",
+      "country": "Czech-Republic",
+      "category": "men",
+      "order": 7
+    },
+    "354": {
+      "name": "4. liga - Divizie E",
+      "country": "Czech-Republic",
+      "category": "men",
+      "order": 8
+    },
+    "355": {
+      "name": "First League",
+      "country": "Montenegro",
+      "category": "men",
+      "order": 0
+    },
+    "356": {
+      "name": "Second League",
+      "country": "Montenegro",
+      "category": "men",
+      "order": 1
+    },
+    "357": {
+      "name": "Premier Division",
+      "country": "Ireland",
+      "category": "men",
+      "order": 0
+    },
+    "358": {
+      "name": "First Division",
+      "country": "Ireland",
+      "category": "men",
+      "order": 1
+    },
+    "361": {
+      "name": "1 Lyga",
+      "country": "Lithuania",
+      "category": "men",
+      "order": 0
+    },
+    "362": {
+      "name": "A Lyga",
+      "country": "Lithuania",
+      "category": "men",
+      "order": 1
+    },
+    "363": {
+      "name": "Premier League",
+      "country": "Ethiopia",
+      "category": "men",
+      "order": 0
+    },
+    "364": {
+      "name": "1. Liga",
+      "country": "Latvia",
+      "category": "men",
+      "order": 0
+    },
+    "365": {
+      "name": "Virsliga",
+      "country": "Latvia",
+      "category": "men",
+      "order": 1
+    },
+    "366": {
+      "name": "1. Deild",
+      "country": "Faroe-Islands",
+      "category": "men",
+      "order": 0
+    },
+    "367": {
+      "name": "Meistaradeildin",
+      "country": "Faroe-Islands",
+      "category": "men",
+      "order": 1
+    },
+    "368": {
+      "name": "Premier League",
+      "country": "Singapore",
+      "category": "men",
+      "order": 0
+    },
+    "369": {
+      "name": "Super League",
+      "country": "Uzbekistan",
+      "category": "men",
+      "order": 0
+    },
+    "370": {
+      "name": "Primera Division",
+      "country": "El-Salvador",
+      "category": "men",
+      "order": 0
+    },
+    "371": {
+      "name": "First League",
+      "country": "Macedonia",
+      "category": "men",
+      "order": 0
+    },
+    "372": {
+      "name": "Second League",
+      "country": "Macedonia",
+      "category": "men",
+      "order": 1
+    },
+    "373": {
+      "name": "1. SNL",
+      "country": "Slovenia",
+      "category": "men",
+      "order": 0
+    },
+    "374": {
+      "name": "2. SNL",
+      "country": "Slovenia",
+      "category": "men",
+      "order": 1
+    },
+    "376": {
+      "name": "National Football League",
+      "country": "Fiji",
+      "category": "men",
+      "order": 0
+    },
+    "377": {
+      "name": "Division d'Honneur",
+      "country": "Guadeloupe",
+      "category": "men",
+      "order": 0
+    },
+    "378": {
+      "name": "Ligue 1",
+      "country": "Guinea",
+      "category": "men",
+      "order": 0
+    },
+    "379": {
+      "name": "Ligue Haïtienne",
+      "country": "Haiti",
+      "category": "men",
+      "order": 0
+    },
+    "380": {
+      "name": "Premier League",
+      "country": "Hong-Kong",
+      "category": "men",
+      "order": 0
+    },
+    "381": {
+      "name": "HKFA 1st Division",
+      "country": "Hong-Kong",
+      "category": "men",
+      "order": 1
+    },
+    "382": {
+      "name": "Liga Leumit",
+      "country": "Israel",
+      "category": "men",
+      "order": 0
+    },
+    "383": {
+      "name": "Ligat Ha'al",
+      "country": "Israel",
+      "category": "men",
+      "order": 1
+    },
+    "386": {
+      "name": "Ligue 1",
+      "country": "Ivory-Coast",
+      "category": "men",
+      "order": 0
+    },
+    "387": {
+      "name": "League",
+      "country": "Jordan",
+      "category": "men",
+      "order": 0
+    },
+    "388": {
+      "name": "1. Division",
+      "country": "Kazakhstan",
+      "category": "men",
+      "order": 0
+    },
+    "389": {
+      "name": "Premier League",
+      "country": "Kazakhstan",
+      "category": "men",
+      "order": 1
+    },
+    "390": {
+      "name": "Premier League",
+      "country": "Lebanon",
+      "category": "men",
+      "order": 0
+    },
+    "391": {
+      "name": "Super League",
+      "country": "Malawi",
+      "category": "men",
+      "order": 0
+    },
+    "392": {
+      "name": "Challenge League",
+      "country": "Malta",
+      "category": "men",
+      "order": 0
+    },
+    "393": {
+      "name": "Premier League",
+      "country": "Malta",
+      "category": "men",
+      "order": 1
+    },
+    "394": {
+      "name": "Super Liga",
+      "country": "Moldova",
+      "category": "men",
+      "order": 0
+    },
+    "395": {
+      "name": "Liga 1",
+      "country": "Moldova",
+      "category": "men",
+      "order": 1
+    },
+    "396": {
+      "name": "Primera Division",
+      "country": "Nicaragua",
+      "category": "men",
+      "order": 0
+    },
+    "397": {
+      "name": "Girabola",
+      "country": "Angola",
+      "category": "men",
+      "order": 0
+    },
+    "398": {
+      "name": "Premier League",
+      "country": "Bangladesh",
+      "category": "men",
+      "order": 0
+    },
+    "399": {
+      "name": "NPFL",
+      "country": "Nigeria",
+      "category": "men",
+      "order": 0
+    },
+    "400": {
+      "name": "Super League",
+      "country": "Zambia",
+      "category": "men",
+      "order": 0
+    },
+    "401": {
+      "name": "Premier Soccer League",
+      "country": "Zimbabwe",
+      "category": "men",
+      "order": 0
+    },
+    "402": {
+      "name": "Sudani Premier League",
+      "country": "Sudan",
+      "category": "men",
+      "order": 0
+    },
+    "403": {
+      "name": "Ligue 1",
+      "country": "Senegal",
+      "category": "men",
+      "order": 0
+    },
+    "404": {
+      "name": "Campionato",
+      "country": "San-Marino",
+      "category": "men",
+      "order": 0
+    },
+    "405": {
+      "name": "National Soccer League",
+      "country": "Rwanda",
+      "category": "men",
+      "order": 0
+    },
+    "406": {
+      "name": "Professional League",
+      "country": "Oman",
+      "category": "men",
+      "order": 0
+    },
+    "407": {
+      "name": "Championship",
+      "country": "Northern-Ireland",
+      "category": "men",
+      "order": 0
+    },
+    "408": {
+      "name": "Premiership",
+      "country": "Northern-Ireland",
+      "category": "men",
+      "order": 1
+    },
+    "409": {
+      "name": "Premier League",
+      "country": "Namibia",
+      "category": "men",
+      "order": 0
+    },
+    "410": {
+      "name": "C-League",
+      "country": "Cambodia",
+      "category": "men",
+      "order": 0
+    },
+    "411": {
+      "name": "Elite One",
+      "country": "Cameroon",
+      "category": "men",
+      "order": 0
+    },
+    "412": {
+      "name": "Premier League",
+      "country": "Botswana",
+      "category": "men",
+      "order": 0
+    },
+    "414": {
+      "name": "Premier League",
+      "country": "Bermuda",
+      "category": "men",
+      "order": 0
+    },
+    "415": {
+      "name": "Championnat National",
+      "country": "Benin",
+      "category": "men",
+      "order": 0
+    },
+    "416": {
+      "name": "Premier League",
+      "country": "Belize",
+      "category": "men",
+      "order": 0
+    },
+    "417": {
+      "name": "Premier League",
+      "country": "Bahrain",
+      "category": "men",
+      "order": 0
+    },
+    "418": {
+      "name": "Birinci Dasta",
+      "country": "Azerbaijan",
+      "category": "men",
+      "order": 0
+    },
+    "419": {
+      "name": "Premyer Liqa",
+      "country": "Azerbaijan",
+      "category": "men",
+      "order": 1
+    },
+    "421": {
+      "name": "Division di Honor",
+      "country": "Aruba",
+      "category": "men",
+      "order": 0
+    },
+    "422": {
+      "name": "Premier League",
+      "country": "Barbados",
+      "category": "men",
+      "order": 0
+    },
+    "423": {
+      "name": "Ligue 1",
+      "country": "Burkina-Faso",
+      "category": "men",
+      "order": 0
+    },
+    "424": {
+      "name": "Ligue 1",
+      "country": "Congo-DR",
+      "category": "men",
+      "order": 0
+    },
+    "425": {
+      "name": "Premier League",
+      "country": "Syria",
+      "category": "men",
+      "order": 0
+    },
+    "426": {
+      "name": "Serie D - Girone A",
+      "country": "Italy",
+      "category": "men",
+      "order": 3
+    },
+    "427": {
+      "name": "Serie D - Girone B",
+      "country": "Italy",
+      "category": "men",
+      "order": 4
+    },
+    "428": {
+      "name": "Serie D - Girone C",
+      "country": "Italy",
+      "category": "men",
+      "order": 5
+    },
+    "429": {
+      "name": "Serie D - Girone D",
+      "country": "Italy",
+      "category": "men",
+      "order": 6
+    },
+    "430": {
+      "name": "Serie D - Girone E",
+      "country": "Italy",
+      "category": "men",
+      "order": 7
+    },
+    "431": {
+      "name": "Serie D - Girone F",
+      "country": "Italy",
+      "category": "men",
+      "order": 8
+    },
+    "432": {
+      "name": "Serie D - Girone G",
+      "country": "Italy",
+      "category": "men",
+      "order": 9
+    },
+    "433": {
+      "name": "Serie D - Girone H",
+      "country": "Italy",
+      "category": "men",
+      "order": 10
+    },
+    "434": {
+      "name": "Serie D - Girone I",
+      "country": "Italy",
+      "category": "men",
+      "order": 11
+    },
+    "435": {
+      "name": "Primera División RFEF - Group 1",
+      "country": "Spain",
+      "category": "men",
+      "order": 2
+    },
+    "436": {
+      "name": "Primera División RFEF - Group 2",
+      "country": "Spain",
+      "category": "men",
+      "order": 3
+    },
+    "437": {
+      "name": "Primera División RFEF - Group 3",
+      "country": "Spain",
+      "category": "men",
+      "order": 4
+    },
+    "438": {
+      "name": "Primera División RFEF - Group 4",
+      "country": "Spain",
+      "category": "men",
+      "order": 5
+    },
+    "439": {
+      "name": "Tercera División RFEF - Group 1",
+      "country": "Spain",
+      "category": "men",
+      "order": 6
+    },
+    "440": {
+      "name": "Tercera División RFEF - Group 2",
+      "country": "Spain",
+      "category": "men",
+      "order": 7
+    },
+    "441": {
+      "name": "Tercera División RFEF - Group 3",
+      "country": "Spain",
+      "category": "men",
+      "order": 8
+    },
+    "442": {
+      "name": "Tercera División RFEF - Group 4",
+      "country": "Spain",
+      "category": "men",
+      "order": 9
+    },
+    "443": {
+      "name": "Tercera División RFEF - Group 5",
+      "country": "Spain",
+      "category": "men",
+      "order": 10
+    },
+    "444": {
+      "name": "Tercera División RFEF - Group 6",
+      "country": "Spain",
+      "category": "men",
+      "order": 11
+    },
+    "445": {
+      "name": "Tercera División RFEF - Group 7",
+      "country": "Spain",
+      "category": "men",
+      "order": 12
+    },
+    "446": {
+      "name": "Tercera División RFEF - Group 8",
+      "country": "Spain",
+      "category": "men",
+      "order": 13
+    },
+    "447": {
+      "name": "Tercera División RFEF - Group 9",
+      "country": "Spain",
+      "category": "men",
+      "order": 14
+    },
+    "448": {
+      "name": "Tercera División RFEF - Group 10",
+      "country": "Spain",
+      "category": "men",
+      "order": 15
+    },
+    "449": {
+      "name": "Tercera División RFEF - Group 11",
+      "country": "Spain",
+      "category": "men",
+      "order": 16
+    },
+    "450": {
+      "name": "Tercera División RFEF - Group 12",
+      "country": "Spain",
+      "category": "men",
+      "order": 17
+    },
+    "451": {
+      "name": "Tercera División RFEF - Group 13",
+      "country": "Spain",
+      "category": "men",
+      "order": 18
+    },
+    "452": {
+      "name": "Tercera División RFEF - Group 14",
+      "country": "Spain",
+      "category": "men",
+      "order": 19
+    },
+    "453": {
+      "name": "Tercera División RFEF - Group 15",
+      "country": "Spain",
+      "category": "men",
+      "order": 20
+    },
+    "454": {
+      "name": "Tercera División RFEF - Group 16",
+      "country": "Spain",
+      "category": "men",
+      "order": 21
+    },
+    "455": {
+      "name": "Tercera División RFEF - Group 17",
+      "country": "Spain",
+      "category": "men",
+      "order": 22
+    },
+    "456": {
+      "name": "Tercera División RFEF - Group 18",
+      "country": "Spain",
+      "category": "men",
+      "order": 23
+    },
+    "457": {
+      "name": "Campeonato de Portugal Prio - Group A",
+      "country": "Portugal",
+      "category": "men",
+      "order": 2
+    },
+    "458": {
+      "name": "Campeonato de Portugal Prio - Group B",
+      "country": "Portugal",
+      "category": "men",
+      "order": 3
+    },
+    "459": {
+      "name": "Campeonato de Portugal Prio - Group C",
+      "country": "Portugal",
+      "category": "men",
+      "order": 4
+    },
+    "460": {
+      "name": "Campeonato de Portugal Prio - Group D",
+      "country": "Portugal",
+      "category": "men",
+      "order": 5
+    },
+    "461": {
+      "name": "National 3 - Group A",
+      "country": "France",
+      "category": "men",
+      "order": 7
+    },
+    "462": {
+      "name": "National 3 - Group B",
+      "country": "France",
+      "category": "men",
+      "order": 8
+    },
+    "463": {
+      "name": "National 3 - Group C",
+      "country": "France",
+      "category": "men",
+      "order": 9
+    },
+    "464": {
+      "name": "National 3 - Group D",
+      "country": "France",
+      "category": "men",
+      "order": 10
+    },
+    "465": {
+      "name": "National 3 - Group E",
+      "country": "France",
+      "category": "men",
+      "order": 11
+    },
+    "466": {
+      "name": "National 3 - Group F",
+      "country": "France",
+      "category": "men",
+      "order": 12
+    },
+    "467": {
+      "name": "National 3 - Group H",
+      "country": "France",
+      "category": "men",
+      "order": 13
+    },
+    "468": {
+      "name": "National 3 - Group I",
+      "country": "France",
+      "category": "men",
+      "order": 14
+    },
+    "469": {
+      "name": "National 3 - Group J",
+      "country": "France",
+      "category": "men",
+      "order": 15
+    },
+    "470": {
+      "name": "National 3 - Group K",
+      "country": "France",
+      "category": "men",
+      "order": 16
+    },
+    "471": {
+      "name": "National 3 - Group L",
+      "country": "France",
+      "category": "men",
+      "order": 17
+    },
+    "472": {
+      "name": "National 3 - Group M",
+      "country": "France",
+      "category": "men",
+      "order": 18
+    },
+    "473": {
+      "name": "2. Division - Group 1",
+      "country": "Norway",
+      "category": "men",
+      "order": 2
+    },
+    "474": {
+      "name": "2. Division - Group 2",
+      "country": "Norway",
+      "category": "men",
+      "order": 3
+    },
+    "475": {
+      "name": "Paulista - A1",
+      "country": "Brazil",
+      "category": "men",
+      "order": 4
+    },
+    "476": {
+      "name": "Paulista - A2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 5
+    },
+    "477": {
+      "name": "Gaúcho - 1",
+      "country": "Brazil",
+      "category": "men",
+      "order": 6
+    },
+    "478": {
+      "name": "Gaúcho - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 7
+    },
+    "479": {
+      "name": "Canadian Premier League",
+      "country": "Canada",
+      "category": "men",
+      "order": 2
+    },
+    "481": {
+      "name": "Northern NSW NPL",
+      "country": "Australia",
+      "category": "men",
+      "order": 8
+    },
+    "482": {
+      "name": "Queensland NPL",
+      "country": "Australia",
+      "category": "men",
+      "order": 9
+    },
+    "484": {
+      "name": "Frauenliga",
+      "country": "Austria",
+      "category": "women",
+      "order": 0
+    },
+    "487": {
+      "name": "First Amateur Division",
+      "country": "Belgium",
+      "category": "men",
+      "order": 16
+    },
+    "488": {
+      "name": "U19 Bundesliga",
+      "country": "Germany",
+      "category": "excluded",
+      "order": 0
+    },
+    "489": {
+      "name": "USL League One",
+      "country": "USA",
+      "category": "men",
+      "order": 3
+    },
+    "492": {
+      "name": "Tweede Divisie",
+      "country": "Netherlands",
+      "category": "men",
+      "order": 3
+    },
+    "494": {
+      "name": "Super League 2",
+      "country": "Greece",
+      "category": "men",
+      "order": 2
+    },
+    "496": {
+      "name": "Liga Alef",
+      "country": "Israel",
+      "category": "men",
+      "order": 2
+    },
+    "497": {
+      "name": "Japan Football League",
+      "country": "Japan",
+      "category": "men",
+      "order": 3
+    },
+    "506": {
+      "name": "2. liga",
+      "country": "Slovakia",
+      "category": "men",
+      "order": 1
+    },
+    "510": {
+      "name": "1. Liga Promotion",
+      "country": "Switzerland",
+      "category": "excluded",
+      "order": 0
+    },
+    "512": {
+      "name": "2nd Division - Group A",
+      "country": "Albania",
+      "category": "men",
+      "order": 2
+    },
+    "513": {
+      "name": "2nd Division - Group B",
+      "country": "Albania",
+      "category": "men",
+      "order": 3
+    },
+    "515": {
+      "name": "U21 League 1",
+      "country": "Algeria",
+      "category": "excluded",
+      "order": 0
+    },
+    "518": {
+      "name": "Reserve Pro League",
+      "country": "Belgium",
+      "category": "excluded",
+      "order": 0
+    },
+    "520": {
+      "name": "Acreano",
+      "country": "Brazil",
+      "category": "men",
+      "order": 8
+    },
+    "521": {
+      "name": "Amapaense",
+      "country": "Brazil",
+      "category": "men",
+      "order": 9
+    },
+    "522": {
+      "name": "Amazonense",
+      "country": "Brazil",
+      "category": "men",
+      "order": 10
+    },
+    "523": {
+      "name": "NISA",
+      "country": "USA",
+      "category": "men",
+      "order": 4
+    },
+    "542": {
+      "name": "Iraqi League",
+      "country": "Iraq",
+      "category": "men",
+      "order": 0
+    },
+    "549": {
+      "name": "Damallsvenskan",
+      "country": "Sweden",
+      "category": "women",
+      "order": 0
+    },
+    "552": {
+      "name": "3. Lig - Group 1",
+      "country": "Turkey",
+      "category": "men",
+      "order": 3
+    },
+    "553": {
+      "name": "3. Lig - Group 2",
+      "country": "Turkey",
+      "category": "men",
+      "order": 4
+    },
+    "554": {
+      "name": "3. Lig - Group 3",
+      "country": "Turkey",
+      "category": "men",
+      "order": 5
+    },
+    "561": {
+      "name": "Premier Intermediate League",
+      "country": "Northern-Ireland",
+      "category": "men",
+      "order": 2
+    },
+    "562": {
+      "name": "Reserve League",
+      "country": "Belarus",
+      "category": "excluded",
+      "order": 0
+    },
+    "563": {
+      "name": "Ettan - Norra",
+      "country": "Sweden",
+      "category": "men",
+      "order": 2
+    },
+    "564": {
+      "name": "Ettan - Södra",
+      "country": "Sweden",
+      "category": "men",
+      "order": 3
+    },
+    "565": {
+      "name": "Liga Primera U20",
+      "country": "Nicaragua",
+      "category": "excluded",
+      "order": 0
+    },
+    "566": {
+      "name": "Ligue A",
+      "country": "Burundi",
+      "category": "men",
+      "order": 0
+    },
+    "567": {
+      "name": "Ligi kuu Bara",
+      "country": "Tanzania",
+      "category": "men",
+      "order": 0
+    },
+    "568": {
+      "name": "Eerste Divisie",
+      "country": "Suriname",
+      "category": "men",
+      "order": 0
+    },
+    "569": {
+      "name": "Premier League",
+      "country": "Kyrgyzstan",
+      "category": "men",
+      "order": 0
+    },
+    "570": {
+      "name": "Premier League",
+      "country": "Ghana",
+      "category": "men",
+      "order": 0
+    },
+    "571": {
+      "name": "Vysshaya Liga",
+      "country": "Tajikistan",
+      "category": "men",
+      "order": 0
+    },
+    "572": {
+      "name": "Srpska Liga - Belgrade",
+      "country": "Serbia",
+      "category": "men",
+      "order": 2
+    },
+    "573": {
+      "name": "Srpska Liga - Vojvodina",
+      "country": "Serbia",
+      "category": "men",
+      "order": 3
+    },
+    "574": {
+      "name": "Srpska Liga - East",
+      "country": "Serbia",
+      "category": "men",
+      "order": 4
+    },
+    "575": {
+      "name": "Srpska Liga - West",
+      "country": "Serbia",
+      "category": "men",
+      "order": 5
+    },
+    "576": {
+      "name": "Gamma Ethniki - Group 1",
+      "country": "Greece",
+      "category": "men",
+      "order": 3
+    },
+    "577": {
+      "name": "Gamma Ethniki - Group 2",
+      "country": "Greece",
+      "category": "men",
+      "order": 4
+    },
+    "578": {
+      "name": "Gamma Ethniki - Group 3",
+      "country": "Greece",
+      "category": "men",
+      "order": 5
+    },
+    "579": {
+      "name": "Gamma Ethniki - Group 4",
+      "country": "Greece",
+      "category": "men",
+      "order": 6
+    },
+    "580": {
+      "name": "Gamma Ethniki - Group 5",
+      "country": "Greece",
+      "category": "men",
+      "order": 7
+    },
+    "581": {
+      "name": "Gamma Ethniki - Group 6",
+      "country": "Greece",
+      "category": "men",
+      "order": 8
+    },
+    "582": {
+      "name": "Gamma Ethniki - Group 7",
+      "country": "Greece",
+      "category": "men",
+      "order": 9
+    },
+    "583": {
+      "name": "Gamma Ethniki - Group 8",
+      "country": "Greece",
+      "category": "men",
+      "order": 10
+    },
+    "584": {
+      "name": "Premier League",
+      "country": "Libya",
+      "category": "men",
+      "order": 0
+    },
+    "585": {
+      "name": "Premier League",
+      "country": "Uganda",
+      "category": "men",
+      "order": 0
+    },
+    "586": {
+      "name": "West Bank Premier League",
+      "country": "Palestine",
+      "category": "men",
+      "order": 0
+    },
+    "588": {
+      "name": "National League",
+      "country": "Myanmar",
+      "category": "men",
+      "order": 0
+    },
+    "589": {
+      "name": "Taiwan Football Premier League",
+      "country": "Chinese-Taipei",
+      "category": "men",
+      "order": 0
+    },
+    "590": {
+      "name": "A Division",
+      "country": "Nepal",
+      "category": "men",
+      "order": 0
+    },
+    "591": {
+      "name": "Pro League",
+      "country": "Trinidad-And-Tobago",
+      "category": "men",
+      "order": 0
+    },
+    "592": {
+      "name": "Division 2 - Norra Götaland",
+      "country": "Sweden",
+      "category": "men",
+      "order": 4
+    },
+    "593": {
+      "name": "Division 2 - Norra Svealand",
+      "country": "Sweden",
+      "category": "men",
+      "order": 5
+    },
+    "594": {
+      "name": "Division 2 - Norrland",
+      "country": "Sweden",
+      "category": "men",
+      "order": 6
+    },
+    "595": {
+      "name": "Division 2 - Södra Svealand",
+      "country": "Sweden",
+      "category": "men",
+      "order": 7
+    },
+    "596": {
+      "name": "Division 2 - Västra Götaland",
+      "country": "Sweden",
+      "category": "men",
+      "order": 8
+    },
+    "597": {
+      "name": "Division 2 - Södra Götaland",
+      "country": "Sweden",
+      "category": "men",
+      "order": 9
+    },
+    "598": {
+      "name": "Première Division",
+      "country": "Mali",
+      "category": "men",
+      "order": 0
+    },
+    "599": {
+      "name": "1. Liga Classic - Group 1",
+      "country": "Switzerland",
+      "category": "men",
+      "order": 2
+    },
+    "600": {
+      "name": "1. Liga Classic - Group 2",
+      "country": "Switzerland",
+      "category": "men",
+      "order": 3
+    },
+    "601": {
+      "name": "1. Liga Classic - Group 3",
+      "country": "Switzerland",
+      "category": "men",
+      "order": 4
+    },
+    "602": {
+      "name": "Baiano - 1",
+      "country": "Brazil",
+      "category": "men",
+      "order": 11
+    },
+    "603": {
+      "name": "Paraibano",
+      "country": "Brazil",
+      "category": "men",
+      "order": 12
+    },
+    "604": {
+      "name": "Catarinense - 1",
+      "country": "Brazil",
+      "category": "men",
+      "order": 13
+    },
+    "605": {
+      "name": "Paulista - A3",
+      "country": "Brazil",
+      "category": "men",
+      "order": 14
+    },
+    "606": {
+      "name": "Paranaense - 1",
+      "country": "Brazil",
+      "category": "men",
+      "order": 15
+    },
+    "607": {
+      "name": "Roraimense",
+      "country": "Brazil",
+      "category": "men",
+      "order": 16
+    },
+    "608": {
+      "name": "Maranhense",
+      "country": "Brazil",
+      "category": "men",
+      "order": 17
+    },
+    "609": {
+      "name": "Cearense - 1",
+      "country": "Brazil",
+      "category": "men",
+      "order": 18
+    },
+    "610": {
+      "name": "Brasiliense",
+      "country": "Brazil",
+      "category": "men",
+      "order": 19
+    },
+    "611": {
+      "name": "Capixaba",
+      "country": "Brazil",
+      "category": "men",
+      "order": 20
+    },
+    "613": {
+      "name": "Baiano - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 21
+    },
+    "614": {
+      "name": "Paranaense - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 22
+    },
+    "615": {
+      "name": "Rondoniense",
+      "country": "Brazil",
+      "category": "men",
+      "order": 23
+    },
+    "616": {
+      "name": "Potiguar",
+      "country": "Brazil",
+      "category": "men",
+      "order": 24
+    },
+    "619": {
+      "name": "Mineiro - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 25
+    },
+    "620": {
+      "name": "Cearense - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 26
+    },
+    "621": {
+      "name": "Piauiense",
+      "country": "Brazil",
+      "category": "men",
+      "order": 27
+    },
+    "622": {
+      "name": "Pernambucano - 1",
+      "country": "Brazil",
+      "category": "men",
+      "order": 28
+    },
+    "623": {
+      "name": "Sul-Matogrossense",
+      "country": "Brazil",
+      "category": "men",
+      "order": 29
+    },
+    "624": {
+      "name": "Carioca - 1",
+      "country": "Brazil",
+      "category": "men",
+      "order": 30
+    },
+    "625": {
+      "name": "Carioca - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 31
+    },
+    "626": {
+      "name": "Sergipano",
+      "country": "Brazil",
+      "category": "men",
+      "order": 32
+    },
+    "627": {
+      "name": "Paraense",
+      "country": "Brazil",
+      "category": "men",
+      "order": 33
+    },
+    "628": {
+      "name": "Goiano - 1",
+      "country": "Brazil",
+      "category": "men",
+      "order": 34
+    },
+    "629": {
+      "name": "Mineiro - 1",
+      "country": "Brazil",
+      "category": "men",
+      "order": 35
+    },
+    "630": {
+      "name": "Matogrossense",
+      "country": "Brazil",
+      "category": "men",
+      "order": 36
+    },
+    "631": {
+      "name": "Tocantinense",
+      "country": "Brazil",
+      "category": "men",
+      "order": 37
+    },
+    "633": {
+      "name": "NB III - Northeast",
+      "country": "Hungary",
+      "category": "men",
+      "order": 2
+    },
+    "634": {
+      "name": "NB III - Southwest",
+      "country": "Hungary",
+      "category": "men",
+      "order": 3
+    },
+    "635": {
+      "name": "NB III - Northwest",
+      "country": "Hungary",
+      "category": "men",
+      "order": 4
+    },
+    "636": {
+      "name": "Ýokary Liga",
+      "country": "Turkmenistan",
+      "category": "men",
+      "order": 0
+    },
+    "637": {
+      "name": "V.League 2",
+      "country": "Vietnam",
+      "category": "men",
+      "order": 1
+    },
+    "638": {
+      "name": "Kvindeliga",
+      "country": "Denmark",
+      "category": "women",
+      "order": 0
+    },
+    "640": {
+      "name": "Kansallinen Liiga",
+      "country": "Finland",
+      "category": "men",
+      "order": 5
+    },
+    "642": {
+      "name": "Curaçao Sekshon Pagá",
+      "country": "Curacao",
+      "category": "men",
+      "order": 0
+    },
+    "643": {
+      "name": "3. liga - Bratislava",
+      "country": "Slovakia",
+      "category": "men",
+      "order": 2
+    },
+    "644": {
+      "name": "3. liga - West",
+      "country": "Slovakia",
+      "category": "men",
+      "order": 3
+    },
+    "645": {
+      "name": "3. liga - East",
+      "country": "Slovakia",
+      "category": "men",
+      "order": 4
+    },
+    "646": {
+      "name": "3. liga - Center",
+      "country": "Slovakia",
+      "category": "men",
+      "order": 5
+    },
+    "647": {
+      "name": "Lao League",
+      "country": "Laos",
+      "category": "men",
+      "order": 0
+    },
+    "648": {
+      "name": "Tasmania NPL",
+      "country": "Australia",
+      "category": "men",
+      "order": 10
+    },
+    "649": {
+      "name": "Supreme Division Women",
+      "country": "Russia",
+      "category": "women",
+      "order": 0
+    },
+    "650": {
+      "name": "Second League - Group 3",
+      "country": "Russia",
+      "category": "men",
+      "order": 2
+    },
+    "651": {
+      "name": "Second League - Group 1",
+      "country": "Russia",
+      "category": "men",
+      "order": 3
+    },
+    "652": {
+      "name": "Second League - Group 2",
+      "country": "Russia",
+      "category": "men",
+      "order": 4
+    },
+    "653": {
+      "name": "Second League - Group 4",
+      "country": "Russia",
+      "category": "men",
+      "order": 5
+    },
+    "660": {
+      "name": "WK-League",
+      "country": "South-Korea",
+      "category": "men",
+      "order": 3
+    },
+    "664": {
+      "name": "Superliga",
+      "country": "Kosovo",
+      "category": "men",
+      "order": 0
+    },
+    "668": {
+      "name": "1. Liga U19",
+      "country": "Czech-Republic",
+      "category": "excluded",
+      "order": 0
+    },
+    "669": {
+      "name": "1. Liga Women",
+      "country": "Czech-Republic",
+      "category": "women",
+      "order": 0
+    },
+    "671": {
+      "name": "Úrvalsdeild Women",
+      "country": "Iceland",
+      "category": "women",
+      "order": 0
+    },
+    "673": {
+      "name": "Liga MX Femenil",
+      "country": "Mexico",
+      "category": "women",
+      "order": 0
+    },
+    "675": {
+      "name": "U21 Divisie 1",
+      "country": "Netherlands",
+      "category": "excluded",
+      "order": 0
+    },
+    "676": {
+      "name": "Central Youth League",
+      "country": "Poland",
+      "category": "excluded",
+      "order": 0
+    },
+    "679": {
+      "name": "U21 League",
+      "country": "Ukraine",
+      "category": "excluded",
+      "order": 0
+    },
+    "681": {
+      "name": "Campeonato de Portugal Prio - Group E",
+      "country": "Portugal",
+      "category": "men",
+      "order": 6
+    },
+    "682": {
+      "name": "Campeonato de Portugal Prio - Group F",
+      "country": "Portugal",
+      "category": "men",
+      "order": 7
+    },
+    "683": {
+      "name": "Campeonato de Portugal Prio - Group G",
+      "country": "Portugal",
+      "category": "men",
+      "order": 8
+    },
+    "684": {
+      "name": "Campeonato de Portugal Prio - Group H",
+      "country": "Portugal",
+      "category": "men",
+      "order": 9
+    },
+    "685": {
+      "name": "3. liga - CFL B",
+      "country": "Czech-Republic",
+      "category": "men",
+      "order": 9
+    },
+    "686": {
+      "name": "4. liga - Divizie F",
+      "country": "Czech-Republic",
+      "category": "men",
+      "order": 10
+    },
+    "687": {
+      "name": "Regionalliga - Tirol",
+      "country": "Austria",
+      "category": "men",
+      "order": 14
+    },
+    "688": {
+      "name": "Regionalliga - Salzburg",
+      "country": "Austria",
+      "category": "men",
+      "order": 15
+    },
+    "689": {
+      "name": "Third Amateur Division - ACFF A",
+      "country": "Belgium",
+      "category": "men",
+      "order": 17
+    },
+    "690": {
+      "name": "Third Amateur Division - ACFF B",
+      "country": "Belgium",
+      "category": "men",
+      "order": 18
+    },
+    "691": {
+      "name": "Provincial - Brabant ACFF",
+      "country": "Belgium",
+      "category": "men",
+      "order": 19
+    },
+    "692": {
+      "name": "Primera División RFEF - Group 5",
+      "country": "Spain",
+      "category": "men",
+      "order": 24
+    },
+    "693": {
+      "name": "Gamma Ethniki - Group 9",
+      "country": "Greece",
+      "category": "men",
+      "order": 11
+    },
+    "694": {
+      "name": "Gamma Ethniki - Group 10",
+      "country": "Greece",
+      "category": "men",
+      "order": 12
+    },
+    "695": {
+      "name": "U18 Premier League - North",
+      "country": "England",
+      "category": "excluded",
+      "order": 1
+    },
+    "696": {
+      "name": "U18 Premier League - South",
+      "country": "England",
+      "category": "excluded",
+      "order": 2
+    },
+    "699": {
+      "name": "Women's Championship",
+      "country": "England",
+      "category": "women",
+      "order": 1
+    },
+    "701": {
+      "name": "Liga Revelação U23",
+      "country": "Portugal",
+      "category": "excluded",
+      "order": 0
+    },
+    "702": {
+      "name": "Premier League 2 Division One",
+      "country": "England",
+      "category": "excluded",
+      "order": 3
+    },
+    "703": {
+      "name": "Professional Development League",
+      "country": "England",
+      "category": "excluded",
+      "order": 4
+    },
+    "705": {
+      "name": "Campionato Primavera - 1",
+      "country": "Italy",
+      "category": "excluded",
+      "order": 0
+    },
+    "706": {
+      "name": "Campionato Primavera - 2",
+      "country": "Italy",
+      "category": "excluded",
+      "order": 1
+    },
+    "710": {
+      "name": "Nacional B",
+      "country": "Bolivia",
+      "category": "men",
+      "order": 1
+    },
+    "711": {
+      "name": "Segunda División",
+      "country": "Chile",
+      "category": "men",
+      "order": 2
+    },
+    "712": {
+      "name": "Liga Femenina",
+      "country": "Colombia",
+      "category": "women",
+      "order": 0
+    },
+    "717": {
+      "name": "I-League - 2nd Division",
+      "country": "India",
+      "category": "men",
+      "order": 2
+    },
+    "722": {
+      "name": "Liga Premier Serie A",
+      "country": "Mexico",
+      "category": "men",
+      "order": 2
+    },
+    "724": {
+      "name": "U18 Divisie 1",
+      "country": "Netherlands",
+      "category": "excluded",
+      "order": 1
+    },
+    "725": {
+      "name": "Toppserien",
+      "country": "Norway",
+      "category": "women",
+      "order": 0
+    },
+    "728": {
+      "name": "Liga 1 Feminin",
+      "country": "Romania",
+      "category": "women",
+      "order": 0
+    },
+    "730": {
+      "name": "Football League - Highland League",
+      "country": "Scotland",
+      "category": "men",
+      "order": 4
+    },
+    "731": {
+      "name": "Football League - Lowland League",
+      "country": "Scotland",
+      "category": "men",
+      "order": 5
+    },
+    "733": {
+      "name": "I Liga - Women",
+      "country": "Slovakia",
+      "category": "women",
+      "order": 0
+    },
+    "734": {
+      "name": "Diski Challenge",
+      "country": "South-Africa",
+      "category": "excluded",
+      "order": 0
+    },
+    "736": {
+      "name": "Elitettan",
+      "country": "Sweden",
+      "category": "women",
+      "order": 1
+    },
+    "739": {
+      "name": "AXA Women’s Super League",
+      "country": "Switzerland",
+      "category": "women",
+      "order": 0
+    },
+    "744": {
+      "name": "Oberliga - Schleswig-Holstein",
+      "country": "Germany",
+      "category": "men",
+      "order": 8
+    },
+    "745": {
+      "name": "Oberliga - Hamburg",
+      "country": "Germany",
+      "category": "men",
+      "order": 9
+    },
+    "746": {
+      "name": "Oberliga - Mittelrhein",
+      "country": "Germany",
+      "category": "men",
+      "order": 10
+    },
+    "747": {
+      "name": "Oberliga - Westfalen",
+      "country": "Germany",
+      "category": "men",
+      "order": 11
+    },
+    "748": {
+      "name": "Oberliga - Niedersachsen",
+      "country": "Germany",
+      "category": "men",
+      "order": 12
+    },
+    "749": {
+      "name": "Oberliga - Bremen",
+      "country": "Germany",
+      "category": "men",
+      "order": 13
+    },
+    "750": {
+      "name": "Oberliga - Hessen",
+      "country": "Germany",
+      "category": "men",
+      "order": 14
+    },
+    "751": {
+      "name": "Oberliga - Niederrhein",
+      "country": "Germany",
+      "category": "men",
+      "order": 15
+    },
+    "752": {
+      "name": "Oberliga - Rheinland-Pfalz / Saar",
+      "country": "Germany",
+      "category": "men",
+      "order": 16
+    },
+    "753": {
+      "name": "Oberliga - Baden-Württemberg",
+      "country": "Germany",
+      "category": "men",
+      "order": 17
+    },
+    "754": {
+      "name": "Oberliga - Nordost-Nord",
+      "country": "Germany",
+      "category": "men",
+      "order": 18
+    },
+    "755": {
+      "name": "Oberliga - Nordost-Süd",
+      "country": "Germany",
+      "category": "men",
+      "order": 19
+    },
+    "758": {
+      "name": "Premier Division",
+      "country": "Gibraltar",
+      "category": "men",
+      "order": 0
+    },
+    "759": {
+      "name": "Liga Mayor",
+      "country": "Dominican-Republic",
+      "category": "men",
+      "order": 0
+    },
+    "760": {
+      "name": "LFA First Division",
+      "country": "Liberia",
+      "category": "men",
+      "order": 0
+    },
+    "762": {
+      "name": "Premier League",
+      "country": "Mauritania",
+      "category": "men",
+      "order": 0
+    },
+    "763": {
+      "name": "Mauritian League",
+      "country": "Mauritius",
+      "category": "men",
+      "order": 0
+    },
+    "764": {
+      "name": "Premier League",
+      "country": "Mongolia",
+      "category": "men",
+      "order": 0
+    },
+    "765": {
+      "name": "PFL",
+      "country": "Philippines",
+      "category": "men",
+      "order": 0
+    },
+    "774": {
+      "name": "3. Division - Girone 1",
+      "country": "Norway",
+      "category": "men",
+      "order": 4
+    },
+    "775": {
+      "name": "3. Division - Girone 2",
+      "country": "Norway",
+      "category": "men",
+      "order": 5
+    },
+    "776": {
+      "name": "3. Division - Girone 3",
+      "country": "Norway",
+      "category": "men",
+      "order": 6
+    },
+    "777": {
+      "name": "3. Division - Girone 4",
+      "country": "Norway",
+      "category": "men",
+      "order": 7
+    },
+    "778": {
+      "name": "3. Division - Girone 5",
+      "country": "Norway",
+      "category": "men",
+      "order": 8
+    },
+    "779": {
+      "name": "3. Division - Girone 6",
+      "country": "Norway",
+      "category": "men",
+      "order": 9
+    },
+    "780": {
+      "name": "III Liga - Group 1",
+      "country": "Poland",
+      "category": "men",
+      "order": 3
+    },
+    "781": {
+      "name": "III Liga - Group 2",
+      "country": "Poland",
+      "category": "men",
+      "order": 4
+    },
+    "782": {
+      "name": "III Liga - Group 3",
+      "country": "Poland",
+      "category": "men",
+      "order": 5
+    },
+    "783": {
+      "name": "III Liga - Group 4",
+      "country": "Poland",
+      "category": "men",
+      "order": 6
+    },
+    "784": {
+      "name": "Liga III - Serie 1",
+      "country": "Romania",
+      "category": "men",
+      "order": 2
+    },
+    "785": {
+      "name": "Liga III - Serie 2",
+      "country": "Romania",
+      "category": "men",
+      "order": 3
+    },
+    "786": {
+      "name": "Liga III - Serie 3",
+      "country": "Romania",
+      "category": "men",
+      "order": 4
+    },
+    "787": {
+      "name": "Liga III - Serie 4",
+      "country": "Romania",
+      "category": "men",
+      "order": 5
+    },
+    "788": {
+      "name": "Liga III - Serie 5",
+      "country": "Romania",
+      "category": "men",
+      "order": 6
+    },
+    "789": {
+      "name": "Liga III - Serie 6",
+      "country": "Romania",
+      "category": "men",
+      "order": 7
+    },
+    "790": {
+      "name": "Liga III - Serie 7",
+      "country": "Romania",
+      "category": "men",
+      "order": 8
+    },
+    "791": {
+      "name": "Liga III - Serie 8",
+      "country": "Romania",
+      "category": "men",
+      "order": 9
+    },
+    "792": {
+      "name": "Liga III - Serie 9",
+      "country": "Romania",
+      "category": "men",
+      "order": 10
+    },
+    "793": {
+      "name": "Liga III - Serie 10",
+      "country": "Romania",
+      "category": "men",
+      "order": 11
+    },
+    "794": {
+      "name": "3. SNL - East",
+      "country": "Slovenia",
+      "category": "men",
+      "order": 2
+    },
+    "795": {
+      "name": "3. SNL - West",
+      "country": "Slovenia",
+      "category": "men",
+      "order": 3
+    },
+    "796": {
+      "name": "2. Liga Interregional - Group 1",
+      "country": "Switzerland",
+      "category": "men",
+      "order": 5
+    },
+    "797": {
+      "name": "2. Liga Interregional - Group 2",
+      "country": "Switzerland",
+      "category": "men",
+      "order": 6
+    },
+    "798": {
+      "name": "2. Liga Interregional - Group 3",
+      "country": "Switzerland",
+      "category": "men",
+      "order": 7
+    },
+    "799": {
+      "name": "2. Liga Interregional - Group 4",
+      "country": "Switzerland",
+      "category": "men",
+      "order": 8
+    },
+    "800": {
+      "name": "2. Liga Interregional - Group 5",
+      "country": "Switzerland",
+      "category": "men",
+      "order": 9
+    },
+    "801": {
+      "name": "2. Liga Interregional - Group 6",
+      "country": "Switzerland",
+      "category": "men",
+      "order": 10
+    },
+    "813": {
+      "name": "Elite Two",
+      "country": "Cameroon",
+      "category": "men",
+      "order": 1
+    },
+    "828": {
+      "name": "Ligue 2",
+      "country": "Tunisia",
+      "category": "men",
+      "order": 1
+    },
+    "829": {
+      "name": "Youth League",
+      "country": "Turkmenistan",
+      "category": "excluded",
+      "order": 0
+    },
+    "833": {
+      "name": "Queensland Premier League",
+      "country": "Australia",
+      "category": "men",
+      "order": 11
+    },
+    "834": {
+      "name": "South Australia State League 1",
+      "country": "Australia",
+      "category": "men",
+      "order": 12
+    },
+    "835": {
+      "name": "New South Wales NPL 2",
+      "country": "Australia",
+      "category": "men",
+      "order": 13
+    },
+    "836": {
+      "name": "Victoria NPL 2",
+      "country": "Australia",
+      "category": "men",
+      "order": 14
+    },
+    "844": {
+      "name": "Ligue 1",
+      "country": "Congo",
+      "category": "men",
+      "order": 0
+    },
+    "845": {
+      "name": "GFA League",
+      "country": "Gambia",
+      "category": "men",
+      "order": 0
+    },
+    "846": {
+      "name": "Somali Premier League",
+      "country": "Somalia",
+      "category": "men",
+      "order": 0
+    },
+    "847": {
+      "name": "Premier League",
+      "country": "Eswatini",
+      "category": "men",
+      "order": 0
+    },
+    "851": {
+      "name": "Carioca A2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 38
+    },
+    "854": {
+      "name": "WE League",
+      "country": "Japan",
+      "category": "women",
+      "order": 0
+    },
+    "855": {
+      "name": "Dhivehi Premier League",
+      "country": "Maldives",
+      "category": "men",
+      "order": 0
+    },
+    "861": {
+      "name": "U20 League",
+      "country": "Mexico",
+      "category": "excluded",
+      "order": 0
+    },
+    "862": {
+      "name": "3. Division",
+      "country": "Denmark",
+      "category": "men",
+      "order": 7
+    },
+    "865": {
+      "name": "Liga 3",
+      "country": "Portugal",
+      "category": "men",
+      "order": 10
+    },
+    "867": {
+      "name": "Copa Paulino Alcantara",
+      "country": "Philippines",
+      "category": "men",
+      "order": 1
+    },
+    "868": {
+      "name": "Premier League",
+      "country": "Pakistan",
+      "category": "men",
+      "order": 0
+    },
+    "872": {
+      "name": "Liga Premier Serie B",
+      "country": "Mexico",
+      "category": "men",
+      "order": 3
+    },
+    "875": {
+      "name": "Segunda División RFEF - Group 1",
+      "country": "Spain",
+      "category": "men",
+      "order": 25
+    },
+    "876": {
+      "name": "Segunda División RFEF - Group 2",
+      "country": "Spain",
+      "category": "men",
+      "order": 26
+    },
+    "877": {
+      "name": "Segunda División RFEF - Group 3",
+      "country": "Spain",
+      "category": "men",
+      "order": 27
+    },
+    "878": {
+      "name": "Segunda División RFEF - Group 4",
+      "country": "Spain",
+      "category": "men",
+      "order": 28
+    },
+    "879": {
+      "name": "Segunda División RFEF - Group 5",
+      "country": "Spain",
+      "category": "men",
+      "order": 29
+    },
+    "883": {
+      "name": "Reserve League",
+      "country": "Netherlands",
+      "category": "excluded",
+      "order": 2
+    },
+    "887": {
+      "name": "Second League",
+      "country": "Egypt",
+      "category": "men",
+      "order": 1
+    },
+    "888": {
+      "name": "Second League - Group B",
+      "country": "Egypt",
+      "category": "men",
+      "order": 2
+    },
+    "889": {
+      "name": "Second League - Group C",
+      "country": "Egypt",
+      "category": "men",
+      "order": 3
+    },
+    "906": {
+      "name": "Reserve League",
+      "country": "Argentina",
+      "category": "excluded",
+      "order": 0
+    },
+    "907": {
+      "name": "Primera Division",
+      "country": "Cuba",
+      "category": "men",
+      "order": 0
+    },
+    "909": {
+      "name": "MLS Next Pro",
+      "country": "USA",
+      "category": "excluded",
+      "order": 0
+    },
+    "915": {
+      "name": "1. Division Women",
+      "country": "Norway",
+      "category": "women",
+      "order": 1
+    },
+    "923": {
+      "name": "League 1 Ontario",
+      "country": "Canada",
+      "category": "men",
+      "order": 3
+    },
+    "929": {
+      "name": "League Two",
+      "country": "China",
+      "category": "men",
+      "order": 2
+    },
+    "931": {
+      "name": "Non League Premier - Southern Central",
+      "country": "England",
+      "category": "men",
+      "order": 16
+    },
+    "932": {
+      "name": "Non League Div One - Northern East",
+      "country": "England",
+      "category": "men",
+      "order": 17
+    },
+    "933": {
+      "name": "Non League Div One - Southern Central",
+      "country": "England",
+      "category": "men",
+      "order": 18
+    },
+    "936": {
+      "name": "Catarinense - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 39
+    },
+    "938": {
+      "name": "Oberliga - Bayern Nord",
+      "country": "Germany",
+      "category": "men",
+      "order": 20
+    },
+    "939": {
+      "name": "Oberliga - Bayern Süd",
+      "country": "Germany",
+      "category": "men",
+      "order": 21
+    },
+    "942": {
+      "name": "Serie C - Girone B",
+      "country": "Italy",
+      "category": "men",
+      "order": 12
+    },
+    "943": {
+      "name": "Serie C - Girone C",
+      "country": "Italy",
+      "category": "men",
+      "order": 13
+    },
+    "946": {
+      "name": "Second NL",
+      "country": "Croatia",
+      "category": "men",
+      "order": 7
+    },
+    "948": {
+      "name": "1a Divisão - Women",
+      "country": "Portugal",
+      "category": "women",
+      "order": 0
+    },
+    "954": {
+      "name": "National League - Central",
+      "country": "New-Zealand",
+      "category": "men",
+      "order": 0
+    },
+    "955": {
+      "name": "National League - National",
+      "country": "New-Zealand",
+      "category": "men",
+      "order": 1
+    },
+    "956": {
+      "name": "National League - Northern",
+      "country": "New-Zealand",
+      "category": "men",
+      "order": 2
+    },
+    "957": {
+      "name": "National League - Southern",
+      "country": "New-Zealand",
+      "category": "men",
+      "order": 3
+    },
+    "962": {
+      "name": "Premier League",
+      "country": "Lesotho",
+      "category": "men",
+      "order": 0
+    },
+    "968": {
+      "name": "Championnat D1",
+      "country": "Gabon",
+      "category": "men",
+      "order": 0
+    },
+    "969": {
+      "name": "Primeira Divisão",
+      "country": "Macao",
+      "category": "men",
+      "order": 0
+    },
+    "974": {
+      "name": "Serie C - Supercoppa Lega Finals",
+      "country": "Italy",
+      "category": "excluded",
+      "order": 2
+    },
+    "975": {
+      "name": "Serie C - Relegation - Play-offs",
+      "country": "Italy",
+      "category": "excluded",
+      "order": 3
+    },
+    "976": {
+      "name": "Serie C - Promotion - Play-offs",
+      "country": "Italy",
+      "category": "excluded",
+      "order": 4
+    },
+    "977": {
+      "name": "Tercera División RFEF - Promotion - Play-offs",
+      "country": "Spain",
+      "category": "excluded",
+      "order": 0
+    },
+    "978": {
+      "name": "2nd Division - Play-offs",
+      "country": "Albania",
+      "category": "excluded",
+      "order": 0
+    },
+    "979": {
+      "name": "Provincial - Play-offs VV",
+      "country": "Belgium",
+      "category": "excluded",
+      "order": 1
+    },
+    "980": {
+      "name": "Provincial - Play-offs ACFF",
+      "country": "Belgium",
+      "category": "excluded",
+      "order": 2
+    },
+    "981": {
+      "name": "Third Amateur Division - Play-offs",
+      "country": "Belgium",
+      "category": "excluded",
+      "order": 3
+    },
+    "982": {
+      "name": "Denmark Series - Promotion Round",
+      "country": "Denmark",
+      "category": "excluded",
+      "order": 0
+    },
+    "983": {
+      "name": "Denmark Series - Relegation Round",
+      "country": "Denmark",
+      "category": "excluded",
+      "order": 1
+    },
+    "984": {
+      "name": "National League - North - Play-offs",
+      "country": "England",
+      "category": "excluded",
+      "order": 5
+    },
+    "985": {
+      "name": "National League - South - Play-offs",
+      "country": "England",
+      "category": "excluded",
+      "order": 6
+    },
+    "986": {
+      "name": "Non League Div One - Play-offs",
+      "country": "England",
+      "category": "excluded",
+      "order": 7
+    },
+    "987": {
+      "name": "U18 Premier League - Championship",
+      "country": "England",
+      "category": "excluded",
+      "order": 8
+    },
+    "988": {
+      "name": "Oberliga - Promotion Round",
+      "country": "Germany",
+      "category": "excluded",
+      "order": 1
+    },
+    "989": {
+      "name": "Oberliga - Relegation Round",
+      "country": "Germany",
+      "category": "excluded",
+      "order": 2
+    },
+    "990": {
+      "name": "Gamma Ethniki - Promotion Group",
+      "country": "Greece",
+      "category": "excluded",
+      "order": 0
+    },
+    "991": {
+      "name": "Campeonato de Portugal Prio - Promotion Round",
+      "country": "Portugal",
+      "category": "excluded",
+      "order": 1
+    },
+    "992": {
+      "name": "Football League - Championship",
+      "country": "Scotland",
+      "category": "men",
+      "order": 6
+    },
+    "993": {
+      "name": "Non League Premier - Isthmian - Play-offs",
+      "country": "England",
+      "category": "excluded",
+      "order": 9
+    },
+    "994": {
+      "name": "Non League Premier - Northern - Play-offs",
+      "country": "England",
+      "category": "excluded",
+      "order": 10
+    },
+    "995": {
+      "name": "Non League Premier - Southern South - Play-offs",
+      "country": "England",
+      "category": "excluded",
+      "order": 11
+    },
+    "996": {
+      "name": "Non League Premier - Southern Central - Play-offs",
+      "country": "England",
+      "category": "excluded",
+      "order": 12
+    },
+    "997": {
+      "name": "Serie D - Promotion - Play-offs",
+      "country": "Italy",
+      "category": "excluded",
+      "order": 5
+    },
+    "998": {
+      "name": "Serie D - Relegation - Play-offs",
+      "country": "Italy",
+      "category": "excluded",
+      "order": 6
+    },
+    "999": {
+      "name": "Serie D - Championship Round",
+      "country": "Italy",
+      "category": "excluded",
+      "order": 7
+    },
+    "1000": {
+      "name": "Segunda División RFEF - Play-offs",
+      "country": "Spain",
+      "category": "excluded",
+      "order": 1
+    },
+    "1002": {
+      "name": "Regionalliga - Promotion Play-offs",
+      "country": "Germany",
+      "category": "excluded",
+      "order": 3
+    },
+    "1003": {
+      "name": "Regionalliga - Relegation Round",
+      "country": "Germany",
+      "category": "excluded",
+      "order": 4
+    },
+    "1004": {
+      "name": "Derde Divisie - Relegation Round",
+      "country": "Netherlands",
+      "category": "excluded",
+      "order": 3
+    },
+    "1005": {
+      "name": "1. Liga Classic - Play-offs",
+      "country": "Switzerland",
+      "category": "excluded",
+      "order": 1
+    },
+    "1006": {
+      "name": "Primera División RFEF - Play Offs",
+      "country": "Spain",
+      "category": "excluded",
+      "order": 2
+    },
+    "1007": {
+      "name": "3. Lig - Play-offs",
+      "country": "Turkey",
+      "category": "excluded",
+      "order": 0
+    },
+    "1009": {
+      "name": "Liga III - Play-offs",
+      "country": "Romania",
+      "category": "excluded",
+      "order": 0
+    },
+    "1010": {
+      "name": "3. liga - Promotion Play-off",
+      "country": "Czech-Republic",
+      "category": "excluded",
+      "order": 1
+    },
+    "1011": {
+      "name": "Second Amateur Division - Play-offs ",
+      "country": "Belgium",
+      "category": "excluded",
+      "order": 4
+    },
+    "1014": {
+      "name": "Second League - Play-offs",
+      "country": "Egypt",
+      "category": "excluded",
+      "order": 0
+    },
+    "1017": {
+      "name": "U23 League",
+      "country": "Mexico",
+      "category": "excluded",
+      "order": 1
+    },
+    "1020": {
+      "name": "Calcutta Premier Division",
+      "country": "India",
+      "category": "men",
+      "order": 3
+    },
+    "1022": {
+      "name": "Premier League - Summer Series",
+      "country": "England",
+      "category": "excluded",
+      "order": 13
+    },
+    "1023": {
+      "name": "NB III - Southeast",
+      "country": "Hungary",
+      "category": "men",
+      "order": 5
+    },
+    "1025": {
+      "name": "Second League A - Division A Gold",
+      "country": "Russia",
+      "category": "men",
+      "order": 6
+    },
+    "1026": {
+      "name": "Second League A - Division A Silver",
+      "country": "Russia",
+      "category": "men",
+      "order": 7
+    },
+    "1027": {
+      "name": "3. Lig - Group 4",
+      "country": "Turkey",
+      "category": "men",
+      "order": 6
+    },
+    "1029": {
+      "name": "National 3 - Group G",
+      "country": "France",
+      "category": "men",
+      "order": 19
+    },
+    "1030": {
+      "name": "Goiano - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 40
+    },
+    "1031": {
+      "name": "Premier League",
+      "country": "Bhutan",
+      "category": "men",
+      "order": 0
+    },
+    "1032": {
+      "name": "Copa de la Liga Profesional",
+      "country": "Argentina",
+      "category": "excluded",
+      "order": 1
+    },
+    "1033": {
+      "name": "Ekstraliga Women",
+      "country": "Poland",
+      "category": "women",
+      "order": 0
+    },
+    "1034": {
+      "name": "2. Frauen Bundesliga",
+      "country": "Germany",
+      "category": "women",
+      "order": 1
+    },
+    "1037": {
+      "name": "Paraibano 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 41
+    },
+    "1041": {
+      "name": "Júniores U19",
+      "country": "Portugal",
+      "category": "excluded",
+      "order": 2
+    },
+    "1048": {
+      "name": "Premier Division",
+      "country": "Antigua-And-Barbuda",
+      "category": "men",
+      "order": 0
+    },
+    "1052": {
+      "name": "Kakkonen - Play-offs",
+      "country": "Finland",
+      "category": "excluded",
+      "order": 0
+    },
+    "1053": {
+      "name": "Division 2 - Play-offs",
+      "country": "Sweden",
+      "category": "excluded",
+      "order": 0
+    },
+    "1054": {
+      "name": "2. Division - Play-offs",
+      "country": "Norway",
+      "category": "excluded",
+      "order": 0
+    },
+    "1055": {
+      "name": "Ettan - Relegation Round",
+      "country": "Sweden",
+      "category": "excluded",
+      "order": 1
+    },
+    "1056": {
+      "name": "National League - Championship - Final",
+      "country": "New-Zealand",
+      "category": "men",
+      "order": 4
+    },
+    "1061": {
+      "name": "Second League A - Spring Season Gold",
+      "country": "Russia",
+      "category": "men",
+      "order": 8
+    },
+    "1062": {
+      "name": "Paulista - A4",
+      "country": "Brazil",
+      "category": "men",
+      "order": 42
+    },
+    "1064": {
+      "name": "Second League A - Spring Season Silver",
+      "country": "Russia",
+      "category": "men",
+      "order": 9
+    },
+    "1065": {
+      "name": "U19 League",
+      "country": "Ukraine",
+      "category": "excluded",
+      "order": 1
+    },
+    "1067": {
+      "name": "Torneo Promocional Amateur",
+      "country": "Argentina",
+      "category": "men",
+      "order": 6
+    },
+    "1069": {
+      "name": "Goiano U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 0
+    },
+    "1071": {
+      "name": "Paranaense U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 1
+    },
+    "1073": {
+      "name": "Baiano U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 2
+    },
+    "1075": {
+      "name": "Pro League A",
+      "country": "Uzbekistan",
+      "category": "men",
+      "order": 1
+    },
+    "1076": {
+      "name": "Catarinense U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 3
+    },
+    "1079": {
+      "name": "Yemeni League",
+      "country": "Yemen",
+      "category": "men",
+      "order": 0
+    },
+    "1080": {
+      "name": "Premier Division",
+      "country": "Grenada",
+      "category": "men",
+      "order": 0
+    },
+    "1084": {
+      "name": "Championnat National",
+      "country": "Togo",
+      "category": "men",
+      "order": 0
+    },
+    "1086": {
+      "name": "Paulista - U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 4
+    },
+    "1087": {
+      "name": "Ykkösliiga",
+      "country": "Finland",
+      "category": "men",
+      "order": 6
+    },
+    "1088": {
+      "name": "Pernambucano - U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 5
+    },
+    "1090": {
+      "name": "NNSW League 1",
+      "country": "Australia",
+      "category": "men",
+      "order": 15
+    },
+    "1091": {
+      "name": "Tasmania Northern Championship",
+      "country": "Australia",
+      "category": "men",
+      "order": 16
+    },
+    "1092": {
+      "name": "Capital Territory NPL 2",
+      "country": "Australia",
+      "category": "men",
+      "order": 17
+    },
+    "1093": {
+      "name": "Tasmania Southern Championship",
+      "country": "Australia",
+      "category": "men",
+      "order": 18
+    },
+    "1094": {
+      "name": "Western Australia State League 1",
+      "country": "Australia",
+      "category": "men",
+      "order": 19
+    },
+    "1095": {
+      "name": "USL League One Cup",
+      "country": "USA",
+      "category": "excluded",
+      "order": 1
+    },
+    "1096": {
+      "name": "Matogrossense 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 43
+    },
+    "1098": {
+      "name": "Paulista Série B",
+      "country": "Brazil",
+      "category": "men",
+      "order": 44
+    },
+    "1099": {
+      "name": "Gamma Ethniki - Relegation Play-offs",
+      "country": "Greece",
+      "category": "excluded",
+      "order": 1
+    },
+    "1100": {
+      "name": "Brasiliense U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 6
+    },
+    "1103": {
+      "name": "Premiership Women",
+      "country": "Northern-Ireland",
+      "category": "women",
+      "order": 0
+    },
+    "1104": {
+      "name": "Liga 3",
+      "country": "Georgia",
+      "category": "men",
+      "order": 2
+    },
+    "1106": {
+      "name": "Carioca C",
+      "country": "Brazil",
+      "category": "men",
+      "order": 45
+    },
+    "1107": {
+      "name": "Mineiro U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 7
+    },
+    "1108": {
+      "name": "Sergipano U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 8
+    },
+    "1110": {
+      "name": "Alagoano U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 9
+    },
+    "1111": {
+      "name": "NB III - Promotion Play-offs",
+      "country": "Hungary",
+      "category": "excluded",
+      "order": 0
+    },
+    "1112": {
+      "name": "Cearense U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 10
+    },
+    "1114": {
+      "name": "Carioca U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 11
+    },
+    "1115": {
+      "name": "Paraense A3",
+      "country": "Brazil",
+      "category": "men",
+      "order": 46
+    },
+    "1116": {
+      "name": "WPSL",
+      "country": "USA",
+      "category": "women",
+      "order": 1
+    },
+    "1117": {
+      "name": "USL W League",
+      "country": "USA",
+      "category": "women",
+      "order": 2
+    },
+    "1118": {
+      "name": "NPSL",
+      "country": "USA",
+      "category": "men",
+      "order": 5
+    },
+    "1119": {
+      "name": "NWSL - Liga MXF Summer Cup",
+      "country": "USA",
+      "category": "excluded",
+      "order": 2
+    },
+    "1120": {
+      "name": "Paraibano U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 12
+    },
+    "1121": {
+      "name": "Second League A - Promotion Play-offs",
+      "country": "Russia",
+      "category": "excluded",
+      "order": 1
+    },
+    "1124": {
+      "name": "Cearense - 3",
+      "country": "Brazil",
+      "category": "men",
+      "order": 47
+    },
+    "1125": {
+      "name": "Pernambucano - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 48
+    },
+    "1126": {
+      "name": "Esiliiga B",
+      "country": "Estonia",
+      "category": "men",
+      "order": 2
+    },
+    "1128": {
+      "name": "Brasileiro U17",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 13
+    },
+    "1130": {
+      "name": "USL Super League",
+      "country": "USA",
+      "category": "women",
+      "order": 3
+    },
+    "1131": {
+      "name": "Super Cup",
+      "country": "Mongolia",
+      "category": "excluded",
+      "order": 0
+    },
+    "1133": {
+      "name": "Goiano - 3",
+      "country": "Brazil",
+      "category": "men",
+      "order": 49
+    },
+    "1134": {
+      "name": "Amazonense - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 50
+    },
+    "1135": {
+      "name": "Sergipano - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 51
+    },
+    "1137": {
+      "name": "Supercup der Frauen",
+      "country": "Germany",
+      "category": "excluded",
+      "order": 5
+    },
+    "1138": {
+      "name": "Paranaense - 3",
+      "country": "Brazil",
+      "category": "men",
+      "order": 52
+    },
+    "1139": {
+      "name": "Potiguar - U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 14
+    },
+    "1141": {
+      "name": "Brasiliense B",
+      "country": "Brazil",
+      "category": "men",
+      "order": 53
+    },
+    "1142": {
+      "name": "Mineiro - 3",
+      "country": "Brazil",
+      "category": "men",
+      "order": 54
+    },
+    "1143": {
+      "name": "Estadual Junior U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 15
+    },
+    "1145": {
+      "name": "Paraense B1",
+      "country": "Brazil",
+      "category": "men",
+      "order": 55
+    },
+    "1147": {
+      "name": "Capixaba B",
+      "country": "Brazil",
+      "category": "men",
+      "order": 56
+    },
+    "1148": {
+      "name": "Maranhense - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 57
+    },
+    "1149": {
+      "name": "Potiguar - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 58
+    },
+    "1150": {
+      "name": "Gaúcho - 3",
+      "country": "Brazil",
+      "category": "men",
+      "order": 59
+    },
+    "1151": {
+      "name": "Pernambucano - 3",
+      "country": "Brazil",
+      "category": "men",
+      "order": 60
+    },
+    "1152": {
+      "name": "U19 Divisie 1",
+      "country": "Netherlands",
+      "category": "excluded",
+      "order": 4
+    },
+    "1154": {
+      "name": "Catarinense - 3",
+      "country": "Brazil",
+      "category": "men",
+      "order": 61
+    },
+    "1155": {
+      "name": "Carioca B2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 62
+    },
+    "1157": {
+      "name": "Paraense U20",
+      "country": "Brazil",
+      "category": "excluded",
+      "order": 16
+    },
+    "1182": {
+      "name": "Northern Super League",
+      "country": "Canada",
+      "category": "women",
+      "order": 0
+    },
+    "1185": {
+      "name": "3. liga - Play-offs",
+      "country": "Slovakia",
+      "category": "excluded",
+      "order": 0
+    },
+    "1195": {
+      "name": "Liga E Pare",
+      "country": "Kosovo",
+      "category": "men",
+      "order": 1
+    },
+    "1196": {
+      "name": "Division One League",
+      "country": "Ghana",
+      "category": "men",
+      "order": 1
+    },
+    "1200": {
+      "name": "Liga MX U21",
+      "country": "Mexico",
+      "category": "excluded",
+      "order": 2
+    },
+    "1203": {
+      "name": "Piauiense - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 63
+    },
+    "1204": {
+      "name": "Rondoniense - 2",
+      "country": "Brazil",
+      "category": "men",
+      "order": 64
+    },
+    "1211": {
+      "name": "Tipsport Liga",
+      "country": "Czech-Republic",
+      "category": "excluded",
+      "order": 2
+    },
+    "1218": {
+      "name": "Pro League U23",
+      "country": "United-Arab-Emirates",
+      "category": "excluded",
+      "order": 0
+    },
+    "1219": {
+      "name": "Copa Presidente",
+      "country": "El-Salvador",
+      "category": "men",
+      "order": 1
+    },
+    "1226": {
+      "name": "Victoria Premier League 2",
+      "country": "Australia",
+      "category": "men",
+      "order": 20
+    },
+    "1227": {
+      "name": "Premier League Women",
+      "country": "Saudi-Arabia",
+      "category": "women",
+      "order": 0
+    },
+    "1229": {
+      "name": "Liga Women",
+      "country": "Peru",
+      "category": "women",
+      "order": 0
+    },
+    "1230": {
+      "name": "Npl Nsw U20",
+      "country": "Australia",
+      "category": "excluded",
+      "order": 0
+    },
+    "1234": {
+      "name": "K4 League",
+      "country": "South-Korea",
+      "category": "men",
+      "order": 4
+    },
+    "1235": {
+      "name": "J2/J3 League",
+      "country": "Japan",
+      "category": "men",
+      "order": 4
+    },
+    "1238": {
+      "name": "Regionalliga - South",
+      "country": "Austria",
+      "category": "men",
+      "order": 16
+    },
+    "1239": {
+      "name": "Regionalliga - North",
+      "country": "Austria",
+      "category": "men",
+      "order": 17
+    },
+    "1240": {
+      "name": "U19 league",
+      "country": "Turkey",
+      "category": "excluded",
+      "order": 1
+    },
+    "1241": {
+      "name": "U19 league",
+      "country": "Serbia",
+      "category": "excluded",
+      "order": 0
+    },
+    "1242": {
+      "name": "Primera Premier",
+      "country": "Mexico",
+      "category": "men",
+      "order": 4
+    },
+    "1243": {
+      "name": "Super League Women",
+      "country": "South-Africa",
+      "category": "women",
+      "order": 0
+    },
+    "1244": {
+      "name": "B-Liga Women",
+      "country": "Denmark",
+      "category": "women",
+      "order": 1
+    }
+  }
+}
