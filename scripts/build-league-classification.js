@@ -1,18 +1,27 @@
 /**
  * FOOTBALLGLOBE - BUILD LEAGUE CLASSIFICATION
  *
- * Splits the in-scope API-Football leagues into three buckets - men, women,
- * excluded - so downstream exports stop re-deriving gender and competition
- * type from league names at call time. Reads scripts/apifootball-scope.json
- * for the id list and the season, and a leagues response file for the names
- * and countries.
+ * Splits the in-scope API-Football leagues into four buckets - men, women,
+ * other, excluded - so downstream exports stop re-deriving gender and
+ * competition type from league names at call time. Reads
+ * scripts/apifootball-scope.json for the id list and the season, and a leagues
+ * response file for the names and countries.
+ *
+ * `other` is youth and reserve competitions. They used to be lumped in with
+ * `excluded`, which was wrong for this map: a youth or reserve side plays at a
+ * real ground hosting watchable football, and dropping those leagues costs the
+ * map roughly 294 stadiums. `excluded` now means only what we genuinely cannot
+ * place on a season map - cup competitions and play-off phases, which have no
+ * stable home venue - while `other` stays available to render, just not as
+ * senior league football.
  *
  * Input (leagues file), either shape:
  *   { response: [ { league: { id, name, type }, country: { name } } ] }
  *   [ { league: { id, name, type }, country: { name } } ]
  *
  * Output:
- *   { generatedAt, season, rulesVersion, counts: { men, women, excluded },
+ *   { generatedAt, season, rulesVersion,
+ *     counts: { men, women, other, excluded },
  *     leagues: { "<id>": { name, country, category, order } } }
  *
  * `order` is the league's zero-based position among its own country's leagues
@@ -41,7 +50,7 @@ const APPLY = process.argv.includes('--apply');
 // Candidate beside the real file, never on top of it.
 const OUTPUT_PATH = APPLY ? OUTPUT_REAL_PATH : OUTPUT_CANDIDATE_PATH;
 
-const RULES_VERSION = 1;
+const RULES_VERSION = 3;
 
 /**
  * The leagues file is the first non-flag argument. A relative path resolves
@@ -72,10 +81,26 @@ const LEAGUES_PATH = parseLeaguesPath(process.argv);
 // kind enters scope.
 // ---------------------------------------------------------------------------
 
+/**
+ * Ids that jump every rule below and land in `men` directly.
+ *
+ * 510 is Switzerland's third tier, genuinely named "1. Liga Promotion" -
+ * "Promotion" is part of the division's proper name, not a phase marker, so
+ * PHASE_PATTERN matches it wrongly. Every other league PHASE_PATTERN catches
+ * names a parent league plus a phase ("Serie C - Promotion - Play-offs"), so
+ * the parent division is already in scope and the phase entry is a duplicate
+ * listing of the same venues; 510 has no such parent and excluding it drops
+ * its grounds outright.
+ *
+ * Found by checking which venues had no category left after exclusion: 16
+ * venues, 15 of them Swiss.
+ */
+const MEN_ID_OVERRIDES = new Set([510]);
+
 const EXCLUDED_CUP_IDS = new Set([1032, 1095, 1211, 1119]);
 const CUP_PATTERN = /super ?cup|supercup|supercopa|supercoppa|community shield|summer series|\bcup\b/i;
 
-const EXCLUDED_YOUTH_IDS = new Set([702, 734]);
+const OTHER_YOUTH_IDS = new Set([702, 734]);
 const YOUTH_PATTERN = /\bu-?1[5-9]\b|\bu-?2[0-3]\b|youth|junior|primavera|development|jugend|academy|reserve|next pro/i;
 
 const PHASE_PATTERN = /play-?off|play offs|promotion|relegation|championship round/i;
@@ -84,16 +109,24 @@ const WOMEN_IDS = new Set([638, 673, 736, 854, 1116, 1117, 1130, 1182]);
 const WOMEN_PATTERN = /women|femin|femenin|femenil|femmin|frauen|dames|kvinn|kvinde|damallsv|toppserien|feminina|wsl|kobiet|damer/i;
 
 /**
- * First match wins, in this order. Cups and youth competitions are ruled out
- * before the women check on purpose: a women's cup is still a cup, and those
- * exclusions are about the competition format, not about who plays in it.
+ * First match wins, in this order. Cups and play-off phases are ruled out
+ * before the women check on purpose: a women's cup is still a cup, and that
+ * exclusion is about the competition format, not about who plays in it.
+ *
+ * The women check now runs BEFORE the youth check, which is deliberate: a
+ * women's youth or reserve league lands in `women`, not `other`. That is the
+ * choice we want while the women's buckets are small and gender is the axis
+ * the map filters on - but it does mean `women` is not purely senior football.
+ * Revisit this ordering if women's youth leagues actually turn up in scope and
+ * anything downstream starts treating `women` as a senior-only set.
  */
 function classify(id, name) {
   const n = name || '';
+  if (MEN_ID_OVERRIDES.has(id)) return 'men';
   if (EXCLUDED_CUP_IDS.has(id) || CUP_PATTERN.test(n)) return 'excluded';
-  if (EXCLUDED_YOUTH_IDS.has(id) || YOUTH_PATTERN.test(n)) return 'excluded';
   if (PHASE_PATTERN.test(n)) return 'excluded';
   if (WOMEN_IDS.has(id) || WOMEN_PATTERN.test(n)) return 'women';
+  if (OTHER_YOUTH_IDS.has(id) || YOUTH_PATTERN.test(n)) return 'other';
   return 'men';
 }
 
@@ -164,18 +197,18 @@ function build() {
     return { id, name, country, category: classify(id, name) };
   });
 
-  const counts = { men: 0, women: 0, excluded: 0 };
+  const counts = { men: 0, women: 0, other: 0, excluded: 0 };
   for (const league of classified) counts[league.category] += 1;
 
-  // ---- GUARD: the three buckets must account for the whole scope ----
-  const summed = counts.men + counts.women + counts.excluded;
+  // ---- GUARD: the four buckets must account for the whole scope ----
+  const summed = counts.men + counts.women + counts.other + counts.excluded;
   if (summed !== scopeIds.length) {
     console.error('='.repeat(60));
     console.error('REFUSING TO WRITE');
     console.error('='.repeat(60));
-    console.error(`  men + women + excluded = ${summed}, scope = ${scopeIds.length}`);
+    console.error(`  men + women + other + excluded = ${summed}, scope = ${scopeIds.length}`);
     console.error('  Every scope league must land in exactly one bucket. A mismatch');
-    console.error('  means classify() returned a category outside the three, or the');
+    console.error('  means classify() returned a category outside the four, or the');
     console.error('  scope list contains duplicate ids.');
     process.exit(1);
   }
@@ -223,6 +256,7 @@ function build() {
   console.log(`  scope:      ${scopeIds.length} leagues`);
   console.log(`  men:        ${counts.men}`);
   console.log(`  women:      ${counts.women}`);
+  console.log(`  other:      ${counts.other}`);
   console.log(`  excluded:   ${counts.excluded}`);
   console.log(`  countries:  ${new Set(classified.map(l => l.country)).size}`);
   console.log('');
