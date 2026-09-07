@@ -3698,29 +3698,6 @@ const map = new MapCtor(mapRef.current, {
             </div>
           )}
         </div>
-
-        {/* Marker colour legend: explains the amber (match-day) vs green (no match-day)
-            stadium marker colours. Hidden under 768px (see .stadium-marker-legend media
-            rule) since the map grows near full-screen there and this would sit off-screen. */}
-        {selectedCountry && (
-          <div className="stadium-marker-legend" style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1.25rem',
-            padding: '0.5rem 0.25rem',
-            fontSize: '0.8rem',
-            color: '#374151'
-          }}>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#f59e0b', display: 'inline-block' }}></span>
-              Home match in next 7 days
-            </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>
-              No home match
-            </span>
-          </div>
-        )}
       </main>
 
       {/* Mobile-only stadium card: replaces Google's InfoWindow under 768px with our own
