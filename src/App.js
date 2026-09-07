@@ -4083,78 +4083,44 @@ const map = new MapCtor(mapRef.current, {
               {/* Stadium List */}
               {stadiumPins.length > 0 && (
                 <div>
-                  {(() => {
-                    // Filter stadiums based on selected league
-                    const filteredStadiums = stadiumPins.filter(stadium => {
-                      if (!selectedLeague || selectedLeague === 'all') return true;
-                      
-                      switch (selectedLeague) {
-                        case 'top':
-                          return stadium.isTopLeague;
-                        case 'capacity':
-                          return stadium.capacity > 25000;
-                        case 'premium':
-                          return stadium.capacity > 40000 || stadium.name.toLowerCase().includes('stadium');
-                        default:
-                          return true;
-                      }
-                    });
-                    
-                    return (
-                      <>
-                        <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '0.75rem' }}>
-                          🏟️ Stadiums ({filteredStadiums.length})
-                        </h3>
-                        <div style={{ maxHeight: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                          {filteredStadiums.slice(0, 10).map((stadium, index) => (
-                            <div
-                              key={stadium.id}
-                              className="stadium-row"
-                              style={{
-                                backgroundColor: selectedStadium?.id === stadium.id ? '#e0f2fe' : '#f9fafb',
-                                borderRadius: '0.5rem',
-                                padding: '0.75rem',
-                                cursor: 'pointer',
-                                border: selectedStadium?.id === stadium.id ? '2px solid #3b82f6' : '1px solid transparent',
-                                transition: 'all 0.2s'
-                              }}
-                              onClick={() => {
-                                setSelectedStadium(stadium);
-                                if (googleMapRef.current && stadium.coordinates) {
-                                  googleMapRef.current.panTo(stadium.coordinates);
-                                  googleMapRef.current.setZoom(15);
-                                }
-                              }}
-                            >
-                              <div className="stadium-row-name" style={{ fontWeight: '500', color: '#1f2937', fontSize: '0.9rem' }}>
-                                {stadium.name}
-                                {stadium.team && (
-                                  <span style={{ fontWeight: '400', color: '#6b7280', marginLeft: '0.5rem' }}>
-                                    • {stadium.team}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="stadium-row-meta" style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '2px' }}>
-                                📍 {stadium.city} • 👥 {stadium.capacity?.toLocaleString() || 'Unknown'} capacity
-                              </div>
-                            </div>
-                          ))}
-                          
-                          {filteredStadiums.length > 10 && (
-                            <div style={{
-                              textAlign: 'center',
-                              padding: '0.75rem',
-                              color: '#6b7280',
-                              fontSize: '0.875rem',
-                              fontStyle: 'italic'
-                            }}>
-                              + {filteredStadiums.length - 10} more stadiums available
-                            </div>
+                  <h3 style={{ fontWeight: '600', color: '#1f2937', marginBottom: '0.75rem' }}>
+                    🏟️ Stadiums ({stadiumPins.length})
+                  </h3>
+                  <div style={{ maxHeight: '300px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {stadiumPins.map((stadium, index) => (
+                      <div
+                        key={stadium.id}
+                        className="stadium-row"
+                        style={{
+                          backgroundColor: selectedStadium?.id === stadium.id ? '#e0f2fe' : '#f9fafb',
+                          borderRadius: '0.5rem',
+                          padding: '0.75rem',
+                          cursor: 'pointer',
+                          border: selectedStadium?.id === stadium.id ? '2px solid #3b82f6' : '1px solid transparent',
+                          transition: 'all 0.2s'
+                        }}
+                        onClick={() => {
+                          setSelectedStadium(stadium);
+                          if (googleMapRef.current && stadium.coordinates) {
+                            googleMapRef.current.panTo(stadium.coordinates);
+                            googleMapRef.current.setZoom(15);
+                          }
+                        }}
+                      >
+                        <div className="stadium-row-name" style={{ fontWeight: '500', color: '#1f2937', fontSize: '0.9rem' }}>
+                          {stadium.name}
+                          {stadium.team && (
+                            <span style={{ fontWeight: '400', color: '#6b7280', marginLeft: '0.5rem' }}>
+                              • {stadium.team}
+                            </span>
                           )}
                         </div>
-                      </>
-                    );
-                  })()}
+                        <div className="stadium-row-meta" style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '2px' }}>
+                          📍 {stadium.city} • 👥 {stadium.capacity?.toLocaleString() || 'Unknown'} capacity
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
