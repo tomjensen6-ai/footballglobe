@@ -3092,7 +3092,15 @@ const map = new MapCtor(mapRef.current, {
   const createProfessionalStadiumPopup = (stadium) => {
     const teamName = stadium.team || stadium.teamName || 'Unknown Team';
     const stadiumName = stadium.name || stadium.venue || 'Unknown Stadium';
-    const address = stadium.address || 'Address not available';
+    // stadiums-premium.json carries no address field, and the upstream one
+    // is sometimes a registered office rather than the ground. The
+    // coordinates went through the acceptance rule, so they are what to
+    // trust: send the viewer to the pin itself.
+    const lat = stadium.latitude;
+    const lng = stadium.longitude;
+    const directionsUrl = (lat != null && lng != null)
+      ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`
+      : '';
     const league = stadium.leagueName || stadium.league || '';
 
     // Get team crest from cache data
@@ -3100,6 +3108,25 @@ const map = new MapCtor(mapRef.current, {
     const clubColors = stadium.clubColors || '';
     const founded = stadium.founded || '';
     const city = stadium.city || '';
+    // 0 means "not known", not "holds nobody" - render only when truthy.
+    const capacityLine = stadium.capacity
+      ? `👥 ${stadium.capacity.toLocaleString()}`
+      : '';
+
+    // Context-strip segments, in display order. The separator belongs to the
+    // segment that follows it rather than being hardcoded per line, so an
+    // absent earlier segment can never leave a dangling leading "· ".
+    // Each surviving segment still renders as its own <span>, exactly as
+    // before, so the flex gap between them is unchanged.
+    const stripHtml = [
+      city ? `📍 ${city}` : '',
+      capacityLine,
+      founded ? `📅 ${founded}` : '',
+      clubColors ? `👕 ${clubColors}` : ''
+    ]
+      .filter(Boolean)
+      .map((segment, i) => `<span>${i === 0 ? '' : '· '}${segment}</span>`)
+      .join('');
     const travelLinks = city ? buildTravelLinks(city, stadium.country || '') : null;
 
     // Match-day fixture (if any) for this team, stashed on window when the
@@ -3203,10 +3230,8 @@ const map = new MapCtor(mapRef.current, {
           background: #fafafa;
           border-bottom: 1px solid #f0f0f0;
         ">
-          ${city ? `<span>📍 ${city}</span>` : ''}
+          ${stripHtml}
           <span id="stadium-weather-strip" style="display: none;"></span>
-          ${founded ? `<span>· 📅 ${founded}</span>` : ''}
-          ${clubColors ? `<span>· 👕 ${clubColors}</span>` : ''}
         </div>
 
         <!-- Next match (match-day highlight) -->
@@ -3276,12 +3301,16 @@ const map = new MapCtor(mapRef.current, {
 
         <!-- Footer -->
         <div class="popup-footer">
-          <p style="
-            margin: 0 0 10px 0;
-            font-size: 11px;
-            color: #9ca3af;
-            line-height: 1.4;
-          ">${address}</p>
+          ${directionsUrl ? `
+            <a href="${directionsUrl}" target="_blank" rel="noopener noreferrer" style="
+              display: block;
+              margin: 0 0 10px 0;
+              font-size: 12px;
+              color: #1B6B52;
+              font-weight: 600;
+              text-decoration: none;
+            ">📍 Get directions</a>
+          ` : ''}
 
           <div style="
             background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
@@ -3291,11 +3320,11 @@ const map = new MapCtor(mapRef.current, {
             border: 1px solid #86efac;
           ">
             <div style="
-              color: #166534;
+              color: #1B6B52;
               font-size: 11px;
               font-weight: 700;
             ">
-              ⚽ FootballGlobe - Discover Stadiums Worldwide
+              📍 VeylorCraft Away - Find live sport you'd travel for
             </div>
           </div>
         </div>
