@@ -7,7 +7,10 @@
  *   stadium.address is deliberately NOT used. football-data.org's address
  *   field is the club's registered office or training ground, not the ground
  *   itself (Bayern -> Sabener Strasse, Roma -> Trigoria, Lazio -> Formello),
- *   and including it drags the result onto the offices.
+ *   and including it drags the result onto the offices. The one exception is
+ *   a tier-3 area-only rejection, which retries with the street address and
+ *   adopts it only within FALLBACK_MAX_DRIFT_KM of the first point - that
+ *   guard, not the result type, is what keeps a registered office out.
  *
  * Acceptance: three tiers, cheapest first.
  *   tier 1  results[0].types contains "stadium". Free and decisive.
@@ -156,6 +159,14 @@ const NOMINATIM_TIMEOUT_MS = Number(process.env.OSM_TIMEOUT_MS) || 10000;
 // 500m comfortably spans a stadium site while excluding the town-centre
 // fallbacks that tier 3 is meant to catch anyway.
 const OSM_MATCH_RADIUS_KM = 0.5;
+
+// A street address further than this from the area-only result it is
+// replacing is not that stadium's street. stadium.address sometimes holds a
+// registered office or training ground - see the note at the top of this
+// file - and those resolve cleanly as street_address, so type alone cannot
+// tell them apart. Measured: Anfield 1.5km, Old Trafford 0.2km, Bayern
+// 13.1km, Roma 20.7km.
+const FALLBACK_MAX_DRIFT_KM = 3;
 
 // OSM responses are cached OUTSIDE the repository, keyed by venue+country, so a
 // re-run costs no Nominatim requests and the cache can never be mistaken for
@@ -541,6 +552,39 @@ function buildAddress(stadium, countryName) {
   else missing.push('country');
 
   return { address: parts.join(', '), missing };
+}
+
+/**
+ * Street-first variant of buildAddress, used ONLY to retry a tier-3
+ * area-only rejection. Returns null when the record has nothing usable so
+ * the caller can skip the retry without spending a request.
+ *
+ * Rejects an empty address; an address identical to the city (contributes
+ * nothing); and an address that merely restates the venue name (would
+ * reproduce the same area-only result). The venue test is exact, not a
+ * substring: a street named AFTER the ground is a different query and a
+ * usable one - Anfield Road, Am Dromlingstadion, Molenveldweg, 651 Lincoln
+ * Road - and the substring form threw all of those away. Measured on
+ * stadiums-apifootball-geocoding.json: 29 addresses restate the venue
+ * exactly and are skipped, 28 are streets named after it and now go through.
+ *
+ * The city is passed in rather than read off the record: the caller has
+ * already run clearCity() by this point.
+ */
+function buildStreetAddress(street, venue, city, countryName) {
+  const s = typeof street === 'string' ? street.trim() : '';
+  if (!s) return null;
+
+  const lower = s.toLowerCase();
+  const v = venue ? String(venue).trim().toLowerCase() : '';
+  const c = city ? String(city).trim().toLowerCase() : '';
+  if (c && lower === c) return null;
+  if (v && lower === v) return null;
+
+  const parts = [s];
+  if (city) parts.push(relaxCity(city));
+  if (countryName) parts.push(countryName);
+  return parts.join(', ');
 }
 
 /**
@@ -1064,9 +1108,17 @@ function baseRecord(item) {
     // records that were never evaluated (skipped, overridden, errored),
     // and the osm* fields are null on tiers 1 and 3, and on the tier-2 rows
     // with no usable result to corroborate, none of which spend a Nominatim
-    // request by design.
+    // request by design. The fallback* fields are null on every row that made
+    // no street-address retry - only a tier-3 row with a usable address makes
+    // one - and usedFallback is false rather than null because it records a
+    // decision, not a question that can go unasked.
     tier: null,
     googleLocationType: null,
+    fallbackQuery: null,
+    fallbackResponse: null,
+    fallbackOverQueryLimitRetries: null,
+    fallbackDriftKm: null,
+    usedFallback: false,
     osmStatus: null,
     osmError: null,
     osmQueryUrl: null,
@@ -1153,6 +1205,10 @@ async function geocodeStadiums() {
   let acceptedByType = 0;
   let acceptedByName = 0;
   let acceptedByOsm = 0;
+  let fallbackAttempted = 0;
+  let fallbackAdopted = 0;
+  let fallbackTooFar = 0;
+  let fallbackAccepted = 0;
   let tier3Rejected = 0;
   let overrideConflicts = 0;
   let overrideNamespaceMismatches = 0;
@@ -1271,11 +1327,11 @@ async function geocodeStadiums() {
       record.response = response;
       record.overQueryLimitRetries = retries;
 
-      const top = response.status === 'OK' && Array.isArray(response.results)
+      let top = response.status === 'OK' && Array.isArray(response.results)
         && response.results.length > 0
         ? response.results[0]
         : null;
-      const types = (top && top.types) || [];
+      let types = (top && top.types) || [];
 
       // ---- THREE-TIER ACCEPTANCE ----
       //
@@ -1287,16 +1343,77 @@ async function geocodeStadiums() {
       // Tier 3 is evaluated BEFORE tier 2 so a town-centre fallback never
       // spends a Nominatim request. Tier 1 is evaluated before both so the
       // common case stays free.
-      const byType = !!(top && types.includes('stadium'));
-      const areaOnly = !byType && !!top && isAreaOnlyResult(types);
+      let byType = !!(top && types.includes('stadium'));
+      let areaOnly = !byType && !!top && isAreaOnlyResult(types);
 
       // The tier a record was decided at, recorded whatever the outcome.
       // A response with no usable result reaches tier 2 - there is nothing
       // area-only about it - but has no point for OSM to corroborate, so it
       // is rejected there without a Nominatim request.
-      const tier = byType ? 1 : (areaOnly ? 3 : 2);
+      let tier = byType ? 1 : (areaOnly ? 3 : 2);
       record.tier = tier;
       record.googleLocationType = (top && top.geometry && top.geometry.location_type) || null;
+
+      // ---- TIER-3 STREET-ADDRESS FALLBACK ----
+      // An area-only result means the venue name resolved to the district
+      // sharing its name. The stored street address is a different query
+      // with a different failure mode, so retry once and let the unchanged
+      // acceptance rules below judge the second response. Only tier 3
+      // reaches here, so no OSM call has been made and nothing downstream
+      // has run.
+      if (areaOnly) {
+        const streetQuery = buildStreetAddress(
+          view.address, view.venue, storedCity, item.country
+        );
+        if (streetQuery && streetQuery !== address) {
+          console.log(`    FALLBACK query: ${streetQuery}`);
+          fallbackAttempted++;
+          const fb = await geocodeWithRetry(streetQuery, iso2);
+          record.fallbackQuery = streetQuery;
+          record.fallbackResponse = fb.response;
+          record.fallbackOverQueryLimitRetries = fb.retries;
+
+          const fbTop = fb.response.status === 'OK'
+            && Array.isArray(fb.response.results)
+            && fb.response.results.length > 0
+            ? fb.response.results[0]
+            : null;
+          const fbTypes = (fbTop && fbTop.types) || [];
+          const fbByType = !!(fbTop && fbTypes.includes('stadium'));
+          const fbAreaOnly = !fbByType && !!fbTop && isAreaOnlyResult(fbTypes);
+
+          // The area-only result is a district centroid - roughly right.
+          // A street address far from it belongs to something else.
+          const driftKm = fbTop ? haversineKm(
+            top.geometry.location.lat, top.geometry.location.lng,
+            fbTop.geometry.location.lat, fbTop.geometry.location.lng
+          ) : null;
+          record.fallbackDriftKm = driftKm;
+
+          const tooFar = driftKm !== null && driftKm > FALLBACK_MAX_DRIFT_KM;
+
+          if (fbTop && !fbAreaOnly && !tooFar) {
+            top = fbTop;
+            types = fbTypes;
+            byType = fbByType;
+            areaOnly = false;
+            tier = fbByType ? 1 : 2;
+            record.tier = tier;
+            record.usedFallback = true;
+            record.googleLocationType =
+              (top.geometry && top.geometry.location_type) || null;
+            fallbackAdopted++;
+            console.log(`      fallback adopted (${driftKm.toFixed(2)}km from area result)`);
+          } else if (tooFar) {
+            fallbackTooFar++;
+            console.log(`      fallback REJECTED - ${driftKm.toFixed(2)}km away `
+              + `(limit ${FALLBACK_MAX_DRIFT_KM}km): ${fbTop.formatted_address}`);
+          } else {
+            console.log(`      fallback no better `
+              + `(${fb.response.status}${fbTypes.length ? ': ' + fbTypes.join(', ') : ''})`);
+          }
+        }
+      }
 
       let osmMatch = null;
       let byName = false;
@@ -1352,6 +1469,7 @@ async function geocodeStadiums() {
         view.acceptedBy = acceptedBy;
 
         accepted++;
+        if (record.usedFallback) fallbackAccepted++;
         if (byType) {
           acceptedByType++;
         } else if (osmMatch) {
@@ -1499,16 +1617,29 @@ async function geocodeStadiums() {
     generatedAt: new Date().toISOString(),
     input: INPUT_PATH,
     inputShape: shape,
-    queryShape: "venue + ', ' + relaxCity(city) + ', ' + countryName; components=country:<ISO2>",
+    queryShape: "venue + ', ' + relaxCity(city) + ', ' + countryName; components=country:<ISO2>. "
+      + "A row decided at tier 3 may instead have been resolved by a second, street-first "
+      + "query of the shape address + ', ' + relaxCity(city) + ', ' + countryName, under the "
+      + "same components filter; usedFallback marks those rows and fallbackQuery holds the "
+      + "exact string sent",
     acceptanceRule: {
-      version: 2,
-      versionNote: 'v2 sends route-typed results to tier 2, where OSM corroboration '
-        + 'decides them; v1 rejected them at tier 3 without an OSM call',
+      version: 3,
+      versionNote: 'v3 retries a tier-3 area-only result once with the record\'s street '
+        + 'address, adopting it only when that result is not itself area-only and lies '
+        + `within ${FALLBACK_MAX_DRIFT_KM}km of the area result; v2 rejected every `
+        + 'area-only result outright, without a second query. v2 sends route-typed '
+        + 'results to tier 2, where OSM corroboration decides them; v1 rejected them '
+        + 'at tier 3 without an OSM call',
       tier1: "results[0].types includes 'stadium'",
       tier2: `OSM leisure=stadium|pitch|sports_centre within ${OSM_MATCH_RADIUS_KM}km of results[0], `
         + 'or venue name contained in formatted_address',
-      tier3: 'reject without an OSM call when types are area-only '
-        + '(locality/political/sublocality/administrative_area_*/neighborhood/colloquial_area)',
+      tier3: 'types are area-only '
+        + '(locality/political/sublocality/administrative_area_*/neighborhood/colloquial_area): '
+        + 'retry once with the street address before rejecting. Rejected when the record has '
+        + 'no usable address, when the retry is itself area-only, or when the retry lands more '
+        + `than ${FALLBACK_MAX_DRIFT_KM}km from the area result. A row that survives the retry `
+        + 'leaves tier 3 and is judged by the tier-1 and tier-2 rules unchanged; a row that '
+        + 'does not spends no OSM call, as before',
     },
     // What every record carries, and - as important - what it does not mean.
     recordFields: {
@@ -1516,8 +1647,26 @@ async function geocodeStadiums() {
         + 'NOT a record of which test ran: a response with no usable result (ZERO_RESULTS, '
         + 'any other non-OK status, or OK with an empty results array) is assigned tier 2 '
         + 'without ever reaching the tier-2 test, because there is no point for OSM to '
-        + 'corroborate. Analysis of tier 2 must therefore filter on osmStatus !== null',
-      googleLocationType: 'results[0].geometry.location_type, null when there was no result',
+        + 'corroborate. Analysis of tier 2 must therefore filter on osmStatus !== null. '
+        + 'A row decided at tier 3 whose street-address retry was adopted is recorded as '
+        + 'tier 1 or 2, NOT 3: usedFallback is the only thing separating it from a row that '
+        + 'reached that tier on its first query',
+      googleLocationType: 'results[0].geometry.location_type, null when there was no result. '
+        + 'Re-derived from the fallback result on the rows that adopted one',
+      fallbackQuery: 'the street-first query this row was retried with; null on every row '
+        + 'that made no retry - only tier-3 rows with a usable address make one',
+      fallbackResponse: 'the complete parsed response to fallbackQuery, verbatim; null when '
+        + 'no retry was made. Recorded whether or not the retry was adopted, since a rejected '
+        + 'retry is evidence. The response field above always holds the FIRST query',
+      fallbackOverQueryLimitRetries: 'per-second rate-limit retries spent on the fallback '
+        + 'query alone; overQueryLimitRetries counts the first query and does not include these',
+      fallbackDriftKm: `km between the area-only result and the fallback result - EVIDENCE `
+        + `ONLY, recorded whether or not the fallback was adopted, and null when no retry was `
+        + `made. Adoption required <= ${FALLBACK_MAX_DRIFT_KM}; a row with a larger `
+        + 'fallbackDriftKm was rejected on distance and kept its original coordinates',
+      usedFallback: 'true ONLY on rows whose fallback result replaced the first; false '
+        + 'everywhere else, including rows whose fallback was queried and then rejected - '
+        + 'those carry fallbackQuery and fallbackResponse with usedFallback false',
       osmStatus: "'ok' | 'empty' | 'failed'; null on tiers 1 and 3, which spend no OSM "
         + 'request, and null on the tier-2 rows that had no usable result to corroborate '
         + '(ZERO_RESULTS and friends), which spend no OSM request either',
@@ -1536,6 +1685,7 @@ async function geocodeStadiums() {
         + 'osmNearest beyond that was rejected, not accepted',
     },
     osmMatchRadiusKm: OSM_MATCH_RADIUS_KM,
+    fallbackMaxDriftKm: FALLBACK_MAX_DRIFT_KM,
     osmTimeoutMs: NOMINATIM_TIMEOUT_MS,
     osmRequests: nominatimRequests,
     osmCacheHits: nominatimCacheHits,
@@ -1576,6 +1726,10 @@ async function geocodeStadiums() {
   console.log(`     tier 2 - venue-name match:        ${acceptedByName}`);
   console.log(`   Rejected:                           ${rejected}`);
   console.log(`     tier 3 - area-only (no OSM call): ${tier3Rejected}`);
+  console.log(`   Street fallback attempted:          ${fallbackAttempted}`);
+  console.log(`     adopted (2nd response used):      ${fallbackAdopted}`);
+  console.log(`     rejected, too far from district:  ${fallbackTooFar}`);
+  console.log(`     accepted after fallback:          ${fallbackAccepted}`);
   console.log(`   OSM requests made:                  ${nominatimRequests}`);
   console.log(`   OSM cache hits (no request):        ${nominatimCacheHits}`);
   console.log(`   Errored:                            ${errored}`);
