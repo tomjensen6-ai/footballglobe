@@ -3400,6 +3400,22 @@ const map = new MapCtor(mapRef.current, {
     };
   }, [googleMapsReady, cacheLoaded, cachedStadiums, isMapLoaded]);
 
+  const headerStats = useMemo(() => {
+    const countries = cachedStadiums?.countries;
+    if (!countries) return null;
+    const seen = new Set();
+    let leagueCount = 0;
+    for (const country of Object.values(countries)) {
+      for (const league of country.leagues || []) {
+        leagueCount += 1;
+        for (const stadium of league.stadiums || []) {
+          seen.add(`${stadium.venue}|${stadium.latitude}|${stadium.longitude}`);
+        }
+      }
+    }
+    return { venues: seen.size, countries: Object.keys(countries).length, leagues: leagueCount };
+  }, [cachedStadiums]);
+
   /**
    * Distinct venues in the selected country across ALL of its leagues - the
    * number the "All leagues" option would actually put on the map.
@@ -3443,29 +3459,45 @@ const map = new MapCtor(mapRef.current, {
       <header className="premium-header" style={{ position: 'sticky', top: 0, zIndex: 50, padding: '1rem 1.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-  <img
-    src="/footballglobe-logo.png"
-    alt="FootballGlobe Logo"
-    className="header-logo"
-    style={{ width: '60px', height: '60px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }}
-  />
-    <h1 className="header-title" style={{
-        fontSize: '2.5rem',
-        fontWeight: '800',
-        background: 'linear-gradient(135deg, #ffffff 0%, #22c55e 100%)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        backgroundClip: 'text',
-        marginBottom: '0.5rem',
-        letterSpacing: '-0.02em'
-      }}>
-      FootballGlobe
-    </h1>
-  </div>
-            <p className="header-tagline" style={{ fontSize: '1.125rem', color: 'rgba(255,255,255,0.9)', fontWeight: '500' }}>
-              Dream Away - Discover Football Worldwide
-            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+              <img
+                src="/away-mark.png"
+                alt=""
+                aria-hidden="true"
+                className="header-logo"
+                style={{ width: '52px', height: '52px', flexShrink: 0 }}
+              />
+              <div>
+                <h1 style={{ margin: 0, lineHeight: 1.05 }}>
+                  <span className="header-wordmark-kicker" style={{
+                    display: 'block',
+                    fontSize: '0.8125rem',
+                    fontWeight: '400',
+                    letterSpacing: '0.24em',
+                    color: 'rgba(255,255,255,0.72)'
+                  }}>
+                    VEYLORCRAFT
+                  </span>
+                  <span className="header-wordmark" style={{
+                    display: 'block',
+                    fontSize: '2.125rem',
+                    fontWeight: '800',
+                    letterSpacing: '-0.01em',
+                    color: '#ffffff'
+                  }}>
+                    AWAY
+                  </span>
+                </h1>
+                <p className="header-tagline" style={{
+                  margin: '0.4rem 0 0',
+                  fontSize: '1rem',
+                  color: 'rgba(255,255,255,0.85)',
+                  fontWeight: '500'
+                }}>
+                  Find live sport you'd travel for.
+                </p>
+              </div>
+            </div>
           </div>
           
           {selectedCountry && (
@@ -3487,36 +3519,16 @@ const map = new MapCtor(mapRef.current, {
           )}
         </div>
         
-        <div className="header-badges" style={{
-            marginTop: '1rem',
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: '0.75rem'
-          }}>
-          <div className="stats-badge" style={{ padding: '0.5rem 1rem', borderRadius: '2rem', fontSize: '0.875rem', fontWeight: '500' }}>
-            📍 {countriesData.length} Countries
-          </div>
-          <div className="stats-badge" style={{ padding: '0.5rem 1rem', borderRadius: '2rem', fontSize: '0.875rem', fontWeight: '500' }}>
-            ⚽ Live Football Data  
-          </div>
-          <div className="stats-badge" style={{ padding: '0.5rem 1rem', borderRadius: '2rem', fontSize: '0.875rem', fontWeight: '500' }}>
-            🗺️ Real-time API
-          </div>
-          
-          {/* App Mode Indicator */}
-          <div className="stats-badge" style={{ 
-            padding: '0.5rem 1rem', 
-            borderRadius: '2rem', 
-            fontSize: '0.875rem', 
+        {headerStats && (
+          <div className="header-badges" style={{
+            marginTop: '0.875rem',
+            fontSize: '0.875rem',
             fontWeight: '500',
-            backgroundColor: appMode === 'world' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(34, 197, 94, 0.1)',
-            color: appMode === 'world' ? '#3b82f6' : '#22c55e'
+            color: 'rgba(255,255,255,0.6)'
           }}>
-            {appMode === 'world' && '🌍 World View'}
-            {appMode === 'country' && '🗺️ Country View'}
-            {appMode === 'stadium' && '🏟️ Stadium View'}
+            {headerStats.venues.toLocaleString()} venues · {headerStats.countries} countries · {headerStats.leagues} divisions
           </div>
-        </div>
+        )}
         
         {/* Journey Mode Selector - Only show in world view */}
         {!selectedCountry && (
@@ -4757,9 +4769,12 @@ const map = new MapCtor(mapRef.current, {
             height: 28px !important;
           }
 
-          .header-title {
+          .header-wordmark-kicker {
+            font-size: 0.625rem !important;
+          }
+
+          .header-wordmark {
             font-size: 1.1rem !important;
-            margin-bottom: 0 !important;
           }
 
           .header-tagline,
