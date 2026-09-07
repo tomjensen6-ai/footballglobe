@@ -192,16 +192,78 @@ function hasCoordinates(venue) {
 
 /**
  * teamNames is an array because one ground can host several clubs. The app
- * renders teamName as a scalar (marker titles, popup, sidebar), so several
- * names are joined rather than dropped - losing "Cruz Azul" from Estadio
+ * renders teamName as a scalar (marker titles, popup, sidebar), so distinct
+ * clubs are joined rather than dropped - losing "Cruz Azul" from Estadio
  * Azteca would be a silent data loss the UI could never show.
+ *
+ * What IS dropped is a club's own age, reserve and women's sides, which the
+ * source lists as peers of the parent: "Manchester United / Manchester
+ * United U21" is one club, not two. Variant tokens are an explicit allowlist,
+ * never "strip the last word" - United, City, FC, SC, Town and AC are all
+ * ordinary parts of club names.
+ *
+ * A lone name is returned untouched. Stripping a variant only makes sense
+ * when the parent is also present: a venue whose only tenant is "Everton W"
+ * is a ground the men's first team does not use, and relabelling it
+ * "Everton" would put a club on the map where it does not play.
+ *
+ * Names are grouped on a diacritic-stripped, casefolded key because the
+ * source carries both spellings of the same club ("Bodo/Glimt" and
+ * "Bodø/Glimt"). The representative is the spelling with the most non-ASCII
+ * characters, then the shortest - insertion order would otherwise pick
+ * whichever happened to come first, which is how "Vitória" became "Vitoria".
+ *
+ * Joined with ' & ', not ' / ': club names contain slashes.
+ *
+ * Academy is deliberately NOT a variant token. Puskas Academy is the club's
+ * actual name, and stripping it invents a club called "Puskas".
  */
+const TEAM_NAME_VARIANT = /^(?:U1[5-9]|U2[0-3]|II|III|IV|B|W|Women|Res\.?|Reserves?)$/i;
+
+function stripTeamVariant(name) {
+  let s = String(name).trim();
+  // Up to three passes: "Sporting CP U23 B" carries more than one marker.
+  for (let i = 0; i < 3; i++) {
+    const m = s.match(/^(.*?)[\s-]+(\S+)$/);
+    if (m && TEAM_NAME_VARIANT.test(m[2])) s = m[1].trim();
+    else break;
+  }
+  return s || String(name).trim();
+}
+
+function normaliseTeamKey(s) {
+  return s.normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
 function teamNameOf(venue) {
   const names = Array.isArray(venue.teamNames)
     ? venue.teamNames.filter(n => typeof n === 'string' && n.trim().length > 0)
     : [];
   if (names.length === 0) return null;
-  return names.length === 1 ? names[0] : names.join(' / ');
+  if (names.length === 1) return names[0].trim();
+
+  const nonAscii = s => [...s].filter(c => c.charCodeAt(0) > 127).length;
+
+  const byBase = new Map();
+  for (const n of names) {
+    const base = stripTeamVariant(n);
+    const key = normaliseTeamKey(base);
+    if (!key) continue;
+    const prev = byBase.get(key);
+    if (!prev
+      || nonAscii(base) > nonAscii(prev)
+      || (nonAscii(base) === nonAscii(prev) && base.length < prev.length)) {
+      byBase.set(key, base);
+    }
+  }
+
+  const bases = [...byBase.values()];
+  if (bases.length === 0) return names[0];
+  return bases.length === 1 ? bases[0] : bases.join(' & ');
 }
 
 /**
