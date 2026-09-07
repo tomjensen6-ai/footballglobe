@@ -105,8 +105,13 @@ const googleToFootballCode = (googleCode) => {
 // ===== Country boundary source =====
 // Subunits, not admin_0_countries: England/Scotland/Wales/Northern-Ireland are
 // separate premium keys and only the subunit layer separates them.
-const NE_GEOJSON_URL =
-  'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_map_subunits.geojson';
+//
+// Pinned vendored copy in public/, downloaded 2026-09-07 from master of
+// nvkelso/natural-earth-vector (geojson/ne_50m_admin_0_map_subunits.geojson).
+// It is served from our own origin rather than raw.githubusercontent.com
+// because that host rate-limits by IP and serves a moving branch: an upstream
+// commit could redraw these borders with no change on this side.
+const NE_GEOJSON_URL = '/ne_50m_admin_0_map_subunits.geojson';
 
 // Single in-flight/parsed promise. Both the polygon render and every hover
 // highlight share it, so the ~3MB payload is fetched and JSON-parsed once.
