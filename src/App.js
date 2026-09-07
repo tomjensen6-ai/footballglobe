@@ -3821,12 +3821,6 @@ const map = new MapCtor(mapRef.current, {
                 <div style={{ color: '#6b7280', fontSize: '1.1rem', fontWeight: '500' }}>
                   Football Stadiums
                 </div>
-                <div style={{ fontSize: '0.75rem', color: '#16a34a', marginTop: '0.25rem' }}>
-                  🟢 Live API Data • {stadiumPins.length} Pins Loaded
-                </div>
-                <div style={{ fontSize: '0.7rem', color: '#9ca3af', marginTop: '0.5rem', fontStyle: 'italic' }}>
-                  ℹ️ Stadium capacity data will be added in a future update
-                </div>
               </div>
               
               {/* Enhanced League Selector */}
