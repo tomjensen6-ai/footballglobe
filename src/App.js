@@ -363,14 +363,6 @@ const FootballGlobe = () => {
       setIsSidebarDrawerOpen(false);
     }, [selectedCountry?.code]);
 
-    // Fetch weather for the mobile stadium card once it's mounted (mirrors the
-    // domready-triggered fetch used for the desktop InfoWindow).
-    useEffect(() => {
-      if (mobileStadiumCard) {
-        injectStadiumWeather(mobileStadiumCard);
-      }
-    }, [mobileStadiumCard]);
-
     // ===== UNIFIED MARKER MANAGEMENT =====
     // This ensures ALL markers are cleared regardless of which function created them
     const clearAllStadiumMarkers = () => {
@@ -1863,10 +1855,6 @@ const FootballGlobe = () => {
           window.currentStadiumInfoWindow.close();
         }
 
-        window.google.maps.event.addListenerOnce(infoWindow, 'domready', () => {
-          injectStadiumWeather(stadium);
-        });
-
         infoWindow.open(googleMapRef.current, marker);
         window.currentStadiumInfoWindow = infoWindow;
       });
@@ -3038,10 +3026,6 @@ const map = new MapCtor(mapRef.current, {
           window.currentStadiumInfoWindow.close();
         }
 
-        window.google.maps.event.addListenerOnce(infoWindow, 'domready', () => {
-          injectStadiumWeather(stadium);
-        });
-
         infoWindow.open(map, marker);
         window.currentStadiumInfoWindow = infoWindow;
       });
@@ -3054,47 +3038,6 @@ const map = new MapCtor(mapRef.current, {
 
   // NEW FUNCTION: Create stadium info window content
   // PROFESSIONAL 10/10 STADIUM POPUP
-  // Map a WMO weather code (Open-Meteo) to a representative emoji
-  const getWeatherEmoji = (code) => {
-    if (code === 0) return '☀️';
-    if (code >= 1 && code <= 3) return '⛅';
-    if (code === 45 || code === 48) return '🌫️';
-    if (code >= 51 && code <= 67) return '🌧️';
-    if (code >= 71 && code <= 77) return '❄️';
-    if (code >= 80 && code <= 82) return '🌦️';
-    if (code >= 95 && code <= 99) return '⛈️';
-    return '🌡️';
-  };
-
-  // NEW FUNCTION: Fetch current weather for a stadium and inject it into the open InfoWindow.
-  // The popup is an HTML string handed to Google Maps, so weather can't be rendered inline -
-  // it has to be fetched after the window opens and patched into the DOM.
-  const injectStadiumWeather = async (stadium) => {
-    const lat = stadium.coordinates?.lat ?? stadium.lat;
-    const lng = stadium.coordinates?.lng ?? stadium.lng;
-    if (lat == null || lng == null) return;
-
-    try {
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code`
-      );
-      if (!response.ok) return;
-
-      const data = await response.json();
-      const temperature = data?.current?.temperature_2m;
-      const weatherCode = data?.current?.weather_code;
-      if (temperature == null || weatherCode == null) return;
-
-      const strip = document.getElementById('stadium-weather-strip');
-      if (!strip) return;
-
-      strip.innerHTML = `· <a href="https://www.windy.com/?${lat},${lng},11" target="_blank" rel="noopener noreferrer" style="color: #0284c7; text-decoration: none; font-weight: 600;">${getWeatherEmoji(weatherCode)} ${Math.round(temperature)}°C</a>`;
-      strip.style.display = 'inline';
-    } catch (err) {
-      // Fetch failed (offline, CORS, etc) - leave the strip item hidden rather than showing an error
-    }
-  };
-
   const createProfessionalStadiumPopup = (stadium) => {
     const teamName = stadium.team || stadium.teamName || 'Unknown Team';
     const stadiumName = stadium.name || stadium.venue || 'Unknown Stadium';
@@ -3128,7 +3071,10 @@ const map = new MapCtor(mapRef.current, {
       city ? `📍 ${city}` : '',
       capacityLine,
       founded ? `📅 ${founded}` : '',
-      clubColors ? `👕 ${clubColors}` : ''
+      clubColors ? `👕 ${clubColors}` : '',
+      lat != null && lng != null
+        ? `<a href="https://www.windy.com/?${lat},${lng},11" target="_blank" rel="noopener noreferrer" style="color: #0284c7; text-decoration: none; font-weight: 600;">🌤️ Check forecast</a>`
+        : ''
     ]
       .filter(Boolean)
       .map((segment, i) => `<span>${i === 0 ? '' : '· '}${segment}</span>`)
@@ -3237,7 +3183,6 @@ const map = new MapCtor(mapRef.current, {
           border-bottom: 1px solid #f0f0f0;
         ">
           ${stripHtml}
-          <span id="stadium-weather-strip" style="display: none;"></span>
         </div>
 
         <!-- Next match (match-day highlight) -->
