@@ -36,3 +36,13 @@
     transform: rotate(360deg);
   }
 }
+
+/* About-the-data panel. Sits below the wordmark at all widths; this rule
+   lets it use the full column width on mobile. First width breakpoint in the
+   codebase - the header is otherwise styled entirely inline in App.js. */
+@media (max-width: 767px) {
+  .header-about {
+    max-width: 100%;
+    margin-top: 0.875rem;
+  }
+}

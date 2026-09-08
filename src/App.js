@@ -7,6 +7,7 @@ import {
   fgFootballStandings,
   fgFootballMatches
 } from './lib/fgApi';
+import AboutData from './AboutData';
 
 // 🔥 HELPER FUNCTION
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -3532,6 +3533,7 @@ const map = new MapCtor(mapRef.current, {
                 </p>
               </div>
             </div>
+            <AboutData />
           </div>
           
           {selectedCountry && (
@@ -4243,7 +4245,7 @@ const map = new MapCtor(mapRef.current, {
         border: '1px solid rgba(255,255,255,0.1)',
         maxWidth: '400px'
       }}>
-        <div>✅ Global Football Data - Real-time & Accurate</div>
+        <div>🌍 Football venues in 135 countries</div>
         <div style={{ marginTop: '0.25rem' }}>🎯 Hover over countries to explore</div>
       </footer>
 
