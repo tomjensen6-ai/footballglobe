@@ -1036,6 +1036,8 @@ function flatItems(data) {
         set acceptedTier(value) { record.acceptedTier = value; },
         get acceptedBy() { return record.acceptedBy; },
         set acceptedBy(value) { record.acceptedBy = value; },
+        get geocodedAt() { return record.geocodedAt; },
+        set geocodedAt(value) { record.geocodedAt = value; },
       },
       clearCity: () => { delete record.city; },
       country: record.country || null,
@@ -1467,6 +1469,13 @@ async function geocodeStadiums() {
         record.osmMatch = osmMatch;
         view.acceptedTier = tier;
         view.acceptedBy = acceptedBy;
+        // Stamped on acceptance only, not on every run that touches the
+        // record. A record accepted in one run and rejected in a later one
+        // keeps the earlier date, which is correct: the date describes the
+        // coordinates the record still holds, not the last time it was
+        // queried. Date-only, matching data.lastGeocoded; the sidecar holds
+        // the full timestamp and the acceptance evidence.
+        view.geocodedAt = new Date().toISOString().split('T')[0];
 
         accepted++;
         if (record.usedFallback) fallbackAccepted++;
