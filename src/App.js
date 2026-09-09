@@ -839,9 +839,13 @@ const FootballGlobe = () => {
       console.log(`✅ Loaded ${processedCountries.length} countries from API`);
       
     } catch (error) {
+      // No fallback country set. countriesData stays empty, which disables
+      // hover; the map still renders venues from the cached JSON, which does
+      // not depend on this request. A synthetic "Demo Mode" country at 0,0
+      // used to be inserted here - it named a cause this catch cannot know
+      // and rendered nowhere.
       console.error('❌ Error fetching countries:', error);
       setApiError(error.message);
-      loadFallbackCountries();
     } finally {
       setIsLoadingCountries(false);
     }
@@ -1489,20 +1493,6 @@ const FootballGlobe = () => {
     };
 
     
-  // Fallback countries (minimal set for demo if API fails)
-  const loadFallbackCountries = () => {
-    console.log('🔄 Loading fallback countries...');
-    setCountriesData([
-      {
-        id: 'demo',
-        name: 'Demo Mode - API Key Required',
-        center: { lat: 0, lng: 0 },
-        stadiums: 0,
-        topLeagues: ['Please add API keys'],
-        continent: 'Demo'
-      }
-    ]);
-  };
 
   // Get map styles based on zoom level
   const getMapStylesForZoom = (zoomLevel) => {
@@ -3592,7 +3582,7 @@ const map = new MapCtor(mapRef.current, {
             style={{
               width: selectedCountry ? 'calc(100% - 400px)' : '100%', // Reserve space for sidebar
               height: '520px',
-              display: countriesData.length > 0 ? 'block' : 'none',
+              display: cacheLoaded && !cacheLoadError ? 'block' : 'none',
               pointerEvents: 'auto',
               position: 'relative',
               cursor: 'default',
@@ -3605,7 +3595,7 @@ const map = new MapCtor(mapRef.current, {
           
 
           {/* Loading placeholder while countries data loads */}
-          {countriesData.length === 0 && (
+          {!cacheLoaded && (
             <div className="map-loading-skeleton" style={{ 
               width: '100%', 
               height: '520px', 
@@ -3657,8 +3647,34 @@ const map = new MapCtor(mapRef.current, {
             </div>
           )}
           
+          {/* Cache load failure. The venue file is served from our own origin,
+              so this is not a proxy or upstream problem - it means
+              /stadiums-premium.json did not load. Distinct from apiError,
+              which only costs hover and country metadata. */}
+          {cacheLoaded && cacheLoadError && (
+            <div style={{
+              width: '100%',
+              height: '520px',
+              borderRadius: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(34, 139, 34, 0.1)'
+            }}>
+              <div style={{ textAlign: 'center', color: 'white', width: '320px' }}>
+                <p style={{ fontSize: '1.125rem', fontWeight: '500', marginBottom: '0.5rem' }}>
+                  Venue data could not be loaded
+                </p>
+                <p style={{ fontSize: '0.875rem', opacity: 0.8 }}>
+                  Reloading the page usually fixes this. If it persists, the
+                  problem is on our side.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Map Status Overlay */}
-          {!isMapLoaded && countriesData.length > 0 && (
+          {!isMapLoaded && cacheLoaded && !cacheLoadError && (
             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(34, 139, 34, 0.2)', zIndex: 30 }}>
               <div style={{ textAlign: 'center', color: 'white' }}>
                 <div style={{ width: '3rem', height: '3rem', border: '4px solid white', borderTop: '4px solid transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }}></div>
